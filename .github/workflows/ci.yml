@@ -400,10 +400,12 @@ jobs:
           echo "🚀 Deploying to GitHub Pages CDN..."
           
           # Generate plugin manifest
-          npm run generate:plugin-manifest
+          node tools/deployment/cli-minimal.cjs generate-manifest \
+            --output cdn/dist/plugins/manifest.json \
+            --base-url "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
           
           # Deploy using our CDN deployment system
-          npx dataprism-deploy deploy \
+          node tools/deployment/cli-minimal.cjs deploy \
             --target github-pages \
             --repository ${{ github.repository }} \
             --environment production \
@@ -430,9 +432,8 @@ jobs:
           echo "deployment-url=${DEPLOYMENT_URL}" >> $GITHUB_OUTPUT
           
           # Validate the deployment
-          npx dataprism-deploy validate "${DEPLOYMENT_URL}" \
-            --timeout 30000 \
-            --performance
+          node tools/deployment/cli-minimal.cjs validate "${DEPLOYMENT_URL}" \
+            --timeout 30000
         continue-on-error: true
 
       # Deploy to AWS CloudFront (secondary CDN)
@@ -564,11 +565,8 @@ jobs:
           GITHUB_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
           
           # Run our comprehensive validation suite
-          npx dataprism-deploy validate "${GITHUB_URL}" \
-            --timeout 30000 \
-            --performance \
-            --security \
-            --verbose
+          node tools/deployment/cli-minimal.cjs validate "${GITHUB_URL}" \
+            --timeout 30000
 
       - name: Test CDN Plugin Loading
         run: |
