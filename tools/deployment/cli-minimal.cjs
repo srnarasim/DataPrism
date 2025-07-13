@@ -214,14 +214,20 @@ function validateDeployment(url, options = {}) {
   // Basic validation - check if URL is accessible
   try {
     const { execSync } = require('child_process');
+    const timeout = options.timeout || 30000;
     
-    // Check main URL
-    execSync(`curl -f -s "${url}" > /dev/null`, { stdio: 'pipe' });
-    log('✅ Main URL accessible');
+    // Check main URL with timeout
+    try {
+      execSync(`curl -f -s --max-time 10 "${url}" > /dev/null`, { stdio: 'pipe' });
+      log('✅ Main URL accessible');
+    } catch (e) {
+      log('❌ Main URL not accessible');
+      return { success: false, error: 'Main URL not accessible' };
+    }
     
     // Check manifest
     try {
-      execSync(`curl -f -s "${url}/manifest.json" > /dev/null`, { stdio: 'pipe' });
+      execSync(`curl -f -s --max-time 5 "${url}/manifest.json" > /dev/null`, { stdio: 'pipe' });
       log('✅ Manifest accessible');
     } catch (e) {
       log('⚠️ Manifest not accessible');
@@ -229,10 +235,18 @@ function validateDeployment(url, options = {}) {
     
     // Check core bundle
     try {
-      execSync(`curl -f -s "${url}/dataprism.min.js" > /dev/null`, { stdio: 'pipe' });
+      execSync(`curl -f -s --max-time 5 "${url}/dataprism.min.js" > /dev/null`, { stdio: 'pipe' });
       log('✅ Core bundle accessible');
     } catch (e) {
       log('⚠️ Core bundle not accessible');
+    }
+    
+    // Check plugin manifest
+    try {
+      execSync(`curl -f -s --max-time 5 "${url}/plugins/manifest.json" > /dev/null`, { stdio: 'pipe' });
+      log('✅ Plugin manifest accessible');
+    } catch (e) {
+      log('⚠️ Plugin manifest not accessible');
     }
     
     log('✅ Basic validation passed');
