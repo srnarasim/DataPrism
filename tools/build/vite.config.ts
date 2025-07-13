@@ -17,27 +17,31 @@ export default defineConfig(({ mode, command }) => {
     ],
     build: {
       target: "es2020",
-      lib: {
-        entry: {
-          core: resolve(__dirname, "../../packages/core/src/index.ts"),
-          "plugin-framework": resolve(
-            __dirname,
-            "../../packages/plugins/src/index.ts",
-          ),
-          orchestration: resolve(
-            __dirname,
-            "../../packages/orchestration/src/index.ts",
-          ),
-        },
-        formats: isCDN ? ["umd"] : ["es", "cjs"],
-        name: "DataPrism",
-        fileName: (format, entryName) => {
-          if (isCDN) {
-            return `${entryName}.min.js`;
+      lib: isCDN
+        ? {
+            entry: resolve(__dirname, "../../packages/orchestration/src/index.ts"),
+            formats: ["umd"],
+            name: "DataPrism",
+            fileName: () => "dataprism.min.js",
           }
-          return `${entryName}.${format === "es" ? "js" : "cjs"}`;
-        },
-      },
+        : {
+            entry: {
+              core: resolve(__dirname, "../../packages/core/src/index.ts"),
+              "plugin-framework": resolve(
+                __dirname,
+                "../../packages/plugins/src/index.ts",
+              ),
+              orchestration: resolve(
+                __dirname,
+                "../../packages/orchestration/src/index.ts",
+              ),
+            },
+            formats: ["es", "cjs"],
+            name: "DataPrism",
+            fileName: (format, entryName) => {
+              return `${entryName}.${format === "es" ? "js" : "cjs"}`;
+            },
+          },
       rollupOptions: {
         external: isCDN
           ? []
@@ -48,6 +52,7 @@ export default defineConfig(({ mode, command }) => {
               "duckdb-wasm",
             ],
         output: {
+          exports: isCDN ? "named" : "auto",
           globals: isCDN
             ? {
                 "@dataprism/core": "DataPrismCore",
