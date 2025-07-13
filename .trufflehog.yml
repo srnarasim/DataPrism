@@ -1,0 +1,25 @@
+# TruffleHog configuration for DataPrism Core
+# Excludes common false positives and focuses on real secrets
+
+exclude_paths:
+  - node_modules/
+  - .git/
+  - dist/
+  - build/
+  - pkg/
+  - target/
+  - coverage/
+  - test-results/
+  - playwright-report/
+  - "*.log"
+  - "*.min.js"
+  - "*.wasm"
+  - package-lock.json
+  - yarn.lock
+  - pnpm-lock.yaml
+
+exclude_detectors:
+  - genericapi
+  - uri
+
+only_verified: true

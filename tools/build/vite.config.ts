@@ -46,7 +46,8 @@ export default defineConfig(({ mode, command }) => {
             '@dataprism/orchestration': 'DataPrismOrchestration'
           } : undefined,
           assetFileNames: (assetInfo) => {
-            const info = assetInfo.name.split('.');
+            const name = assetInfo.name || 'unknown';
+            const info = name.split('.');
             const ext = info[info.length - 1];
             if (/wasm/i.test(ext)) {
               return `assets/[name]-[hash][extname]`;
