@@ -4,7 +4,7 @@ export interface WorkerTask<T = any, R = any> {
   data: T;
   transferable?: Transferable[];
   timeout?: number;
-  priority?: 'low' | 'normal' | 'high';
+  priority?: "low" | "normal" | "high";
 }
 
 export interface WorkerResult<R = any> {
@@ -48,8 +48,8 @@ export class WorkerManager {
       maxWorkers: navigator.hardwareConcurrency || 4,
       maxQueueSize: 100,
       terminateTimeout: 5000,
-      workerScript: '',
-      ...config
+      workerScript: "",
+      ...config,
     };
   }
 
@@ -57,7 +57,7 @@ export class WorkerManager {
     if (this.isInitialized) return;
 
     this.config.workerScript = workerScript;
-    
+
     // Create initial worker pool
     const initialWorkers = Math.min(2, this.config.maxWorkers);
     for (let i = 0; i < initialWorkers; i++) {
@@ -69,7 +69,9 @@ export class WorkerManager {
 
   public async execute<T, R>(task: WorkerTask<T, R>): Promise<WorkerResult<R>> {
     if (!this.isInitialized) {
-      throw new Error('WorkerManager not initialized. Call initialize() first.');
+      throw new Error(
+        "WorkerManager not initialized. Call initialize() first.",
+      );
     }
 
     return new Promise((resolve, reject) => {
@@ -77,12 +79,12 @@ export class WorkerManager {
         task,
         resolve: resolve as (result: WorkerResult) => void,
         reject,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       // Check queue size limit
       if (this.taskQueue.length >= this.config.maxQueueSize) {
-        reject(new Error('Worker queue is full'));
+        reject(new Error("Worker queue is full"));
         return;
       }
 
@@ -91,33 +93,35 @@ export class WorkerManager {
     });
   }
 
-  public async executeParallel<T, R>(tasks: WorkerTask<T, R>[]): Promise<WorkerResult<R>[]> {
-    const promises = tasks.map(task => this.execute(task));
+  public async executeParallel<T, R>(
+    tasks: WorkerTask<T, R>[],
+  ): Promise<WorkerResult<R>[]> {
+    const promises = tasks.map((task) => this.execute(task));
     return Promise.all(promises);
   }
 
   public getStats() {
     return {
       totalWorkers: this.workers.length,
-      busyWorkers: this.workers.filter(w => w.busy).length,
+      busyWorkers: this.workers.filter((w) => w.busy).length,
       queueLength: this.taskQueue.length,
-      pendingTasks: this.pendingTasks.size
+      pendingTasks: this.pendingTasks.size,
     };
   }
 
   public async terminate(): Promise<void> {
     // Cancel all pending tasks
     for (const [taskId, queuedTask] of this.pendingTasks) {
-      queuedTask.reject(new Error('WorkerManager terminated'));
+      queuedTask.reject(new Error("WorkerManager terminated"));
     }
     this.pendingTasks.clear();
     this.taskQueue = [];
 
     // Terminate all workers
-    const terminatePromises = this.workers.map(instance => 
-      this.terminateWorker(instance)
+    const terminatePromises = this.workers.map((instance) =>
+      this.terminateWorker(instance),
     );
-    
+
     await Promise.all(terminatePromises);
     this.workers = [];
     this.isInitialized = false;
@@ -125,10 +129,10 @@ export class WorkerManager {
 
   private async createWorker(): Promise<WorkerInstance> {
     const worker = new Worker(this.config.workerScript); // Use classic worker (default)
-    
+
     const instance: WorkerInstance = {
       worker,
-      busy: false
+      busy: false,
     };
 
     worker.onmessage = (event) => {
@@ -152,14 +156,14 @@ export class WorkerManager {
 
       instance.worker.onmessage = null;
       instance.worker.onerror = null;
-      
+
       // Try graceful termination first
-      instance.worker.postMessage({ type: 'terminate' });
-      
+      instance.worker.postMessage({ type: "terminate" });
+
       // Wait for worker to acknowledge termination
       const originalOnMessage = instance.worker.onmessage;
       instance.worker.onmessage = (event) => {
-        if (event.data.type === 'terminated') {
+        if (event.data.type === "terminated") {
           clearTimeout(timeout);
           instance.worker.terminate();
           resolve();
@@ -176,22 +180,22 @@ export class WorkerManager {
     // Sort queue by priority
     this.taskQueue.sort((a, b) => {
       const priorityOrder = { high: 3, normal: 2, low: 1 };
-      const aPriority = priorityOrder[a.task.priority || 'normal'];
-      const bPriority = priorityOrder[b.task.priority || 'normal'];
-      
+      const aPriority = priorityOrder[a.task.priority || "normal"];
+      const bPriority = priorityOrder[b.task.priority || "normal"];
+
       if (aPriority !== bPriority) {
         return bPriority - aPriority; // Higher priority first
       }
-      
+
       return a.timestamp - b.timestamp; // FIFO for same priority
     });
 
     // Find available worker or create new one
-    let availableWorker = this.workers.find(w => !w.busy);
-    
+    let availableWorker = this.workers.find((w) => !w.busy);
+
     if (!availableWorker && this.workers.length < this.config.maxWorkers) {
       // Create new worker if under limit
-      this.createWorker().then(worker => {
+      this.createWorker().then((worker) => {
         this.assignTaskToWorker(worker);
       });
       return;
@@ -225,33 +229,38 @@ export class WorkerManager {
     try {
       worker.worker.postMessage(
         {
-          type: 'task',
-          task: queuedTask.task
+          type: "task",
+          task: queuedTask.task,
         },
-        queuedTask.task.transferable || []
+        queuedTask.task.transferable || [],
       );
     } catch (error) {
       this.handleWorkerError(worker, error);
     }
   }
 
-  private handleWorkerMessage(worker: WorkerInstance, event: MessageEvent): void {
+  private handleWorkerMessage(
+    worker: WorkerInstance,
+    event: MessageEvent,
+  ): void {
     const { type, taskId, result, error } = event.data;
 
-    if (type === 'task-complete' && taskId) {
+    if (type === "task-complete" && taskId) {
       const queuedTask = this.pendingTasks.get(taskId);
       if (!queuedTask) return;
 
       this.pendingTasks.delete(taskId);
-      
-      const executionTime = worker.startTime ? Date.now() - worker.startTime : 0;
-      
+
+      const executionTime = worker.startTime
+        ? Date.now() - worker.startTime
+        : 0;
+
       const workerResult: WorkerResult = {
         id: taskId,
         success: !error,
         data: result,
         error,
-        executionTime
+        executionTime,
       };
 
       if (error) {
@@ -264,14 +273,14 @@ export class WorkerManager {
       worker.busy = false;
       worker.taskId = undefined;
       worker.startTime = undefined;
-      
+
       this.processQueue();
     }
   }
 
   private handleWorkerError(worker: WorkerInstance, error: any): void {
-    console.error('Worker error:', error);
-    
+    console.error("Worker error:", error);
+
     // Handle any pending task for this worker
     if (worker.taskId) {
       const queuedTask = this.pendingTasks.get(worker.taskId);
@@ -286,7 +295,7 @@ export class WorkerManager {
     if (workerIndex !== -1) {
       this.workers.splice(workerIndex, 1);
       worker.worker.terminate();
-      
+
       // Create replacement worker if we're below minimum
       if (this.workers.length < 2 && this.isInitialized) {
         this.createWorker();
@@ -294,16 +303,19 @@ export class WorkerManager {
     }
   }
 
-  private handleTaskTimeout(worker: WorkerInstance, queuedTask: QueuedTask): void {
+  private handleTaskTimeout(
+    worker: WorkerInstance,
+    queuedTask: QueuedTask,
+  ): void {
     this.pendingTasks.delete(queuedTask.task.id);
     queuedTask.reject(new Error(`Task timeout: ${queuedTask.task.id}`));
-    
+
     // Terminate and replace the worker
     const workerIndex = this.workers.indexOf(worker);
     if (workerIndex !== -1) {
       this.workers.splice(workerIndex, 1);
       worker.worker.terminate();
-      
+
       // Create replacement
       this.createWorker();
     }

@@ -9,18 +9,18 @@ npm install @dataprism/plugins-out-of-box
 ```
 
 ```typescript
-import { 
+import {
   createVisualizationPlugin,
   createIntegrationPlugin,
   createProcessingPlugin,
-  createUtilityPlugin
-} from '@dataprism/plugins-out-of-box';
+  createUtilityPlugin,
+} from "@dataprism/plugins-out-of-box";
 
 // Create and use plugins
-const chartsPlugin = await createVisualizationPlugin('observable-charts');
-const csvPlugin = await createIntegrationPlugin('csv-importer');
-const clusteringPlugin = await createProcessingPlugin('semantic-clustering');
-const monitorPlugin = await createUtilityPlugin('performance-monitor');
+const chartsPlugin = await createVisualizationPlugin("observable-charts");
+const csvPlugin = await createIntegrationPlugin("csv-importer");
+const clusteringPlugin = await createProcessingPlugin("semantic-clustering");
+const monitorPlugin = await createUtilityPlugin("performance-monitor");
 ```
 
 ## 📦 Plugin Collection
@@ -28,9 +28,11 @@ const monitorPlugin = await createUtilityPlugin('performance-monitor');
 ### 🎨 Visualization Plugins
 
 #### Observable Charts Plugin
+
 High-performance interactive charts built with D3 and Observable Framework patterns.
 
 **Features:**
+
 - 5 chart types: Bar, Line, Area, Scatter, Histogram
 - Interactive tooltips, zoom, pan, and selection
 - Responsive design with automatic resizing
@@ -38,17 +40,19 @@ High-performance interactive charts built with D3 and Observable Framework patte
 - Configurable themes and styling
 
 **Usage:**
+
 ```typescript
-const plugin = await createVisualizationPlugin('observable-charts');
+const plugin = await createVisualizationPlugin("observable-charts");
 await plugin.initialize(context);
 await plugin.render(container, dataset, {
-  theme: 'dark',
+  theme: "dark",
   responsive: true,
-  animation: true
+  animation: true,
 });
 ```
 
 **Performance:**
+
 - Handles 50K+ data points at 30+ FPS
 - Bundle size: ~25KB gzipped
 - Load time: <200ms
@@ -56,9 +60,11 @@ await plugin.render(container, dataset, {
 ### 📁 Integration Plugins
 
 #### CSV Importer Plugin
+
 Stream large CSV/TSV files with automatic type inference and progress tracking.
 
 **Features:**
+
 - Supports files up to 4GB
 - Automatic delimiter and encoding detection
 - Schema preview with type inference
@@ -66,17 +72,19 @@ Stream large CSV/TSV files with automatic type inference and progress tracking.
 - Data quality validation and error reporting
 
 **Usage:**
+
 ```typescript
-const plugin = await createIntegrationPlugin('csv-importer');
-const preview = await plugin.execute('preview', { file, config });
-const dataset = await plugin.execute('import', { 
-  file, 
-  config, 
-  onProgress: (progress) => console.log(`${progress.percentage}% complete`)
+const plugin = await createIntegrationPlugin("csv-importer");
+const preview = await plugin.execute("preview", { file, config });
+const dataset = await plugin.execute("import", {
+  file,
+  config,
+  onProgress: (progress) => console.log(`${progress.percentage}% complete`),
 });
 ```
 
 **Performance:**
+
 - 8+ MB/s parsing throughput
 - Memory overhead: <1.2x file size
 - Web Worker-based for non-blocking operation
@@ -84,9 +92,11 @@ const dataset = await plugin.execute('import', {
 ### 🧠 Processing Plugins
 
 #### Semantic Clustering Plugin
+
 Advanced clustering with embeddings and interactive visualization.
 
 **Features:**
+
 - K-means and DBSCAN algorithms
 - Local TF-IDF embeddings for text data
 - Interactive 2D cluster visualization
@@ -94,20 +104,22 @@ Advanced clustering with embeddings and interactive visualization.
 - Export cluster labels and results
 
 **Usage:**
+
 ```typescript
-const plugin = await createProcessingPlugin('semantic-clustering');
-const result = await plugin.execute('cluster', {
+const plugin = await createProcessingPlugin("semantic-clustering");
+const result = await plugin.execute("cluster", {
   data: dataset,
   config: {
-    algorithm: 'kmeans',
+    algorithm: "kmeans",
     numClusters: 5,
-    features: ['text_column'],
-    normalize: true
-  }
+    features: ["text_column"],
+    normalize: true,
+  },
 });
 ```
 
 **Performance:**
+
 - 100K vectors clustered in <60 seconds
 - Supports up to 384-dimensional embeddings
 - Quality metrics computed automatically
@@ -115,9 +127,11 @@ const result = await plugin.execute('cluster', {
 ### 📊 Utility Plugins
 
 #### Performance Monitor Plugin
+
 Real-time performance monitoring with live dashboard and alerts.
 
 **Features:**
+
 - FPS, memory, CPU, and WASM heap monitoring
 - Configurable overlay, detached, or embedded modes
 - Live charts and historical data
@@ -125,19 +139,21 @@ Real-time performance monitoring with live dashboard and alerts.
 - Export performance logs
 
 **Usage:**
+
 ```typescript
-const plugin = await createUtilityPlugin('performance-monitor');
-await plugin.execute('show', { mode: 'overlay' });
+const plugin = await createUtilityPlugin("performance-monitor");
+await plugin.execute("show", { mode: "overlay" });
 await plugin.configure({
   thresholds: {
     memory: 1000, // MB
     fps: 30,
-    cpu: 80 // %
-  }
+    cpu: 80, // %
+  },
 });
 ```
 
 **Performance:**
+
 - <2% CPU overhead in idle
 - <25MB memory footprint
 - Real-time updates every 1000ms
@@ -181,19 +197,22 @@ npm run size-check        # Validate bundle size limits
 ## 📊 Performance Specifications
 
 ### Bundle Sizes
+
 - **Total Collection**: <100KB ES module, <60KB CommonJS
 - **Individual Plugins**: <25KB each (gzipped)
 - **Lazy Loading**: Plugins loaded on-demand
 
 ### Runtime Performance
+
 - **Load Time**: <300ms per plugin
 - **Memory Usage**: <25MB total overhead
 - **Query Performance**: Maintains <2s response time
 - **Concurrency**: 5+ simultaneous operations
 
 ### Browser Support
+
 - Chrome 90+ ✅
-- Firefox 88+ ✅  
+- Firefox 88+ ✅
 - Safari 14+ ✅
 - Edge 90+ ✅
 
@@ -202,7 +221,7 @@ npm run size-check        # Validate bundle size limits
 ### Global Configuration
 
 ```typescript
-import { PLUGIN_REGISTRY } from '@dataprism/plugins-out-of-box';
+import { PLUGIN_REGISTRY } from "@dataprism/plugins-out-of-box";
 
 // Configure all plugins
 for (const category of Object.keys(PLUGIN_REGISTRY)) {
@@ -210,11 +229,11 @@ for (const category of Object.keys(PLUGIN_REGISTRY)) {
     const plugin = await PLUGIN_REGISTRY[category][pluginId]();
     await plugin.configure({
       // Global settings
-      theme: 'dark',
+      theme: "dark",
       performance: {
         maxMemoryMB: 1000,
-        enableOptimizations: true
-      }
+        enableOptimizations: true,
+      },
     });
   }
 }
@@ -228,13 +247,13 @@ Each plugin supports extensive configuration through its `configure()` method:
 // Observable Charts
 await chartsPlugin.configure({
   chartSpec: {
-    type: 'bar',
-    x: 'category',
-    y: 'value',
-    title: 'Sales by Region'
+    type: "bar",
+    x: "category",
+    y: "value",
+    title: "Sales by Region",
   },
   responsive: true,
-  maxDataPoints: 10000
+  maxDataPoints: 10000,
 });
 
 // CSV Importer
@@ -242,32 +261,32 @@ await csvPlugin.configure({
   chunkSize: 50000,
   autoDetectTypes: true,
   strictParsing: false,
-  encoding: 'UTF-8'
+  encoding: "UTF-8",
 });
 
 // Semantic Clustering
 await clusteringPlugin.configure({
-  algorithm: 'dbscan',
+  algorithm: "dbscan",
   eps: 0.5,
   minPoints: 5,
   normalize: true,
   embeddings: {
-    provider: 'local',
-    dimensions: 384
-  }
+    provider: "local",
+    dimensions: 384,
+  },
 });
 
 // Performance Monitor
 await monitorPlugin.configure({
-  mode: 'overlay',
-  position: 'top-right',
+  mode: "overlay",
+  position: "top-right",
   updateInterval: 1000,
   enableAlerts: true,
   thresholds: {
     memory: 1000,
     fps: 30,
-    cpu: 80
-  }
+    cpu: 80,
+  },
 });
 ```
 
@@ -276,32 +295,35 @@ await monitorPlugin.configure({
 ### List Available Plugins
 
 ```typescript
-import { 
-  getAvailablePlugins, 
+import {
+  getAvailablePlugins,
   getPluginsByCategory,
-  PLUGIN_METADATA 
-} from '@dataprism/plugins-out-of-box';
+  PLUGIN_METADATA,
+} from "@dataprism/plugins-out-of-box";
 
 // Get all plugins
 const allPlugins = getAvailablePlugins();
 console.log(allPlugins); // ['observable-charts', 'csv-importer', ...]
 
 // Get plugins by category
-const vizPlugins = getPluginsByCategory('visualization');
-const integrationPlugins = getPluginsByCategory('integration');
+const vizPlugins = getPluginsByCategory("visualization");
+const integrationPlugins = getPluginsByCategory("integration");
 
 // Get plugin metadata
-const metadata = PLUGIN_METADATA['observable-charts'];
+const metadata = PLUGIN_METADATA["observable-charts"];
 console.log(metadata.description, metadata.tags);
 ```
 
 ### Plugin Validation
 
 ```typescript
-import { validatePlugin, validateAllPlugins } from '@dataprism/plugins-out-of-box';
+import {
+  validatePlugin,
+  validateAllPlugins,
+} from "@dataprism/plugins-out-of-box";
 
 // Validate single plugin
-const isValid = await validatePlugin('observable-charts');
+const isValid = await validatePlugin("observable-charts");
 
 // Validate all plugins
 const validationResults = await validateAllPlugins();
@@ -314,62 +336,62 @@ console.log(validationResults);
 ### Complete Workflow Example
 
 ```typescript
-import { 
+import {
   createIntegrationPlugin,
   createProcessingPlugin,
   createVisualizationPlugin,
-  createUtilityPlugin
-} from '@dataprism/plugins-out-of-box';
+  createUtilityPlugin,
+} from "@dataprism/plugins-out-of-box";
 
 async function completeAnalysisWorkflow(csvFile: File) {
   // 1. Start performance monitoring
-  const monitor = await createUtilityPlugin('performance-monitor');
+  const monitor = await createUtilityPlugin("performance-monitor");
   await monitor.initialize(context);
-  await monitor.execute('show', { mode: 'overlay' });
+  await monitor.execute("show", { mode: "overlay" });
 
   // 2. Import CSV data
-  const importer = await createIntegrationPlugin('csv-importer');
+  const importer = await createIntegrationPlugin("csv-importer");
   await importer.initialize(context);
-  
-  const dataset = await importer.execute('import', {
+
+  const dataset = await importer.execute("import", {
     file: csvFile,
     config: { autoDetectTypes: true },
     onProgress: (progress) => {
       console.log(`Import: ${progress.percentage}% complete`);
-    }
+    },
   });
 
   // 3. Perform clustering analysis
-  const clustering = await createProcessingPlugin('semantic-clustering');
+  const clustering = await createProcessingPlugin("semantic-clustering");
   await clustering.initialize(context);
-  
-  const clusterResult = await clustering.execute('cluster', {
+
+  const clusterResult = await clustering.execute("cluster", {
     data: dataset,
     config: {
-      algorithm: 'kmeans',
+      algorithm: "kmeans",
       numClusters: 5,
-      features: ['numeric_column_1', 'numeric_column_2'],
-      normalize: true
-    }
+      features: ["numeric_column_1", "numeric_column_2"],
+      normalize: true,
+    },
   });
 
   // 4. Visualize results
-  const charts = await createVisualizationPlugin('observable-charts');
+  const charts = await createVisualizationPlugin("observable-charts");
   await charts.initialize(context);
-  
-  await charts.render(document.getElementById('chart-container'), dataset, {
+
+  await charts.render(document.getElementById("chart-container"), dataset, {
     chartSpec: {
-      type: 'scatter',
-      x: 'numeric_column_1',
-      y: 'numeric_column_2',
-      color: 'cluster_id'
-    }
+      type: "scatter",
+      x: "numeric_column_1",
+      y: "numeric_column_2",
+      color: "cluster_id",
+    },
   });
 
   // 5. Export results
-  const chartBlob = await charts.export('png');
-  const clusterLabels = await clustering.exportClusterLabels('csv');
-  const performanceLog = await monitor.export('csv');
+  const chartBlob = await charts.export("png");
+  const clusterLabels = await clustering.exportClusterLabels("csv");
+  const performanceLog = await monitor.export("csv");
 
   return {
     dataset,
@@ -377,8 +399,8 @@ async function completeAnalysisWorkflow(csvFile: File) {
     exports: {
       chart: chartBlob,
       clusters: clusterLabels,
-      performance: performanceLog
-    }
+      performance: performanceLog,
+    },
   };
 }
 ```

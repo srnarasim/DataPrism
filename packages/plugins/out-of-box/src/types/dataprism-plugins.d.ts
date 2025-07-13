@@ -1,5 +1,5 @@
 // Type definitions for @dataprism/plugins
-declare module '@dataprism/plugins' {
+declare module "@dataprism/plugins" {
   export interface PluginDependency {
     name: string;
     version: string;
@@ -8,19 +8,19 @@ declare module '@dataprism/plugins' {
 
   export interface PluginPermission {
     resource: string;
-    access: 'read' | 'write' | 'execute';
+    access: "read" | "write" | "execute";
     scope?: string;
   }
 
   export interface ValidationRule {
-    type: 'min' | 'max' | 'pattern' | 'enum' | 'custom';
+    type: "min" | "max" | "pattern" | "enum" | "custom";
     value: any;
     message?: string;
   }
 
   export interface PluginConfigSchema {
     [key: string]: {
-      type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+      type: "string" | "number" | "boolean" | "object" | "array";
       required?: boolean;
       default?: any;
       description?: string;
@@ -49,12 +49,16 @@ declare module '@dataprism/plugins' {
     };
   }
 
-  export type PluginCategory = 'data-processing' | 'visualization' | 'integration' | 'utility';
+  export type PluginCategory =
+    | "data-processing"
+    | "visualization"
+    | "integration"
+    | "utility";
 
   export interface PluginCapability {
     name: string;
     description: string;
-    type: 'processing' | 'visualization' | 'integration' | 'utility';
+    type: "processing" | "visualization" | "integration" | "utility";
     version: string;
     async: boolean;
     inputTypes?: string[];
@@ -132,7 +136,13 @@ declare module '@dataprism/plugins' {
   }
 
   // Data types
-  export type DataType = 'string' | 'number' | 'integer' | 'boolean' | 'date' | 'object';
+  export type DataType =
+    | "string"
+    | "number"
+    | "integer"
+    | "boolean"
+    | "date"
+    | "object";
 
   export interface Column {
     name: string;
@@ -163,15 +173,15 @@ declare module '@dataprism/plugins' {
     };
   }
 
-  export type InteractionEventType = 
-    | 'click' 
-    | 'hover' 
-    | 'select' 
-    | 'zoom' 
-    | 'pan' 
-    | 'brush'
-    | 'filter'
-    | 'sort';
+  export type InteractionEventType =
+    | "click"
+    | "hover"
+    | "select"
+    | "zoom"
+    | "pan"
+    | "brush"
+    | "filter"
+    | "sort";
 
   export interface InteractionFeature {
     name: string;
@@ -190,11 +200,11 @@ declare module '@dataprism/plugins' {
   export interface VisualizationType {
     name: string;
     description: string;
-    category: 'chart' | 'table' | 'map' | 'network' | 'tree' | 'custom';
+    category: "chart" | "table" | "map" | "network" | "tree" | "custom";
     requiredFields: FieldRequirement[];
     optionalFields: FieldRequirement[];
     preview?: string;
-    complexity: 'simple' | 'moderate' | 'complex';
+    complexity: "simple" | "moderate" | "complex";
   }
 
   export interface AccessibilityConfig {
@@ -213,7 +223,7 @@ declare module '@dataprism/plugins' {
   }
 
   export interface RenderConfig {
-    theme: 'light' | 'dark' | 'auto';
+    theme: "light" | "dark" | "auto";
     responsive: boolean;
     animation: boolean;
     interaction: boolean;
@@ -225,27 +235,27 @@ declare module '@dataprism/plugins' {
   export interface LayoutConfig {
     margin: { top: number; right: number; bottom: number; left: number };
     padding: { top: number; right: number; bottom: number; left: number };
-    orientation: 'horizontal' | 'vertical';
-    alignment: 'start' | 'center' | 'end';
+    orientation: "horizontal" | "vertical";
+    alignment: "start" | "center" | "end";
   }
 
   export interface FontConfig {
     family: string;
     size: number;
-    weight: 'normal' | 'bold' | 'lighter' | 'bolder';
-    style: 'normal' | 'italic';
+    weight: "normal" | "bold" | "lighter" | "bolder";
+    style: "normal" | "italic";
   }
 
   export interface BorderConfig {
     width: number;
-    style: 'solid' | 'dashed' | 'dotted';
+    style: "solid" | "dashed" | "dotted";
     color: string;
     radius: number;
   }
 
   export interface StylingConfig {
     colors: string[];
-    colorScheme: 'categorical' | 'sequential' | 'diverging';
+    colorScheme: "categorical" | "sequential" | "diverging";
     fonts: FontConfig;
     borders: BorderConfig;
     shadows: boolean;
@@ -262,14 +272,14 @@ declare module '@dataprism/plugins' {
 
   export interface FilterConfig {
     field: string;
-    operator: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'contains';
+    operator: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "in" | "contains";
     value: any;
     active: boolean;
   }
 
   export interface DataConfig {
-    aggregation: 'sum' | 'avg' | 'count' | 'min' | 'max' | 'none';
-    sorting: 'asc' | 'desc' | 'none';
+    aggregation: "sum" | "avg" | "count" | "min" | "max" | "none";
+    sorting: "asc" | "desc" | "none";
     filtering: FilterConfig[];
     grouping: string[];
   }
@@ -282,11 +292,22 @@ declare module '@dataprism/plugins' {
     [key: string]: any;
   }
 
-  export type ExportFormat = 'svg' | 'png' | 'jpeg' | 'pdf' | 'html' | 'json' | 'csv';
+  export type ExportFormat =
+    | "svg"
+    | "png"
+    | "jpeg"
+    | "pdf"
+    | "html"
+    | "json"
+    | "csv";
 
   // Specialized plugin interfaces
   export interface IVisualizationPlugin extends IPlugin {
-    render(container: Element, data: Dataset, config?: RenderConfig): Promise<void>;
+    render(
+      container: Element,
+      data: Dataset,
+      config?: RenderConfig,
+    ): Promise<void>;
     update(data: Dataset): Promise<void>;
     resize(dimensions: Dimensions): Promise<void>;
     destroy(): Promise<void>;

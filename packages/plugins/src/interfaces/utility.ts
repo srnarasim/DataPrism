@@ -1,16 +1,16 @@
-import { IPlugin } from './plugin.js';
+import { IPlugin } from "./plugin.js";
 
 export interface IUtilityPlugin extends IPlugin {
   // Core Utility Operations
   configure(settings: UtilitySettings): Promise<void>;
   monitor(metrics: UtilityMetrics): Promise<void>;
   log(level: LogLevel, message: string, context?: LogContext): Promise<void>;
-  
+
   // Utility Features
   getUtilityFeatures(): UtilityFeature[];
   getSystemStatus(): Promise<SystemStatus>;
   performMaintenance(): Promise<MaintenanceResult>;
-  
+
   // Health and Monitoring
   healthCheck(): Promise<HealthStatus>;
   getPerformanceReport(): Promise<PerformanceReport>;
@@ -19,7 +19,7 @@ export interface IUtilityPlugin extends IPlugin {
 
 export interface UtilitySettings {
   enabled: boolean;
-  level: 'basic' | 'standard' | 'advanced';
+  level: "basic" | "standard" | "advanced";
   autoStart: boolean;
   configuration: Record<string, any>;
   schedule?: ScheduleConfig;
@@ -27,7 +27,7 @@ export interface UtilitySettings {
 
 export interface ScheduleConfig {
   enabled: boolean;
-  frequency: 'hourly' | 'daily' | 'weekly' | 'monthly';
+  frequency: "hourly" | "daily" | "weekly" | "monthly";
   time?: string; // HH:MM format
   timezone?: string;
   dayOfWeek?: number; // 0-6, Sunday = 0
@@ -85,7 +85,7 @@ export interface ApplicationMetrics {
   activeConnections: number;
 }
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+export type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
 
 export interface LogContext {
   component?: string;
@@ -104,18 +104,18 @@ export interface UtilityFeature {
   configuration: Record<string, any>;
 }
 
-export type UtilityCategory = 
-  | 'monitoring' 
-  | 'logging' 
-  | 'security' 
-  | 'performance'
-  | 'backup'
-  | 'validation'
-  | 'automation'
-  | 'reporting';
+export type UtilityCategory =
+  | "monitoring"
+  | "logging"
+  | "security"
+  | "performance"
+  | "backup"
+  | "validation"
+  | "automation"
+  | "reporting";
 
 export interface SystemStatus {
-  overall: 'healthy' | 'warning' | 'critical' | 'unknown';
+  overall: "healthy" | "warning" | "critical" | "unknown";
   components: ComponentStatus[];
   lastCheck: string;
   uptime: number;
@@ -123,7 +123,7 @@ export interface SystemStatus {
 
 export interface ComponentStatus {
   name: string;
-  status: 'healthy' | 'warning' | 'critical' | 'unknown';
+  status: "healthy" | "warning" | "critical" | "unknown";
   message?: string;
   metrics?: Record<string, any>;
   lastCheck: string;
@@ -140,7 +140,7 @@ export interface MaintenanceResult {
 export interface MaintenanceTask {
   name: string;
   description: string;
-  status: 'completed' | 'failed' | 'skipped';
+  status: "completed" | "failed" | "skipped";
   duration: number;
   result?: any;
 }
@@ -162,11 +162,11 @@ export interface HealthStatus {
 
 export interface HealthCheck {
   name: string;
-  status: 'pass' | 'fail' | 'warn';
+  status: "pass" | "fail" | "warn";
   message: string;
   value?: any;
   threshold?: any;
-  impact: 'low' | 'medium' | 'high' | 'critical';
+  impact: "low" | "medium" | "high" | "critical";
 }
 
 export interface PerformanceReport {
@@ -193,7 +193,7 @@ export interface PerformanceDetail {
   metric: string;
   value: number;
   unit: string;
-  trend: 'up' | 'down' | 'stable';
+  trend: "up" | "down" | "stable";
   comparison: {
     previousPeriod: number;
     change: number;
@@ -203,7 +203,7 @@ export interface PerformanceDetail {
 
 export interface PerformanceTrend {
   metric: string;
-  direction: 'improving' | 'degrading' | 'stable';
+  direction: "improving" | "degrading" | "stable";
   confidence: number; // 0-1
   prediction: {
     nextPeriod: number;
@@ -240,7 +240,7 @@ export interface SecurityScanResult {
 
 export interface SecurityVulnerability {
   id: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   type: string;
   description: string;
   affected: string[];
@@ -262,7 +262,7 @@ export interface AuthenticationPolicy {
 }
 
 export interface AuthorizationPolicy {
-  model: 'rbac' | 'abac' | 'custom';
+  model: "rbac" | "abac" | "custom";
   defaultDeny: boolean;
   rules: AuthorizationRule[];
 }
@@ -307,11 +307,11 @@ export interface SecurityAuditResult {
 export interface SecurityEvent {
   timestamp: string;
   type: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   user?: string;
   resource: string;
   action: string;
-  result: 'success' | 'failure';
+  result: "success" | "failure";
   details: Record<string, any>;
 }
 
@@ -319,7 +319,7 @@ export interface SecurityAnomaly {
   type: string;
   description: string;
   confidence: number; // 0-1
-  risk: 'low' | 'medium' | 'high';
+  risk: "low" | "medium" | "high";
   events: string[]; // event IDs
 }
 
@@ -335,7 +335,7 @@ export interface SecuritySummary {
 export interface SecurityReport {
   executive: {
     summary: string;
-    riskLevel: 'low' | 'medium' | 'high' | 'critical';
+    riskLevel: "low" | "medium" | "high" | "critical";
     keyFindings: string[];
     recommendations: string[];
   };
@@ -345,7 +345,7 @@ export interface SecurityReport {
     metrics: SecurityMetrics;
   };
   compliance: {
-    status: 'compliant' | 'non-compliant' | 'partial';
+    status: "compliant" | "non-compliant" | "partial";
     frameworks: ComplianceFramework[];
     gaps: ComplianceGap[];
   };
@@ -361,7 +361,7 @@ export interface SecurityMetrics {
 export interface ComplianceFramework {
   name: string;
   version: string;
-  status: 'compliant' | 'non-compliant' | 'partial';
+  status: "compliant" | "non-compliant" | "partial";
   coverage: number; // percentage
   lastAssessment: string;
 }
@@ -369,7 +369,7 @@ export interface ComplianceFramework {
 export interface ComplianceGap {
   requirement: string;
   description: string;
-  severity: 'low' | 'medium' | 'high';
+  severity: "low" | "medium" | "high";
   remediation: string;
   timeline: string;
 }

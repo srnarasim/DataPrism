@@ -1,4 +1,4 @@
-import { DataPrismError } from './types.js';
+import { DataPrismError } from "./types.js";
 
 export class ErrorHandler {
   private static instance: ErrorHandler;
@@ -11,11 +11,14 @@ export class ErrorHandler {
     return ErrorHandler.instance;
   }
 
-  handleError(error: unknown, source: 'wasm' | 'duckdb' | 'orchestration'): DataPrismError {
+  handleError(
+    error: unknown,
+    source: "wasm" | "duckdb" | "orchestration",
+  ): DataPrismError {
     const dataPrismError: DataPrismError = {
       message: error instanceof Error ? error.message : String(error),
       code: this.generateErrorCode(source),
-      source
+      source,
     };
 
     this.errorLog.push(dataPrismError);
@@ -40,9 +43,9 @@ export class ErrorHandler {
 }
 
 // Global error handler for unhandled promise rejections
-if (typeof window !== 'undefined') {
-  window.addEventListener('unhandledrejection', (event) => {
+if (typeof window !== "undefined") {
+  window.addEventListener("unhandledrejection", (event) => {
     const errorHandler = ErrorHandler.getInstance();
-    errorHandler.handleError(event.reason, 'orchestration');
+    errorHandler.handleError(event.reason, "orchestration");
   });
 }

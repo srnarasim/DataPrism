@@ -1,4 +1,4 @@
-import { Dataset, DataType } from '@dataprism/plugins';
+import { Dataset, DataType } from "@dataprism/plugins";
 
 export interface DataValidationResult {
   isValid: boolean;
@@ -34,15 +34,20 @@ export class DataUtils {
   /**
    * Infer data types for columns based on sample data
    */
-  public static inferDataTypes(samples: any[][], headers: string[]): TypeInferenceResult[] {
+  public static inferDataTypes(
+    samples: any[][],
+    headers: string[],
+  ): TypeInferenceResult[] {
     const results: TypeInferenceResult[] = [];
-    
+
     for (let colIndex = 0; colIndex < headers.length; colIndex++) {
-      const columnSamples = samples.map(row => row[colIndex]).filter(val => val != null && val !== '');
+      const columnSamples = samples
+        .map((row) => row[colIndex])
+        .filter((val) => val != null && val !== "");
       const result = this.inferColumnType(columnSamples);
       results.push(result);
     }
-    
+
     return results;
   }
 
@@ -57,22 +62,25 @@ export class DataUtils {
       rowCount: dataset.rows.length,
       columnCount: dataset.columns.length,
       nullCount: 0,
-      duplicateCount: 0
+      duplicateCount: 0,
     };
 
     // Check for empty dataset
     if (dataset.rows.length === 0) {
-      result.errors.push('Dataset is empty');
+      result.errors.push("Dataset is empty");
       result.isValid = false;
       return result;
     }
 
     // Check for missing column names
-    const missingColumns = dataset.columns.filter((col, index) => 
-      !col.name || col.name.trim() === '' || col.name === `column_${index}`
+    const missingColumns = dataset.columns.filter(
+      (col, index) =>
+        !col.name || col.name.trim() === "" || col.name === `column_${index}`,
     );
     if (missingColumns.length > 0) {
-      result.warnings.push(`${missingColumns.length} columns have missing or auto-generated names`);
+      result.warnings.push(
+        `${missingColumns.length} columns have missing or auto-generated names`,
+      );
     }
 
     // Count nulls and validate data types
@@ -83,8 +91,8 @@ export class DataUtils {
 
       for (const row of dataset.rows) {
         const value = row[colIndex];
-        
-        if (value == null || value === '') {
+
+        if (value == null || value === "") {
           columnNulls++;
           continue;
         }
@@ -100,29 +108,38 @@ export class DataUtils {
       // Warn about high null percentage
       const nullPercentage = (columnNulls / dataset.rows.length) * 100;
       if (nullPercentage > 50) {
-        result.warnings.push(`Column '${column.name}' has ${nullPercentage.toFixed(1)}% null values`);
+        result.warnings.push(
+          `Column '${column.name}' has ${nullPercentage.toFixed(1)}% null values`,
+        );
       }
 
       // Error on type inconsistencies
       if (typeErrors > 0) {
         const errorPercentage = (typeErrors / dataset.rows.length) * 100;
         if (errorPercentage > 10) {
-          result.errors.push(`Column '${column.name}' has ${errorPercentage.toFixed(1)}% type inconsistencies`);
+          result.errors.push(
+            `Column '${column.name}' has ${errorPercentage.toFixed(1)}% type inconsistencies`,
+          );
           result.isValid = false;
         } else {
-          result.warnings.push(`Column '${column.name}' has ${typeErrors} type inconsistencies`);
+          result.warnings.push(
+            `Column '${column.name}' has ${typeErrors} type inconsistencies`,
+          );
         }
       }
     }
 
     // Check for duplicate rows
-    const uniqueRows = new Set(dataset.rows.map(row => JSON.stringify(row)));
+    const uniqueRows = new Set(dataset.rows.map((row) => JSON.stringify(row)));
     result.duplicateCount = dataset.rows.length - uniqueRows.size;
-    
+
     if (result.duplicateCount > 0) {
-      const duplicatePercentage = (result.duplicateCount / dataset.rows.length) * 100;
+      const duplicatePercentage =
+        (result.duplicateCount / dataset.rows.length) * 100;
       if (duplicatePercentage > 25) {
-        result.warnings.push(`Dataset has ${duplicatePercentage.toFixed(1)}% duplicate rows`);
+        result.warnings.push(
+          `Dataset has ${duplicatePercentage.toFixed(1)}% duplicate rows`,
+        );
       }
     }
 
@@ -137,23 +154,32 @@ export class DataUtils {
 
     for (let colIndex = 0; colIndex < dataset.columns.length; colIndex++) {
       const column = dataset.columns[colIndex];
-      const values = dataset.rows.map(row => row[colIndex]).filter(val => val != null && val !== '');
-      
+      const values = dataset.rows
+        .map((row) => row[colIndex])
+        .filter((val) => val != null && val !== "");
+
       const stats: DataStatistics = {
         columnName: column.name,
         dataType: column.type,
         nullCount: dataset.rows.length - values.length,
-        uniqueCount: new Set(values).size
+        uniqueCount: new Set(values).size,
       };
 
-      if (column.type === 'number' || column.type === 'integer') {
-        const numericValues = values.map(v => Number(v)).filter(v => !isNaN(v));
+      if (column.type === "number" || column.type === "integer") {
+        const numericValues = values
+          .map((v) => Number(v))
+          .filter((v) => !isNaN(v));
         if (numericValues.length > 0) {
           stats.min = Math.min(...numericValues);
           stats.max = Math.max(...numericValues);
-          stats.mean = numericValues.reduce((sum, val) => sum + val, 0) / numericValues.length;
+          stats.mean =
+            numericValues.reduce((sum, val) => sum + val, 0) /
+            numericValues.length;
           stats.median = this.calculateMedian(numericValues);
-          stats.standardDeviation = this.calculateStandardDeviation(numericValues, stats.mean);
+          stats.standardDeviation = this.calculateStandardDeviation(
+            numericValues,
+            stats.mean,
+          );
         }
       }
 
@@ -173,38 +199,50 @@ export class DataUtils {
    */
   public static toCsv(dataset: Dataset, includeHeaders = true): string {
     const rows: string[] = [];
-    
+
     if (includeHeaders) {
-      const headers = dataset.columns.map(col => this.escapeCsvValue(col.name));
-      rows.push(headers.join(','));
+      const headers = dataset.columns.map((col) =>
+        this.escapeCsvValue(col.name),
+      );
+      rows.push(headers.join(","));
     }
 
     for (const row of dataset.rows) {
-      const csvRow = row.map(value => this.escapeCsvValue(String(value ?? '')));
-      rows.push(csvRow.join(','));
+      const csvRow = row.map((value) =>
+        this.escapeCsvValue(String(value ?? "")),
+      );
+      rows.push(csvRow.join(","));
     }
 
-    return rows.join('\n');
+    return rows.join("\n");
   }
 
   /**
    * Sample rows from dataset
    */
-  public static sampleRows(dataset: Dataset, count: number, method: 'first' | 'random' | 'stratified' = 'first'): Dataset {
+  public static sampleRows(
+    dataset: Dataset,
+    count: number,
+    method: "first" | "random" | "stratified" = "first",
+  ): Dataset {
     let sampledRows: any[][];
 
     switch (method) {
-      case 'first':
+      case "first":
         sampledRows = dataset.rows.slice(0, count);
         break;
-      case 'random':
+      case "random":
         sampledRows = this.shuffleArray([...dataset.rows]).slice(0, count);
         break;
-      case 'stratified':
+      case "stratified":
         // Simple stratified sampling - would need more complex logic for real stratification
         const step = Math.floor(dataset.rows.length / count);
         sampledRows = [];
-        for (let i = 0; i < dataset.rows.length && sampledRows.length < count; i += step) {
+        for (
+          let i = 0;
+          i < dataset.rows.length && sampledRows.length < count;
+          i += step
+        ) {
           sampledRows.push(dataset.rows[i]);
         }
         break;
@@ -214,17 +252,17 @@ export class DataUtils {
 
     return {
       columns: dataset.columns,
-      rows: sampledRows
+      rows: sampledRows,
     };
   }
 
   private static inferColumnType(samples: any[]): TypeInferenceResult {
     if (samples.length === 0) {
       return {
-        suggestedType: 'string',
+        suggestedType: "string",
         confidence: 0,
         samples: [],
-        patterns: []
+        patterns: [],
       };
     }
 
@@ -235,55 +273,59 @@ export class DataUtils {
     let booleanCount = 0;
     let stringCount = 0;
 
-    for (const sample of samples.slice(0, 100)) { // Check first 100 samples
+    for (const sample of samples.slice(0, 100)) {
+      // Check first 100 samples
       const str = String(sample).trim();
-      
+
       // Check for boolean
       if (/^(true|false|yes|no|y|n|1|0)$/i.test(str)) {
         booleanCount++;
-        patterns.push('boolean');
+        patterns.push("boolean");
         continue;
       }
 
       // Check for integer
       if (/^-?\d+$/.test(str)) {
         integerCount++;
-        patterns.push('integer');
+        patterns.push("integer");
         continue;
       }
 
       // Check for number
       if (/^-?\d*\.?\d+([eE][+-]?\d+)?$/.test(str)) {
         numberCount++;
-        patterns.push('number');
+        patterns.push("number");
         continue;
       }
 
       // Check for date
       const datePatterns = [
-        /^\d{4}-\d{2}-\d{2}$/,        // YYYY-MM-DD
-        /^\d{2}\/\d{2}\/\d{4}$/,      // MM/DD/YYYY
-        /^\d{2}-\d{2}-\d{4}$/,        // MM-DD-YYYY
-        /^\d{4}\/\d{2}\/\d{2}$/       // YYYY/MM/DD
+        /^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
+        /^\d{2}\/\d{2}\/\d{4}$/, // MM/DD/YYYY
+        /^\d{2}-\d{2}-\d{4}$/, // MM-DD-YYYY
+        /^\d{4}\/\d{2}\/\d{2}$/, // YYYY/MM/DD
       ];
-      
-      if (datePatterns.some(pattern => pattern.test(str)) || !isNaN(Date.parse(str))) {
+
+      if (
+        datePatterns.some((pattern) => pattern.test(str)) ||
+        !isNaN(Date.parse(str))
+      ) {
         dateCount++;
-        patterns.push('date');
+        patterns.push("date");
         continue;
       }
 
       stringCount++;
-      patterns.push('string');
+      patterns.push("string");
     }
 
     const total = samples.length;
     const results = [
-      { type: 'integer' as DataType, count: integerCount },
-      { type: 'number' as DataType, count: numberCount },
-      { type: 'boolean' as DataType, count: booleanCount },
-      { type: 'date' as DataType, count: dateCount },
-      { type: 'string' as DataType, count: stringCount }
+      { type: "integer" as DataType, count: integerCount },
+      { type: "number" as DataType, count: numberCount },
+      { type: "boolean" as DataType, count: booleanCount },
+      { type: "date" as DataType, count: dateCount },
+      { type: "string" as DataType, count: stringCount },
     ];
 
     // Sort by count and get the highest
@@ -294,24 +336,27 @@ export class DataUtils {
       suggestedType: winner.type,
       confidence: winner.count / total,
       samples: samples.slice(0, 10),
-      patterns: [...new Set(patterns)]
+      patterns: [...new Set(patterns)],
     };
   }
 
   private static isValueOfType(value: any, type: DataType): boolean {
     switch (type) {
-      case 'string':
-        return typeof value === 'string';
-      case 'number':
-        return typeof value === 'number' || !isNaN(Number(value));
-      case 'integer':
+      case "string":
+        return typeof value === "string";
+      case "number":
+        return typeof value === "number" || !isNaN(Number(value));
+      case "integer":
         return Number.isInteger(Number(value));
-      case 'boolean':
-        return typeof value === 'boolean' || /^(true|false|yes|no|y|n|1|0)$/i.test(String(value));
-      case 'date':
+      case "boolean":
+        return (
+          typeof value === "boolean" ||
+          /^(true|false|yes|no|y|n|1|0)$/i.test(String(value))
+        );
+      case "date":
         return value instanceof Date || !isNaN(Date.parse(value));
-      case 'object':
-        return typeof value === 'object';
+      case "object":
+        return typeof value === "object";
       default:
         return true;
     }
@@ -320,7 +365,7 @@ export class DataUtils {
   private static calculateMedian(values: number[]): number {
     const sorted = [...values].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
-    
+
     if (sorted.length % 2 === 0) {
       return (sorted[mid - 1] + sorted[mid]) / 2;
     } else {
@@ -328,9 +373,13 @@ export class DataUtils {
     }
   }
 
-  private static calculateStandardDeviation(values: number[], mean: number): number {
-    const squaredDiffs = values.map(value => Math.pow(value - mean, 2));
-    const avgSquaredDiff = squaredDiffs.reduce((sum, diff) => sum + diff, 0) / values.length;
+  private static calculateStandardDeviation(
+    values: number[],
+    mean: number,
+  ): number {
+    const squaredDiffs = values.map((value) => Math.pow(value - mean, 2));
+    const avgSquaredDiff =
+      squaredDiffs.reduce((sum, diff) => sum + diff, 0) / values.length;
     return Math.sqrt(avgSquaredDiff);
   }
 
@@ -342,7 +391,7 @@ export class DataUtils {
     for (const value of values) {
       const key = String(value);
       frequency[key] = (frequency[key] || 0) + 1;
-      
+
       if (frequency[key] > maxCount) {
         maxCount = frequency[key];
         mode = value;
@@ -353,7 +402,7 @@ export class DataUtils {
   }
 
   private static escapeCsvValue(value: string): string {
-    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+    if (value.includes(",") || value.includes('"') || value.includes("\n")) {
       return '"' + value.replace(/"/g, '""') + '"';
     }
     return value;

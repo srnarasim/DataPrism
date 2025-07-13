@@ -16,7 +16,7 @@ Traditional web-based analytics solutions face several challenges:
 DataPrism Core solves these challenges by bringing analytics directly to the browser:
 
 ```typescript
-import { DataPrismEngine } from '@dataprism/core';
+import { DataPrismEngine } from "@dataprism/core";
 
 // Initialize once - no server required
 const engine = new DataPrismEngine();
@@ -35,24 +35,28 @@ const results = await engine.query(`
 ## Key Benefits
 
 ### 🚀 **High Performance**
+
 - **WebAssembly Runtime**: Near-native performance in the browser
 - **Columnar Processing**: DuckDB's OLAP-optimized engine
 - **Memory Efficiency**: Intelligent memory management and query optimization
 - **Parallel Execution**: Multi-threaded processing where supported
 
 ### 🔒 **Privacy & Security**
+
 - **Local Processing**: Data never leaves your browser
 - **No Network Calls**: Completely offline-capable
 - **Client-Side Encryption**: Optional encryption for sensitive data
 - **GDPR Compliant**: Built-in privacy protection
 
 ### 🛠️ **Developer Experience**
+
 - **TypeScript First**: Full type safety and IntelliSense support
 - **Modern APIs**: Promise-based, async/await compatible
 - **Comprehensive Docs**: Extensive documentation and examples
 - **Plugin Architecture**: Extensible and customizable
 
 ### 🌐 **Universal Compatibility**
+
 - **Browser Native**: Works in any modern browser
 - **Zero Dependencies**: No server infrastructure required
 - **CDN Ready**: Deploy via CDN with integrity validation
@@ -69,11 +73,11 @@ graph TB
     C --> D[DuckDB-WASM]
     C --> E[Memory Manager]
     C --> F[Query Optimizer]
-    
+
     G[Plugin System] --> B
     H[Data Loaders] --> C
     I[Visualization APIs] --> B
-    
+
     subgraph "WebAssembly Runtime"
         D
         E
@@ -94,28 +98,36 @@ graph TB
 DataPrism Core is perfect for:
 
 ### 📊 **Interactive Dashboards**
+
 Build real-time dashboards that process data entirely in the browser:
+
 - Financial reporting and analysis
-- Sales performance tracking  
+- Sales performance tracking
 - Operational metrics monitoring
 - Customer analytics and segmentation
 
 ### 🔍 **Data Exploration Tools**
+
 Create powerful data exploration interfaces:
+
 - Self-service analytics platforms
 - Data science notebooks
 - Business intelligence tools
 - Ad-hoc query interfaces
 
 ### 📈 **Embedded Analytics**
+
 Embed analytics directly in your applications:
+
 - SaaS product analytics
 - Customer-facing reporting
 - White-label analytics solutions
 - IoT data visualization
 
 ### 🔬 **Research & Analysis**
+
 Academic and research applications:
+
 - Scientific data analysis
 - Survey data processing
 - Statistical modeling
@@ -125,26 +137,26 @@ Academic and research applications:
 
 DataPrism Core is optimized for analytical workloads:
 
-| Operation | Dataset Size | Performance |
-|-----------|--------------|-------------|
-| CSV Loading | 1M rows | ~2 seconds |
-| Simple Aggregation | 10M rows | ~500ms |
-| Complex JOIN | 1M + 1M rows | ~1 second |
-| GROUP BY + ORDER | 5M rows | ~800ms |
-| Window Functions | 1M rows | ~600ms |
+| Operation          | Dataset Size | Performance |
+| ------------------ | ------------ | ----------- |
+| CSV Loading        | 1M rows      | ~2 seconds  |
+| Simple Aggregation | 10M rows     | ~500ms      |
+| Complex JOIN       | 1M + 1M rows | ~1 second   |
+| GROUP BY + ORDER   | 5M rows      | ~800ms      |
+| Window Functions   | 1M rows      | ~600ms      |
 
-*Performance measured on modern desktop browsers (Chrome 120+, 16GB RAM)*
+_Performance measured on modern desktop browsers (Chrome 120+, 16GB RAM)_
 
 ## Browser Support
 
 DataPrism Core requires WebAssembly support:
 
-| Feature | Chrome 90+ | Firefox 88+ | Safari 14+ | Edge 90+ |
-|---------|------------|-------------|------------|-----------|
-| Basic WebAssembly | ✅ | ✅ | ✅ | ✅ |
-| Threading | ✅ | ✅ | ❌ | ✅ |
-| SIMD | ✅ | ✅ | ✅ | ✅ |
-| Bulk Memory | ✅ | ✅ | ✅ | ✅ |
+| Feature           | Chrome 90+ | Firefox 88+ | Safari 14+ | Edge 90+ |
+| ----------------- | ---------- | ----------- | ---------- | -------- |
+| Basic WebAssembly | ✅         | ✅          | ✅         | ✅       |
+| Threading         | ✅         | ✅          | ❌         | ✅       |
+| SIMD              | ✅         | ✅          | ✅         | ✅       |
+| Bulk Memory       | ✅         | ✅          | ✅         | ✅       |
 
 ## Getting Started
 

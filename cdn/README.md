@@ -8,12 +8,12 @@ This directory contains the CDN-optimized builds of DataPrism Core packages.
 
 ```html
 <script type="module">
-  import { DataPrismEngine } from 'https://cdn.dataprism.dev/v1.0.0/core.min.js';
-  
+  import { DataPrismEngine } from "https://cdn.dataprism.dev/v1.0.0/core.min.js";
+
   const engine = new DataPrismEngine();
   await engine.initialize();
-  
-  const result = await engine.query('SELECT 1 as hello');
+
+  const result = await engine.query("SELECT 1 as hello");
   console.log(result);
 </script>
 ```
@@ -24,29 +24,36 @@ This directory contains the CDN-optimized builds of DataPrism Core packages.
 <script src="https://cdn.dataprism.dev/v1.0.0/core.min.js"></script>
 <script>
   const engine = new DataPrismCore.DataPrismEngine();
-  engine.initialize().then(() => {
-    return engine.query('SELECT 1 as hello');
-  }).then(result => {
-    console.log(result);
-  });
+  engine
+    .initialize()
+    .then(() => {
+      return engine.query("SELECT 1 as hello");
+    })
+    .then((result) => {
+      console.log(result);
+    });
 </script>
 ```
 
 ## Available Packages
 
 ### Core Engine
+
 - `core.min.js` - Main DataPrism engine with DuckDB integration
 - `core.min.js.map` - Source map for debugging
 
 ### Plugin Framework
+
 - `plugin-framework.min.js` - Plugin development framework
 - `plugin-framework.min.js.map` - Source map for debugging
 
 ### Orchestration Layer
+
 - `orchestration.min.js` - High-level orchestration APIs
 - `orchestration.min.js.map` - Source map for debugging
 
 ### WebAssembly Assets
+
 - `assets/*.wasm` - WebAssembly binaries
 - `assets/integrity.json` - Integrity hashes for verification
 
@@ -55,11 +62,11 @@ This directory contains the CDN-optimized builds of DataPrism Core packages.
 All CDN assets include integrity hashes for subresource integrity (SRI) verification:
 
 ```html
-<script 
+<script
   src="https://cdn.dataprism.dev/v1.0.0/core.min.js"
   integrity="sha384-..."
-  crossorigin="anonymous">
-</script>
+  crossorigin="anonymous"
+></script>
 ```
 
 Integrity hashes are available in `assets/integrity.json`.
@@ -81,6 +88,7 @@ Integrity hashes are available in `assets/integrity.json`.
 ## Versioning
 
 CDN URLs include version numbers for cache stability:
+
 - Latest: `https://cdn.dataprism.dev/latest/`
 - Specific version: `https://cdn.dataprism.dev/v1.0.0/`
 - Major version: `https://cdn.dataprism.dev/v1/`
@@ -89,6 +97,7 @@ CDN URLs include version numbers for cache stability:
 
 This CDN distribution was built on: {{ BUILD_DATE }}
 Package versions:
+
 - @dataprism/core: {{ CORE_VERSION }}
 - @dataprism/plugin-framework: {{ PLUGIN_VERSION }}
 - @dataprism/orchestration: {{ ORCHESTRATION_VERSION }}
@@ -111,6 +120,7 @@ Cross-Origin-Opener-Policy: same-origin
 ## Support
 
 For CDN-related issues:
+
 - Check the [status page](https://status.dataprism.dev)
 - Report issues at [GitHub Issues](https://github.com/dataprism/core/issues)
 - Documentation: [https://docs.dataprism.dev/cdn](https://docs.dataprism.dev/cdn)

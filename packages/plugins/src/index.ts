@@ -1,50 +1,59 @@
 // Main plugin system exports
-export { PluginManager } from './manager/plugin-manager.js';
-import { PluginManager } from './manager/plugin-manager.js';
-import { PluginRegistry } from './manager/plugin-registry.js';
-import { IPlugin, PluginManifest, PluginContext, PluginCapability } from './interfaces/plugin.js';
-import type { ValidationResult } from './manager/plugin-registry.js';
-export { PluginRegistry } from './manager/plugin-registry.js';
-export { PluginLoader, PluginLoadError } from './manager/plugin-loader.js';
-export { ResourceManager, ResourceMonitor, ResourceError } from './manager/resource-manager.js';
+export { PluginManager } from "./manager/plugin-manager.js";
+import { PluginManager } from "./manager/plugin-manager.js";
+import { PluginRegistry } from "./manager/plugin-registry.js";
+import {
+  IPlugin,
+  PluginManifest,
+  PluginContext,
+  PluginCapability,
+} from "./interfaces/plugin.js";
+import type { ValidationResult } from "./manager/plugin-registry.js";
+export { PluginRegistry } from "./manager/plugin-registry.js";
+export { PluginLoader, PluginLoadError } from "./manager/plugin-loader.js";
+export {
+  ResourceManager,
+  ResourceMonitor,
+  ResourceError,
+} from "./manager/resource-manager.js";
 
 // Security system exports
-export { 
-  SecurityManager, 
-  PluginSandbox, 
-  SecurityError, 
+export {
+  SecurityManager,
+  PluginSandbox,
+  SecurityError,
   AuditLogger,
-  SecurityPolicySet 
-} from './security/security-manager.js';
+  SecurityPolicySet,
+} from "./security/security-manager.js";
 
 // Communication system exports
-export { EventBus, EventBusFactory } from './communication/event-bus.js';
+export { EventBus, EventBusFactory } from "./communication/event-bus.js";
 
 // Interface exports
-export * from './interfaces/index.js';
+export * from "./interfaces/index.js";
 
 // Type exports for convenience
 export type {
   // Plugin Manager types
   PluginInfo,
   PluginStatus,
-  PluginSystemStatus
-} from './manager/plugin-manager.js';
+  PluginSystemStatus,
+} from "./manager/plugin-manager.js";
 
 export type {
   // Plugin Registry types
   PluginSearchQuery,
   PluginSearchResult,
   PluginRegistryStatistics,
-  ValidationResult
-} from './manager/plugin-registry.js';
+  ValidationResult,
+} from "./manager/plugin-registry.js";
 
 export type {
   // Plugin Loader types
   PluginValidationResult,
   PluginModuleInfo,
-  ModuleType
-} from './manager/plugin-loader.js';
+  ModuleType,
+} from "./manager/plugin-loader.js";
 
 export type {
   // Resource Manager types
@@ -57,8 +66,8 @@ export type {
   GlobalResourceLimits,
   GlobalResourceUsage,
   OptimizationResult,
-  QuotaEnforcementResult
-} from './manager/resource-manager.js';
+  QuotaEnforcementResult,
+} from "./manager/resource-manager.js";
 
 export type {
   // Security types
@@ -67,16 +76,16 @@ export type {
   SuspiciousActivity,
   SecurityPolicy,
   AuditEvent,
-  EventFilter
-} from './security/security-manager.js';
+  EventFilter,
+} from "./security/security-manager.js";
 
 export type {
   // Event Bus types
   EventHandler,
   EventSubscription,
   EventHistoryEntry,
-  EventBusMetrics
-} from './communication/event-bus.js';
+  EventBusMetrics,
+} from "./communication/event-bus.js";
 
 // Plugin System Factory
 export class DataPrismPluginSystem {
@@ -88,7 +97,7 @@ export class DataPrismPluginSystem {
     }
 
     const manager = new PluginManager();
-    
+
     // Apply configuration if provided
     if (config) {
       this.applyConfiguration(manager, config);
@@ -96,7 +105,7 @@ export class DataPrismPluginSystem {
 
     await manager.initialize();
     this.instance = manager;
-    
+
     return manager;
   }
 
@@ -111,16 +120,19 @@ export class DataPrismPluginSystem {
     }
   }
 
-  private static applyConfiguration(manager: PluginManager, config: PluginSystemConfig): void {
+  private static applyConfiguration(
+    manager: PluginManager,
+    config: PluginSystemConfig,
+  ): void {
     // Apply configuration to manager
     // In production, this would configure various aspects of the plugin system
-    console.debug('Plugin system configuration applied:', config);
+    console.debug("Plugin system configuration applied:", config);
   }
 }
 
 export interface PluginSystemConfig {
   maxPlugins?: number;
-  securityLevel?: 'strict' | 'moderate' | 'permissive';
+  securityLevel?: "strict" | "moderate" | "permissive";
   resourceLimits?: {
     globalMemoryMB?: number;
     globalCPUPercent?: number;
@@ -146,22 +158,20 @@ export const PluginUtils = {
   createManifestTemplate: (pluginName: string, category: string): any => {
     return {
       name: pluginName,
-      version: '1.0.0',
+      version: "1.0.0",
       description: `${pluginName} plugin for DataPrism`,
-      author: 'Plugin Developer',
-      license: 'MIT',
-      keywords: [category, 'dataprism'],
+      author: "Plugin Developer",
+      license: "MIT",
+      keywords: [category, "dataprism"],
       category,
-      entryPoint: './index.js',
+      entryPoint: "./index.js",
       dependencies: [],
-      permissions: [
-        { resource: 'data', access: 'read' }
-      ],
+      permissions: [{ resource: "data", access: "read" }],
       configuration: {},
       compatibility: {
-        minCoreVersion: '0.1.0',
-        browsers: ['chrome', 'firefox', 'safari', 'edge']
-      }
+        minCoreVersion: "0.1.0",
+        browsers: ["chrome", "firefox", "safari", "edge"],
+      },
     };
   },
 
@@ -177,7 +187,7 @@ export const PluginUtils = {
    */
   isValidVersion: (version: string): boolean => {
     return /^\d+\.\d+\.\d+(-[\w\d\-]+)?(\+[\w\d\-]+)?$/.test(version);
-  }
+  },
 };
 
 // Plugin development helpers
@@ -230,7 +240,7 @@ export abstract class BasePlugin implements IPlugin {
 
   async activate(): Promise<void> {
     if (!this.initialized) {
-      throw new Error('Plugin must be initialized before activation');
+      throw new Error("Plugin must be initialized before activation");
     }
     this.active = true;
     await this.onActivate();
@@ -276,7 +286,11 @@ export abstract class BasePlugin implements IPlugin {
   }
 
   // Utility methods for plugin implementations
-  protected log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]): void {
+  protected log(
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    ...args: any[]
+  ): void {
     if (this.context?.logger) {
       this.context.logger[level](message, ...args);
     } else {
@@ -290,31 +304,40 @@ export abstract class BasePlugin implements IPlugin {
     }
   }
 
-  protected async callService(serviceName: string, method: string, ...args: any[]): Promise<any> {
+  protected async callService(
+    serviceName: string,
+    method: string,
+    ...args: any[]
+  ): Promise<any> {
     if (!this.context?.services) {
-      throw new Error('Plugin context services not available');
+      throw new Error("Plugin context services not available");
     }
     return this.context.services.call(serviceName, method, ...args);
   }
 }
 
 // Version information
-export const VERSION = '1.0.0';
+export const VERSION = "1.0.0";
 export const BUILD_TIME = new Date().toISOString();
 
 // Plugin system metadata
 export const PLUGIN_SYSTEM_INFO = {
-  name: 'DataPrism Plugin System',
+  name: "DataPrism Plugin System",
   version: VERSION,
   buildTime: BUILD_TIME,
-  supportedCategories: ['data-processing', 'visualization', 'integration', 'utility'],
+  supportedCategories: [
+    "data-processing",
+    "visualization",
+    "integration",
+    "utility",
+  ],
   capabilities: [
-    'Dynamic plugin loading',
-    'Security sandboxing',
-    'Resource management',
-    'Event-driven communication',
-    'Hot reload support',
-    'Dependency resolution',
-    'Audit logging'
-  ]
+    "Dynamic plugin loading",
+    "Security sandboxing",
+    "Resource management",
+    "Event-driven communication",
+    "Hot reload support",
+    "Dependency resolution",
+    "Audit logging",
+  ],
 };

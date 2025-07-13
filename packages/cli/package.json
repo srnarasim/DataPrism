@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Command-line interface for DataPrism Core project scaffolding and plugin development",
-  "keywords": ["cli", "dataprism", "analytics", "plugin-development", "scaffolding"],
+  "keywords": [
+    "cli",
+    "dataprism",
+    "analytics",
+    "plugin-development",
+    "scaffolding"
+  ],
   "author": "DataPrism Team",
   "license": "MIT",
   "homepage": "https://dataprism.dev",

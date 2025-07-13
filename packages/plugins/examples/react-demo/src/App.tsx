@@ -1,28 +1,24 @@
-import React, { useState } from 'react';
-import './App.css';
-import { PluginManager } from './components/PluginManager';
-import { DataProcessor } from './components/DataProcessor';
-import { ChartVisualization } from './components/ChartVisualization';
-import { LLMIntegration } from './components/LLMIntegration';
-import { SystemMonitor } from './components/SystemMonitor';
-import { usePluginSystem } from './hooks/usePluginSystem';
+import React, { useState } from "react";
+import "./App.css";
+import { PluginManager } from "./components/PluginManager";
+import { DataProcessor } from "./components/DataProcessor";
+import { ChartVisualization } from "./components/ChartVisualization";
+import { LLMIntegration } from "./components/LLMIntegration";
+import { SystemMonitor } from "./components/SystemMonitor";
+import { usePluginSystem } from "./hooks/usePluginSystem";
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const { 
-    pluginSystem, 
-    isInitialized, 
-    activePlugins, 
-    systemStatus 
-  } = usePluginSystem();
+  const [activeTab, setActiveTab] = useState("overview");
+  const { pluginSystem, isInitialized, activePlugins, systemStatus } =
+    usePluginSystem();
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: '🏠' },
-    { id: 'data', label: 'Data Processing', icon: '📊' },
-    { id: 'charts', label: 'Visualization', icon: '📈' },
-    { id: 'llm', label: 'LLM Integration', icon: '🤖' },
-    { id: 'monitor', label: 'System Monitor', icon: '🔧' },
-    { id: 'plugins', label: 'Plugin Manager', icon: '🔌' }
+    { id: "overview", label: "Overview", icon: "🏠" },
+    { id: "data", label: "Data Processing", icon: "📊" },
+    { id: "charts", label: "Visualization", icon: "📈" },
+    { id: "llm", label: "LLM Integration", icon: "🤖" },
+    { id: "monitor", label: "System Monitor", icon: "🔧" },
+    { id: "plugins", label: "Plugin Manager", icon: "🔌" },
   ];
 
   const renderTabContent = () => {
@@ -36,25 +32,37 @@ const App: React.FC = () => {
     }
 
     switch (activeTab) {
-      case 'overview':
+      case "overview":
         return (
           <div className="overview-container">
             <h2>🚀 DataPrism Plugin System Demo</h2>
             <div className="overview-grid">
               <div className="overview-card">
                 <h3>🔌 Plugin Status</h3>
-                <p><strong>Active Plugins:</strong> {activePlugins.length}</p>
+                <p>
+                  <strong>Active Plugins:</strong> {activePlugins.length}
+                </p>
                 <ul>
-                  {activePlugins.map(plugin => (
+                  {activePlugins.map((plugin) => (
                     <li key={plugin}>{plugin}</li>
                   ))}
                 </ul>
               </div>
               <div className="overview-card">
                 <h3>⚡ System Health</h3>
-                <p><strong>Status:</strong> <span className={`status ${systemStatus}`}>{systemStatus}</span></p>
-                <p><strong>Memory:</strong> ~{Math.floor(Math.random() * 100)}MB</p>
-                <p><strong>Response Time:</strong> ~{Math.floor(Math.random() * 100)}ms</p>
+                <p>
+                  <strong>Status:</strong>{" "}
+                  <span className={`status ${systemStatus}`}>
+                    {systemStatus}
+                  </span>
+                </p>
+                <p>
+                  <strong>Memory:</strong> ~{Math.floor(Math.random() * 100)}MB
+                </p>
+                <p>
+                  <strong>Response Time:</strong> ~
+                  {Math.floor(Math.random() * 100)}ms
+                </p>
               </div>
               <div className="overview-card">
                 <h3>📋 Available Features</h3>
@@ -69,15 +77,15 @@ const App: React.FC = () => {
             </div>
           </div>
         );
-      case 'data':
+      case "data":
         return <DataProcessor pluginSystem={pluginSystem} />;
-      case 'charts':
+      case "charts":
         return <ChartVisualization pluginSystem={pluginSystem} />;
-      case 'llm':
+      case "llm":
         return <LLMIntegration pluginSystem={pluginSystem} />;
-      case 'monitor':
+      case "monitor":
         return <SystemMonitor pluginSystem={pluginSystem} />;
-      case 'plugins':
+      case "plugins":
         return <PluginManager pluginSystem={pluginSystem} />;
       default:
         return <div>Tab not found</div>;
@@ -95,10 +103,10 @@ const App: React.FC = () => {
 
       <nav className="app-nav">
         <div className="nav-tabs">
-          {tabs.map(tab => (
+          {tabs.map((tab) => (
             <button
               key={tab.id}
-              className={`nav-tab ${activeTab === tab.id ? 'active' : ''}`}
+              className={`nav-tab ${activeTab === tab.id ? "active" : ""}`}
               onClick={() => setActiveTab(tab.id)}
             >
               <span className="tab-icon">{tab.icon}</span>
@@ -109,9 +117,7 @@ const App: React.FC = () => {
       </nav>
 
       <main className="app-main">
-        <div className="main-content">
-          {renderTabContent()}
-        </div>
+        <div className="main-content">{renderTabContent()}</div>
       </main>
 
       <footer className="app-footer">

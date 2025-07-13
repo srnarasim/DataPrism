@@ -1,6 +1,6 @@
-import React from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -12,13 +12,16 @@ interface ErrorBoundaryProps {
   children: React.ReactNode;
 }
 
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
     };
   }
 
@@ -27,9 +30,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
     this.setState({ errorInfo });
-    
+
     // You could send error reports to your error tracking service here
     if (import.meta.env.PROD) {
       // Example: sendErrorReport(error, errorInfo);
@@ -40,7 +43,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     this.setState({
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
     });
   };
 
@@ -56,16 +59,17 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                   <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
                 </div>
               </div>
-              
+
               {/* Error message */}
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 Something went wrong
               </h1>
-              
+
               <p className="text-gray-600 dark:text-gray-300 mb-6">
-                We're sorry, but something unexpected happened. This error has been logged and we'll look into it.
+                We're sorry, but something unexpected happened. This error has
+                been logged and we'll look into it.
               </p>
-              
+
               {/* Error details (only in development) */}
               {import.meta.env.DEV && this.state.error && (
                 <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg text-left">
@@ -82,7 +86,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                   )}
                 </div>
               )}
-              
+
               {/* Action buttons */}
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
@@ -92,7 +96,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Try Again
                 </button>
-                
+
                 <Link
                   to="/"
                   className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -101,11 +105,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                   Go Home
                 </Link>
               </div>
-              
+
               {/* Help text */}
               <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
                 <p>
-                  If this problem persists, please{' '}
+                  If this problem persists, please{" "}
                   <a
                     href="https://github.com/dataprism/core/issues"
                     target="_blank"

@@ -1,23 +1,27 @@
-import { IPlugin } from './plugin.js';
-import { Dataset, DataType } from './data-processor.js';
+import { IPlugin } from "./plugin.js";
+import { Dataset, DataType } from "./data-processor.js";
 
 export interface IVisualizationPlugin extends IPlugin {
   // Rendering Operations
-  render(container: Element, data: Dataset, config?: RenderConfig): Promise<void>;
+  render(
+    container: Element,
+    data: Dataset,
+    config?: RenderConfig,
+  ): Promise<void>;
   update(data: Dataset): Promise<void>;
   resize(dimensions: Dimensions): Promise<void>;
   destroy(): Promise<void>;
-  
+
   // Visualization Capabilities
   getVisualizationTypes(): VisualizationType[];
   getSupportedDataTypes(): DataType[];
   getInteractionFeatures(): InteractionFeature[];
-  
+
   // Export and Configuration
   export(format: ExportFormat): Promise<Blob>;
   getConfiguration(): VisualizationConfig;
   setConfiguration(config: VisualizationConfig): Promise<void>;
-  
+
   // Event Handling
   onInteraction(event: InteractionEvent): Promise<void>;
   getSelectionData(): any[];
@@ -27,11 +31,11 @@ export interface IVisualizationPlugin extends IPlugin {
 export interface VisualizationType {
   name: string;
   description: string;
-  category: 'chart' | 'table' | 'map' | 'network' | 'tree' | 'custom';
+  category: "chart" | "table" | "map" | "network" | "tree" | "custom";
   requiredFields: FieldRequirement[];
   optionalFields: FieldRequirement[];
   preview?: string; // Base64 encoded preview image
-  complexity: 'simple' | 'moderate' | 'complex';
+  complexity: "simple" | "moderate" | "complex";
 }
 
 export interface FieldRequirement {
@@ -42,7 +46,7 @@ export interface FieldRequirement {
 }
 
 export interface RenderConfig {
-  theme: 'light' | 'dark' | 'auto';
+  theme: "light" | "dark" | "auto";
   responsive: boolean;
   animation: boolean;
   interaction: boolean;
@@ -78,15 +82,15 @@ export interface InteractionFeature {
   configurable: boolean;
 }
 
-export type InteractionEventType = 
-  | 'click' 
-  | 'hover' 
-  | 'select' 
-  | 'zoom' 
-  | 'pan' 
-  | 'brush'
-  | 'filter'
-  | 'sort';
+export type InteractionEventType =
+  | "click"
+  | "hover"
+  | "select"
+  | "zoom"
+  | "pan"
+  | "brush"
+  | "filter"
+  | "sort";
 
 export interface InteractionEvent {
   type: InteractionEventType;
@@ -101,7 +105,14 @@ export interface InteractionEvent {
   };
 }
 
-export type ExportFormat = 'svg' | 'png' | 'jpeg' | 'pdf' | 'html' | 'json' | 'csv';
+export type ExportFormat =
+  | "svg"
+  | "png"
+  | "jpeg"
+  | "pdf"
+  | "html"
+  | "json"
+  | "csv";
 
 export interface VisualizationConfig {
   layout: LayoutConfig;
@@ -114,13 +125,13 @@ export interface VisualizationConfig {
 export interface LayoutConfig {
   margin: { top: number; right: number; bottom: number; left: number };
   padding: { top: number; right: number; bottom: number; left: number };
-  orientation: 'horizontal' | 'vertical';
-  alignment: 'start' | 'center' | 'end';
+  orientation: "horizontal" | "vertical";
+  alignment: "start" | "center" | "end";
 }
 
 export interface StylingConfig {
   colors: string[];
-  colorScheme: 'categorical' | 'sequential' | 'diverging';
+  colorScheme: "categorical" | "sequential" | "diverging";
   fonts: FontConfig;
   borders: BorderConfig;
   shadows: boolean;
@@ -129,13 +140,13 @@ export interface StylingConfig {
 export interface FontConfig {
   family: string;
   size: number;
-  weight: 'normal' | 'bold' | 'lighter' | 'bolder';
-  style: 'normal' | 'italic';
+  weight: "normal" | "bold" | "lighter" | "bolder";
+  style: "normal" | "italic";
 }
 
 export interface BorderConfig {
   width: number;
-  style: 'solid' | 'dashed' | 'dotted';
+  style: "solid" | "dashed" | "dotted";
   color: string;
   radius: number;
 }
@@ -150,15 +161,15 @@ export interface BehaviorConfig {
 }
 
 export interface DataConfig {
-  aggregation: 'sum' | 'avg' | 'count' | 'min' | 'max' | 'none';
-  sorting: 'asc' | 'desc' | 'none';
+  aggregation: "sum" | "avg" | "count" | "min" | "max" | "none";
+  sorting: "asc" | "desc" | "none";
   filtering: FilterConfig[];
   grouping: string[];
 }
 
 export interface FilterConfig {
   field: string;
-  operator: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'contains';
+  operator: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "in" | "contains";
   value: any;
   active: boolean;
 }

@@ -55,6 +55,7 @@ We follow the [Conventional Commits](https://conventionalcommits.org/) specifica
 ```
 
 **Types:**
+
 - `feat`: A new feature
 - `fix`: A bug fix
 - `docs`: Documentation only changes
@@ -65,6 +66,7 @@ We follow the [Conventional Commits](https://conventionalcommits.org/) specifica
 - `chore`: Changes to the build process or auxiliary tools
 
 **Examples:**
+
 ```
 feat(core): add CSV export functionality
 fix(orchestration): resolve memory leak in query execution
@@ -214,6 +216,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
@@ -223,6 +226,7 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Environment:**
+
 - OS: [e.g. macOS, Windows, Linux]
 - Browser: [e.g. Chrome, Firefox, Safari]
 - Version: [e.g. 1.0.0]

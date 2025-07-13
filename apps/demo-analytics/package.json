@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "type": "module",
   "description": "DataPrism Core comprehensive analytics demo application",
-  "keywords": ["dataprism", "analytics", "demo", "visualization", "data-processing"],
+  "keywords": [
+    "dataprism",
+    "analytics",
+    "demo",
+    "visualization",
+    "data-processing"
+  ],
   "private": true,
   "scripts": {
     "dev": "vite",

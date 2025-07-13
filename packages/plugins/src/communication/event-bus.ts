@@ -27,7 +27,7 @@ export class EventBus {
 
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
-    
+
     // Set up global error handling for async event handlers
     this.setupErrorHandling();
     this.isInitialized = true;
@@ -35,7 +35,7 @@ export class EventBus {
 
   publish<T>(event: string, data: T): void {
     if (!this.isInitialized) {
-      console.warn('EventBus not initialized, call initialize() first');
+      console.warn("EventBus not initialized, call initialize() first");
       return;
     }
 
@@ -58,20 +58,21 @@ export class EventBus {
 
   subscribe<T>(event: string, handler: EventHandler<T>): EventSubscription {
     if (!this.isInitialized) {
-      console.warn('EventBus not initialized, call initialize() first');
+      console.warn("EventBus not initialized, call initialize() first");
     }
 
-    if (event === '*') {
+    if (event === "*") {
       this.wildcardHandlers.add(handler as EventHandler);
       return {
-        unsubscribe: () => this.wildcardHandlers.delete(handler as EventHandler)
+        unsubscribe: () =>
+          this.wildcardHandlers.delete(handler as EventHandler),
       };
     }
 
     if (!this.handlers.has(event)) {
       this.handlers.set(event, new Set());
     }
-    
+
     this.handlers.get(event)!.add(handler as EventHandler);
 
     return {
@@ -83,12 +84,12 @@ export class EventBus {
             this.handlers.delete(event);
           }
         }
-      }
+      },
     };
   }
 
   unsubscribe(event: string, handler: EventHandler): void {
-    if (event === '*') {
+    if (event === "*") {
       this.wildcardHandlers.delete(handler);
       return;
     }
@@ -114,7 +115,7 @@ export class EventBus {
 
   getEventHistory(event?: string): EventHistoryEntry[] {
     if (event) {
-      return this.eventHistory.filter(entry => entry.event === event);
+      return this.eventHistory.filter((entry) => entry.event === event);
     }
     return [...this.eventHistory];
   }
@@ -125,13 +126,13 @@ export class EventBus {
 
   getActiveSubscriptions(): Map<string, number> {
     const subscriptions = new Map<string, number>();
-    
+
     for (const [event, handlers] of this.handlers) {
       subscriptions.set(event, handlers.size);
     }
-    
+
     if (this.wildcardHandlers.size > 0) {
-      subscriptions.set('*', this.wildcardHandlers.size);
+      subscriptions.set("*", this.wildcardHandlers.size);
     }
 
     return subscriptions;
@@ -154,11 +155,15 @@ export class EventBus {
   getMetrics(): EventBusMetrics {
     return {
       totalEvents: this.eventHistory.length,
-      uniqueEvents: new Set(this.eventHistory.map(e => e.event)).size,
-      activeSubscriptions: Array.from(this.handlers.entries()).reduce((sum, [, handlers]) => sum + handlers.size, 0) + this.wildcardHandlers.size,
+      uniqueEvents: new Set(this.eventHistory.map((e) => e.event)).size,
+      activeSubscriptions:
+        Array.from(this.handlers.entries()).reduce(
+          (sum, [, handlers]) => sum + handlers.size,
+          0,
+        ) + this.wildcardHandlers.size,
       wildcardSubscriptions: this.wildcardHandlers.size,
       historySize: this.eventHistory.length,
-      maxHistorySize: this.maxHistorySize
+      maxHistorySize: this.maxHistorySize,
     };
   }
 
@@ -169,20 +174,32 @@ export class EventBus {
     this.isInitialized = false;
   }
 
-  private executeHandler(handler: EventHandler, data: any, event: string): void {
+  private executeHandler(
+    handler: EventHandler,
+    data: any,
+    event: string,
+  ): void {
     try {
       const result = handler(data);
-      
+
       // Handle async handlers
       if (result instanceof Promise) {
-        result.catch(error => {
+        result.catch((error) => {
           console.error(`Error in async event handler for ${event}:`, error);
-          this.publish('eventbus:error', { event, error, handler: handler.toString() });
+          this.publish("eventbus:error", {
+            event,
+            error,
+            handler: handler.toString(),
+          });
         });
       }
     } catch (error) {
       console.error(`Error in event handler for ${event}:`, error);
-      this.publish('eventbus:error', { event, error, handler: handler.toString() });
+      this.publish("eventbus:error", {
+        event,
+        error,
+        handler: handler.toString(),
+      });
     }
   }
 
@@ -190,7 +207,7 @@ export class EventBus {
     this.eventHistory.push({
       event,
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // Maintain history size limit
@@ -201,11 +218,11 @@ export class EventBus {
 
   private setupErrorHandling(): void {
     // Handle uncaught promise rejections from event handlers
-    if (typeof window !== 'undefined') {
-      window.addEventListener('unhandledrejection', (event) => {
-        this.publish('eventbus:unhandled-rejection', {
+    if (typeof window !== "undefined") {
+      window.addEventListener("unhandledrejection", (event) => {
+        this.publish("eventbus:unhandled-rejection", {
           reason: event.reason,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       });
     }

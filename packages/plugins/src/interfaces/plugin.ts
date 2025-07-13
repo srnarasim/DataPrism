@@ -5,17 +5,17 @@ export interface IPlugin {
   getDescription(): string;
   getAuthor(): string;
   getDependencies(): PluginDependency[];
-  
+
   // Lifecycle Management
   initialize(context: PluginContext): Promise<void>;
   activate(): Promise<void>;
   deactivate(): Promise<void>;
   cleanup(): Promise<void>;
-  
+
   // Core Operations
   execute(operation: string, params: any): Promise<any>;
   configure(settings: PluginSettings): Promise<void>;
-  
+
   // Metadata and Capabilities
   getManifest(): PluginManifest;
   getCapabilities(): PluginCapability[];
@@ -43,7 +43,11 @@ export interface PluginManifest {
   };
 }
 
-export type PluginCategory = 'data-processing' | 'visualization' | 'integration' | 'utility';
+export type PluginCategory =
+  | "data-processing"
+  | "visualization"
+  | "integration"
+  | "utility";
 
 export interface PluginDependency {
   name: string;
@@ -53,7 +57,7 @@ export interface PluginDependency {
 
 export interface PluginPermission {
   resource: string;
-  access: 'read' | 'write' | 'execute';
+  access: "read" | "write" | "execute";
   scope?: string;
 }
 
@@ -73,7 +77,7 @@ export interface PluginSettings {
 
 export interface PluginConfigSchema {
   [key: string]: {
-    type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+    type: "string" | "number" | "boolean" | "object" | "array";
     required?: boolean;
     default?: any;
     description?: string;
@@ -84,7 +88,7 @@ export interface PluginConfigSchema {
 export interface PluginCapability {
   name: string;
   description: string;
-  type: 'processing' | 'visualization' | 'integration' | 'utility';
+  type: "processing" | "visualization" | "integration" | "utility";
   version: string;
   async: boolean;
   inputTypes?: string[];
@@ -92,7 +96,7 @@ export interface PluginCapability {
 }
 
 export interface ValidationRule {
-  type: 'min' | 'max' | 'pattern' | 'enum' | 'custom';
+  type: "min" | "max" | "pattern" | "enum" | "custom";
   value: any;
   message?: string;
 }

@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock DOM APIs
 global.ResizeObserver = vi.fn(() => ({
@@ -40,7 +40,7 @@ global.HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
 }));
 
 // Mock URL API
-global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
 global.URL.revokeObjectURL = vi.fn();
 
 // Mock performance API
@@ -49,7 +49,7 @@ global.performance.measure = vi.fn();
 global.performance.getEntriesByName = vi.fn(() => []);
 
 // Mock DataPrism plugins interfaces (since we don't have the actual package)
-vi.mock('@dataprism/plugins', () => ({
+vi.mock("@dataprism/plugins", () => ({
   // Plugin interfaces would be mocked here
   IPlugin: class {},
   IVisualizationPlugin: class {},

@@ -107,15 +107,13 @@ Demonstrate an end-to-end workflow using DataPrism Core, the plugin framework, a
 
 ### Demo App Structure
 
-| Package                    | Role in Demo App                          |
-|----------------------------|-------------------------------------------|
-| @prism/core                | WASM analytics engine, data processing    |
-| @prism/plugin-framework    | Plugin loader, manifest management        |
-| @prism/plugin-csv-importer | Data ingestion from CSV                   |
-| @prism/plugin-observable-charts | Data visualization (charts)           |
-| @prism/plugin-openai-llm   | LLM-powered classification suggestions    |
-| @prism/plugin-csv-exporter | Export labeled data to CSV                |
+| Package                         | Role in Demo App                       |
+| ------------------------------- | -------------------------------------- |
+| @prism/core                     | WASM analytics engine, data processing |
+| @prism/plugin-framework         | Plugin loader, manifest management     |
+| @prism/plugin-csv-importer      | Data ingestion from CSV                |
+| @prism/plugin-observable-charts | Data visualization (charts)            |
+| @prism/plugin-openai-llm        | LLM-powered classification suggestions |
+| @prism/plugin-csv-exporter      | Export labeled data to CSV             |
 
 ### Example Usage (Pseudo-code)
-
-

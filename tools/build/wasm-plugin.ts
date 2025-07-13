@@ -1,19 +1,19 @@
-import { Plugin } from 'vite';
-import { readFileSync, writeFileSync } from 'fs';
-import { createHash } from 'crypto';
-import { basename, dirname, join } from 'path';
+import { Plugin } from "vite";
+import { readFileSync, writeFileSync } from "fs";
+import { createHash } from "crypto";
+import { basename, dirname, join } from "path";
 
 export interface WasmPluginOptions {
   /**
    * Base64 encode WASM files for inline embedding
    */
   inline?: boolean;
-  
+
   /**
    * Generate integrity hashes for WASM files
    */
   generateIntegrity?: boolean;
-  
+
   /**
    * Copy WASM files to specific directory
    */
@@ -24,21 +24,21 @@ export function wasmPlugin(options: WasmPluginOptions = {}): Plugin {
   const {
     inline = false,
     generateIntegrity = true,
-    outDir = 'assets'
+    outDir = "assets",
   } = options;
 
   const wasmFiles = new Map<string, { source: Buffer; hash?: string }>();
 
   return {
-    name: 'wasm-loader',
-    
+    name: "wasm-loader",
+
     load(id) {
-      if (id.endsWith('.wasm')) {
+      if (id.endsWith(".wasm")) {
         if (inline) {
           // Inline WASM as base64
           const wasmBuffer = readFileSync(id);
-          const base64 = wasmBuffer.toString('base64');
-          
+          const base64 = wasmBuffer.toString("base64");
+
           return `
             export default function loadWasm() {
               const base64 = '${base64}';
@@ -54,15 +54,15 @@ export function wasmPlugin(options: WasmPluginOptions = {}): Plugin {
           // Load WASM as URL
           const wasmBuffer = readFileSync(id);
           const fileName = basename(id);
-          
+
           // Generate integrity hash
           let hash: string | undefined;
           if (generateIntegrity) {
-            hash = createHash('sha384').update(wasmBuffer).digest('base64');
+            hash = createHash("sha384").update(wasmBuffer).digest("base64");
           }
-          
+
           wasmFiles.set(fileName, { source: wasmBuffer, hash });
-          
+
           return `
             export default function loadWasm() {
               return fetch('/${outDir}/${fileName}')
@@ -75,7 +75,7 @@ export function wasmPlugin(options: WasmPluginOptions = {}): Plugin {
             }
             
             export const wasmUrl = '/${outDir}/${fileName}';
-            ${hash ? `export const integrity = 'sha384-${hash}';` : ''}
+            ${hash ? `export const integrity = 'sha384-${hash}';` : ""}
           `;
         }
       }
@@ -85,32 +85,32 @@ export function wasmPlugin(options: WasmPluginOptions = {}): Plugin {
       // Copy WASM files to output directory
       for (const [fileName, { source, hash }] of wasmFiles) {
         this.emitFile({
-          type: 'asset',
+          type: "asset",
           fileName: `${outDir}/${fileName}`,
-          source
+          source,
         });
-        
+
         // Generate integrity manifest
         if (generateIntegrity && hash) {
           const manifestPath = `${outDir}/integrity.json`;
           let manifest: Record<string, string> = {};
-          
+
           // Read existing manifest if it exists
           try {
             const existingBundle = bundle[manifestPath];
-            if (existingBundle && existingBundle.type === 'asset') {
+            if (existingBundle && existingBundle.type === "asset") {
               manifest = JSON.parse(existingBundle.source as string);
             }
           } catch (e) {
             // New manifest
           }
-          
+
           manifest[fileName] = `sha384-${hash}`;
-          
+
           this.emitFile({
-            type: 'asset',
+            type: "asset",
             fileName: manifestPath,
-            source: JSON.stringify(manifest, null, 2)
+            source: JSON.stringify(manifest, null, 2),
           });
         }
       }
@@ -119,13 +119,13 @@ export function wasmPlugin(options: WasmPluginOptions = {}): Plugin {
     configureServer(server) {
       // Serve WASM files with correct MIME type in development
       server.middlewares.use((req, res, next) => {
-        if (req.url?.endsWith('.wasm')) {
-          res.setHeader('Content-Type', 'application/wasm');
-          res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
-          res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+        if (req.url?.endsWith(".wasm")) {
+          res.setHeader("Content-Type", "application/wasm");
+          res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+          res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
         }
         next();
       });
-    }
+    },
   };
 }

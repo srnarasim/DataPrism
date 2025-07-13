@@ -14,6 +14,7 @@ npm run serve
 ```
 
 Then open your browser to:
+
 - **Main Demo**: http://localhost:3001/examples/real-workflow.html
 - **Examples List**: http://localhost:3001/examples
 - **Original Mock Demo**: http://localhost:3001/examples/complete-workflow.html
@@ -23,6 +24,7 @@ Then open your browser to:
 ## Demo Features
 
 ### Real Integration Demo (`real-workflow.html`)
+
 ✅ **Uses actual DataPrism plugins - no mocking!**
 
 - **CSV Import**: Real file parsing with PapaParse integration
@@ -32,6 +34,7 @@ Then open your browser to:
 - **Export Functions**: Real plugin export methods for PNG/SVG/CSV/JSON
 
 ### Original Mock Demo (`complete-workflow.html`)
+
 ⚠️ **For comparison - uses simulated behavior**
 
 - Shows the same UI but with setTimeout delays and random data generation
@@ -39,6 +42,7 @@ Then open your browser to:
 ## Troubleshooting
 
 ### CORS Errors
+
 If you see "Cross-Origin Request Blocked" errors, it means you're trying to open the HTML files directly in the browser instead of through the HTTP server. Always use:
 
 ```bash
@@ -48,6 +52,7 @@ npm run serve
 Then access via `http://localhost:3000` instead of opening files directly.
 
 ### Port 3000 Already in Use
+
 If port 3000 is busy, modify `server.js` to use a different port:
 
 ```javascript
@@ -55,6 +60,7 @@ const PORT = 3001; // Change this line
 ```
 
 ### Build Issues
+
 Make sure all dependencies are installed and use the browser build:
 
 ```bash
@@ -63,6 +69,7 @@ npm run build:browser  # Use browser build, not regular build
 ```
 
 ### Module Resolution Errors
+
 If you see "bare specifier" errors like `The specifier "d3" was a bare specifier`, it means:
 
 1. You're using the wrong build - use `npm run build:browser` instead of `npm run build`
@@ -70,6 +77,7 @@ If you see "bare specifier" errors like `The specifier "d3" was a bare specifier
 3. The regular `dist/index.js` build externalizes dependencies for library use
 
 ### Worker Loading Errors
+
 If you see "disallowed MIME type", "importScripts inside Module Worker", or "NetworkError" errors:
 
 1. Make sure you're running the HTTP server (`npm run serve`), not opening files directly
@@ -78,13 +86,17 @@ If you see "disallowed MIME type", "importScripts inside Module Worker", or "Net
 4. Workers are now self-contained with no external CDN dependencies
 
 ### Network/CDN Errors
+
 The current implementation eliminates CDN dependency issues by using built-in algorithms:
+
 - No more `NS_ERROR_CORRUPTED_CONTENT` from unpkg.com
 - No network timeouts or CDN availability issues
 - Faster and more reliable operation
 
 ### Self-Contained Workers
+
 The workers are now **self-contained** with no external dependencies:
+
 - **CSV Parser**: Built-in CSV parsing algorithm (no PapaParse CDN dependency)
 - **Clustering**: Built-in K-Means and DBSCAN implementations (no ML library CDN dependencies)
 - **Reliability**: No network dependencies or CDN failures
@@ -95,7 +107,7 @@ The workers are now **self-contained** with no external dependencies:
 The demo showcases four plugin categories:
 
 1. **Integration Plugin**: `CSVImporterPlugin` - Real CSV file parsing
-2. **Visualization Plugin**: `ObservableChartsPlugin` - D3.js chart rendering  
+2. **Visualization Plugin**: `ObservableChartsPlugin` - D3.js chart rendering
 3. **Processing Plugin**: `SemanticClusteringPlugin` - ML clustering algorithms
 4. **Utility Plugin**: `PerformanceMonitorPlugin` - System metrics collection
 

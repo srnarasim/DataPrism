@@ -38,7 +38,7 @@ npx @dataprism/cli init my-analytics-app
 ### Basic Usage
 
 ```typescript
-import { DataPrismEngine } from '@dataprism/core';
+import { DataPrismEngine } from "@dataprism/core";
 
 // Initialize the engine
 const engine = new DataPrismEngine();
@@ -50,7 +50,7 @@ Alice,25,New York
 Bob,30,London
 Charlie,35,Tokyo`;
 
-await engine.loadCSV(csvData, 'users');
+await engine.loadCSV(csvData, "users");
 
 // Execute SQL queries
 const result = await engine.query(`
@@ -79,11 +79,11 @@ graph TB
     C --> D[DuckDB-WASM]
     C --> E[Memory Manager]
     C --> F[Query Optimizer]
-    
+
     G[Plugin System] --> B
     H[Data Loaders] --> C
     I[Visualization APIs] --> B
-    
+
     subgraph "WebAssembly Runtime"
         D
         E
@@ -101,41 +101,41 @@ graph TB
 
 ## 📦 Packages
 
-| Package | Description | NPM |
-|---------|-------------|-----|
-| [@dataprism/core](./packages/core) | Core WebAssembly engine | [![npm](https://img.shields.io/npm/v/@dataprism/core)](https://www.npmjs.com/package/@dataprism/core) |
-| [@dataprism/orchestration](./packages/orchestration) | High-level orchestration APIs | [![npm](https://img.shields.io/npm/v/@dataprism/orchestration)](https://www.npmjs.com/package/@dataprism/orchestration) |
-| [@dataprism/plugin-framework](./packages/plugins) | Plugin development framework | [![npm](https://img.shields.io/npm/v/@dataprism/plugin-framework)](https://www.npmjs.com/package/@dataprism/plugin-framework) |
-| [@dataprism/cli](./packages/cli) | Command-line interface | [![npm](https://img.shields.io/npm/v/@dataprism/cli)](https://www.npmjs.com/package/@dataprism/cli) |
+| Package                                              | Description                   | NPM                                                                                                                           |
+| ---------------------------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [@dataprism/core](./packages/core)                   | Core WebAssembly engine       | [![npm](https://img.shields.io/npm/v/@dataprism/core)](https://www.npmjs.com/package/@dataprism/core)                         |
+| [@dataprism/orchestration](./packages/orchestration) | High-level orchestration APIs | [![npm](https://img.shields.io/npm/v/@dataprism/orchestration)](https://www.npmjs.com/package/@dataprism/orchestration)       |
+| [@dataprism/plugin-framework](./packages/plugins)    | Plugin development framework  | [![npm](https://img.shields.io/npm/v/@dataprism/plugin-framework)](https://www.npmjs.com/package/@dataprism/plugin-framework) |
+| [@dataprism/cli](./packages/cli)                     | Command-line interface        | [![npm](https://img.shields.io/npm/v/@dataprism/cli)](https://www.npmjs.com/package/@dataprism/cli)                           |
 
 ## 🎯 Performance
 
 DataPrism Core is optimized for real-world analytical workloads:
 
-| Operation | Dataset Size | Performance | Memory Usage |
-|-----------|--------------|-------------|--------------|
-| CSV Loading | 1M rows | ~2 seconds | ~200MB |
-| Simple Aggregation | 10M rows | ~500ms | ~400MB |
-| Complex JOIN | 1M + 1M rows | ~1 second | ~300MB |
-| Window Functions | 5M rows | ~800ms | ~350MB |
+| Operation          | Dataset Size | Performance | Memory Usage |
+| ------------------ | ------------ | ----------- | ------------ |
+| CSV Loading        | 1M rows      | ~2 seconds  | ~200MB       |
+| Simple Aggregation | 10M rows     | ~500ms      | ~400MB       |
+| Complex JOIN       | 1M + 1M rows | ~1 second   | ~300MB       |
+| Window Functions   | 5M rows      | ~800ms      | ~350MB       |
 
-*Benchmarks run on Chrome 120+, 16GB RAM, modern desktop*
+_Benchmarks run on Chrome 120+, 16GB RAM, modern desktop_
 
 ## 🌐 Browser Support
 
-| Browser | Version | WebAssembly | Threading | Status |
-|---------|---------|-------------|-----------|--------|
-| Chrome | 90+ | ✅ | ✅ | ✅ Fully Supported |
-| Firefox | 88+ | ✅ | ✅ | ✅ Fully Supported |
-| Safari | 14+ | ✅ | ❌ | ✅ Supported* |
-| Edge | 90+ | ✅ | ✅ | ✅ Fully Supported |
+| Browser | Version | WebAssembly | Threading | Status             |
+| ------- | ------- | ----------- | --------- | ------------------ |
+| Chrome  | 90+     | ✅          | ✅        | ✅ Fully Supported |
+| Firefox | 88+     | ✅          | ✅        | ✅ Fully Supported |
+| Safari  | 14+     | ✅          | ❌        | ✅ Supported\*     |
+| Edge    | 90+     | ✅          | ✅        | ✅ Fully Supported |
 
-*\*Safari has limited threading support but full functionality*
+_\*Safari has limited threading support but full functionality_
 
 ## 🚀 Live Examples
 
 - **[Interactive Demo](https://demo.dataprism.dev)** - Full-featured analytics application
-- **[Query Lab](https://demo.dataprism.dev/query-lab)** - SQL playground with sample datasets  
+- **[Query Lab](https://demo.dataprism.dev/query-lab)** - SQL playground with sample datasets
 - **[Plugin Showcase](https://demo.dataprism.dev/plugins)** - Explore the plugin ecosystem
 - **[Performance Benchmarks](https://demo.dataprism.dev/performance)** - Real-world performance metrics
 
@@ -228,10 +228,10 @@ npx @dataprism/cli plugin create  # Create new plugin
 
 ```typescript
 const engine = new DataPrismEngine({
-  memoryLimit: '512MB',     // Memory limit
-  queryTimeout: 30000,      // Query timeout in ms
+  memoryLimit: "512MB", // Memory limit
+  queryTimeout: 30000, // Query timeout in ms
   enableOptimizations: true, // Enable query optimizations
-  debug: false              // Debug mode
+  debug: false, // Debug mode
 });
 ```
 
@@ -249,15 +249,15 @@ Cross-Origin-Opener-Policy: same-origin
 Extend DataPrism with custom functionality:
 
 ```typescript
-import { PluginBase } from '@dataprism/plugin-framework';
+import { PluginBase } from "@dataprism/plugin-framework";
 
 class MyPlugin extends PluginBase {
   static metadata = {
-    name: 'my-plugin',
-    version: '1.0.0',
-    type: 'data-processor'
+    name: "my-plugin",
+    version: "1.0.0",
+    type: "data-processor",
   };
-  
+
   async process(data, context) {
     // Custom processing logic
     return processedData;
@@ -277,11 +277,11 @@ DataPrism provides comprehensive error handling:
 
 ```typescript
 try {
-  const result = await engine.query('SELECT * FROM non_existent_table');
+  const result = await engine.query("SELECT * FROM non_existent_table");
 } catch (error) {
   if (error instanceof QueryError) {
-    console.error('SQL Error:', error.message);
-    console.error('Line:', error.line);
+    console.error("SQL Error:", error.message);
+    console.error("Line:", error.line);
   }
 }
 ```
@@ -293,9 +293,9 @@ Monitor your application's performance:
 ```typescript
 // Get performance metrics
 const metrics = await engine.getMetrics();
-console.log('Memory usage:', metrics.memoryUsage);
-console.log('Query count:', metrics.queryCount);
-console.log('Average query time:', metrics.avgQueryTime);
+console.log("Memory usage:", metrics.memoryUsage);
+console.log("Query count:", metrics.queryCount);
+console.log("Average query time:", metrics.avgQueryTime);
 
 // Set up real-time monitoring
 setInterval(async () => {
@@ -316,38 +316,47 @@ DataPrism Core is built with security in mind:
 ## 🌟 Use Cases
 
 ### Interactive Dashboards
+
 Build real-time dashboards that process data entirely in the browser:
+
 - Financial reporting and analysis
 - Sales performance tracking
 - Operational metrics monitoring
 
-### Data Exploration Tools  
+### Data Exploration Tools
+
 Create powerful data exploration interfaces:
+
 - Self-service analytics platforms
 - Business intelligence tools
 - Ad-hoc query interfaces
 
 ### Embedded Analytics
+
 Embed analytics directly in your applications:
+
 - SaaS product analytics
-- Customer-facing reporting  
+- Customer-facing reporting
 - White-label analytics solutions
 
 ## 🗺️ Roadmap
 
 ### v1.1 (Q2 2024)
+
 - [ ] LLM integration for natural language queries
 - [ ] Real-time streaming data processing
 - [ ] Advanced visualization components
 - [ ] Mobile app SDK
 
 ### v1.2 (Q3 2024)
+
 - [ ] Machine learning model integration
 - [ ] Advanced plugin marketplace
 - [ ] Cloud synchronization options
 - [ ] Enterprise security features
 
 ### v2.0 (Q4 2024)
+
 - [ ] Multi-threaded processing
 - [ ] Advanced caching strategies
 - [ ] Collaborative analytics features

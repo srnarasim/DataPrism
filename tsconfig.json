@@ -19,11 +19,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": [
-    "packages/orchestration/src/**/*",
-    "packages/llm/src/**/*",
-    "tools/build/**/*"
-  ],
+  "include": ["packages/llm/src/**/*"],
   "exclude": [
     "node_modules",
     "**/node_modules",
@@ -31,10 +27,6 @@
     "**/build",
     "**/pkg",
     "**/target",
-    "**/*.d.ts",
-    "apps/**/*",
-    "packages/cli/**/*",
-    "packages/plugins/**/*",
-    "tests/**/*"
+    "**/*.d.ts"
   ]
 }

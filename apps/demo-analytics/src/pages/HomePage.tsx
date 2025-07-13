@@ -1,19 +1,19 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  ArrowRight, 
-  BarChart3, 
-  Database, 
-  Zap, 
-  Shield, 
-  Globe, 
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  ArrowRight,
+  BarChart3,
+  Database,
+  Zap,
+  Shield,
+  Globe,
   Code2,
   Play,
   FileText,
-  Github
-} from 'lucide-react';
+  Github,
+} from "lucide-react";
 
-import { useDataPrism } from '../contexts/DataPrismContext';
+import { useDataPrism } from "../contexts/DataPrismContext";
 
 export default function HomePage() {
   const { isInitialized, initializationError, retry } = useDataPrism();
@@ -27,24 +27,29 @@ export default function HomePage() {
             <BarChart3 className="h-10 w-10 text-white" />
           </div>
         </div>
-        
+
         <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-6">
           DataPrism Core
           <span className="block text-2xl sm:text-3xl text-blue-600 dark:text-blue-400 font-normal mt-2">
             Analytics Demo
           </span>
         </h1>
-        
+
         <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
-          Experience the power of browser-based data analytics with WebAssembly. 
-          Process millions of rows, create stunning visualizations, and build custom plugins—all in your browser.
+          Experience the power of browser-based data analytics with WebAssembly.
+          Process millions of rows, create stunning visualizations, and build
+          custom plugins—all in your browser.
         </p>
 
         {/* Status */}
         {initializationError ? (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-8 max-w-md mx-auto">
-            <p className="text-red-800 dark:text-red-400 font-medium mb-2">Engine Failed to Initialize</p>
-            <p className="text-red-600 dark:text-red-400 text-sm mb-3">{initializationError.message}</p>
+            <p className="text-red-800 dark:text-red-400 font-medium mb-2">
+              Engine Failed to Initialize
+            </p>
+            <p className="text-red-600 dark:text-red-400 text-sm mb-3">
+              {initializationError.message}
+            </p>
             <button
               onClick={retry}
               className="inline-flex items-center px-3 py-1 border border-red-300 dark:border-red-600 text-sm font-medium rounded text-red-700 dark:text-red-400 bg-white dark:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/40"
@@ -54,13 +59,21 @@ export default function HomePage() {
           </div>
         ) : !isInitialized ? (
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-8 max-w-md mx-auto">
-            <p className="text-yellow-800 dark:text-yellow-400 font-medium">Initializing Engine...</p>
-            <p className="text-yellow-600 dark:text-yellow-400 text-sm">Loading WebAssembly runtime and DuckDB</p>
+            <p className="text-yellow-800 dark:text-yellow-400 font-medium">
+              Initializing Engine...
+            </p>
+            <p className="text-yellow-600 dark:text-yellow-400 text-sm">
+              Loading WebAssembly runtime and DuckDB
+            </p>
           </div>
         ) : (
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-8 max-w-md mx-auto">
-            <p className="text-green-800 dark:text-green-400 font-medium">Engine Ready!</p>
-            <p className="text-green-600 dark:text-green-400 text-sm">DataPrism Core is loaded and ready to use</p>
+            <p className="text-green-800 dark:text-green-400 font-medium">
+              Engine Ready!
+            </p>
+            <p className="text-green-600 dark:text-green-400 text-sm">
+              DataPrism Core is loaded and ready to use
+            </p>
           </div>
         )}
 
@@ -74,7 +87,7 @@ export default function HomePage() {
             Start Exploring Data
             <ArrowRight className="h-5 w-5 ml-2" />
           </Link>
-          
+
           <Link
             to="/about"
             className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
@@ -94,7 +107,7 @@ export default function HomePage() {
           to="/explorer"
           ctaText="Explore Data"
         />
-        
+
         <FeatureCard
           icon={BarChart3}
           title="Interactive Visualizations"
@@ -102,7 +115,7 @@ export default function HomePage() {
           to="/visualizations"
           ctaText="View Charts"
         />
-        
+
         <FeatureCard
           icon={Code2}
           title="SQL Query Lab"
@@ -110,7 +123,7 @@ export default function HomePage() {
           to="/query-lab"
           ctaText="Open Lab"
         />
-        
+
         <FeatureCard
           icon={Zap}
           title="Plugin System"
@@ -118,7 +131,7 @@ export default function HomePage() {
           to="/plugins"
           ctaText="Try Plugins"
         />
-        
+
         <FeatureCard
           icon={Shield}
           title="Performance Monitoring"
@@ -126,7 +139,7 @@ export default function HomePage() {
           to="/performance"
           ctaText="View Metrics"
         />
-        
+
         <FeatureCard
           icon={Globe}
           title="Browser-Native"
@@ -141,7 +154,7 @@ export default function HomePage() {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
           Quick Start Demo
         </h2>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <QuickStartStep
             step={1}
@@ -149,14 +162,14 @@ export default function HomePage() {
             description="Upload CSV files or use our sample datasets to get started immediately."
             to="/explorer"
           />
-          
+
           <QuickStartStep
             step={2}
             title="Analyze & Query"
             description="Use SQL or our visual query builder to explore patterns and insights."
             to="/query-lab"
           />
-          
+
           <QuickStartStep
             step={3}
             title="Visualize Results"
@@ -171,26 +184,22 @@ export default function HomePage() {
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
           Powered by Modern Web Technologies
         </h2>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <TechCard
             name="WebAssembly"
             description="Near-native performance"
             logo="🚀"
           />
-          
+
           <TechCard
             name="DuckDB"
             description="Columnar analytics engine"
             logo="🦆"
           />
-          
-          <TechCard
-            name="React"
-            description="Modern UI framework"
-            logo="⚛️"
-          />
-          
+
+          <TechCard name="React" description="Modern UI framework" logo="⚛️" />
+
           <TechCard
             name="TypeScript"
             description="Type-safe development"
@@ -204,7 +213,7 @@ export default function HomePage() {
         <p className="mb-4">
           DataPrism Core Demo - Showcasing browser-based analytics capabilities
         </p>
-        
+
         <div className="flex justify-center space-x-6">
           <a
             href="https://github.com/dataprism/core"
@@ -215,7 +224,7 @@ export default function HomePage() {
             <Github className="h-5 w-5 mr-2" />
             GitHub
           </a>
-          
+
           <Link
             to="/about"
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -236,7 +245,13 @@ interface FeatureCardProps {
   ctaText: string;
 }
 
-function FeatureCard({ icon: Icon, title, description, to, ctaText }: FeatureCardProps) {
+function FeatureCard({
+  icon: Icon,
+  title,
+  description,
+  to,
+  ctaText,
+}: FeatureCardProps) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-center mb-4">
@@ -247,11 +262,9 @@ function FeatureCard({ icon: Icon, title, description, to, ctaText }: FeatureCar
           {title}
         </h3>
       </div>
-      
-      <p className="text-gray-600 dark:text-gray-300 mb-4">
-        {description}
-      </p>
-      
+
+      <p className="text-gray-600 dark:text-gray-300 mb-4">{description}</p>
+
       <Link
         to={to}
         className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
@@ -278,15 +291,13 @@ function QuickStartStep({ step, title, description, to }: QuickStartStepProps) {
           {step}
         </div>
       </div>
-      
+
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
         {title}
       </h3>
-      
-      <p className="text-gray-600 dark:text-gray-300 mb-4">
-        {description}
-      </p>
-      
+
+      <p className="text-gray-600 dark:text-gray-300 mb-4">{description}</p>
+
       <Link
         to={to}
         className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"

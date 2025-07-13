@@ -1,23 +1,23 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  BarChart3, 
-  Database, 
-  LineChart, 
-  Terminal, 
-  Puzzle, 
-  Zap, 
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  BarChart3,
+  Database,
+  LineChart,
+  Terminal,
+  Puzzle,
+  Zap,
   Info,
   Menu,
   X,
   Sun,
   Moon,
-  Monitor
-} from 'lucide-react';
+  Monitor,
+} from "lucide-react";
 
-import { useTheme } from '../contexts/ThemeContext';
-import { useDataPrism } from '../contexts/DataPrismContext';
-import { cn } from '../utils/cn';
+import { useTheme } from "../contexts/ThemeContext";
+import { useDataPrism } from "../contexts/DataPrismContext";
+import { cn } from "../utils/cn";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,19 +30,19 @@ export function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const navigation = [
-    { name: 'Home', href: '/', icon: BarChart3 },
-    { name: 'Data Explorer', href: '/explorer', icon: Database },
-    { name: 'Visualizations', href: '/visualizations', icon: LineChart },
-    { name: 'Query Lab', href: '/query-lab', icon: Terminal },
-    { name: 'Plugins Demo', href: '/plugins', icon: Puzzle },
-    { name: 'Performance', href: '/performance', icon: Zap },
-    { name: 'About', href: '/about', icon: Info },
+    { name: "Home", href: "/", icon: BarChart3 },
+    { name: "Data Explorer", href: "/explorer", icon: Database },
+    { name: "Visualizations", href: "/visualizations", icon: LineChart },
+    { name: "Query Lab", href: "/query-lab", icon: Terminal },
+    { name: "Plugins Demo", href: "/plugins", icon: Puzzle },
+    { name: "Performance", href: "/performance", icon: Zap },
+    { name: "About", href: "/about", icon: Info },
   ];
 
   const themeIcons = {
     light: Sun,
     dark: Moon,
-    system: Monitor
+    system: Monitor,
   };
 
   const ThemeIcon = themeIcons[theme];
@@ -50,16 +50,23 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Mobile sidebar */}
-      <div className={cn(
-        "fixed inset-0 z-50 lg:hidden",
-        sidebarOpen ? "block" : "hidden"
-      )}>
-        <div className="fixed inset-0 bg-black/20" onClick={() => setSidebarOpen(false)} />
+      <div
+        className={cn(
+          "fixed inset-0 z-50 lg:hidden",
+          sidebarOpen ? "block" : "hidden",
+        )}
+      >
+        <div
+          className="fixed inset-0 bg-black/20"
+          onClick={() => setSidebarOpen(false)}
+        />
         <div className="fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-xl">
           <div className="flex h-16 items-center justify-between px-4">
             <Link to="/" className="flex items-center space-x-2">
               <BarChart3 className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">DataPrism</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">
+                DataPrism
+              </span>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -68,7 +75,10 @@ export function Layout({ children }: LayoutProps) {
               <X className="h-6 w-6" />
             </button>
           </div>
-          <MobileNavigation navigation={navigation} currentPath={location.pathname} />
+          <MobileNavigation
+            navigation={navigation}
+            currentPath={location.pathname}
+          />
         </div>
       </div>
 
@@ -78,10 +88,15 @@ export function Layout({ children }: LayoutProps) {
           <div className="flex h-16 shrink-0 items-center">
             <Link to="/" className="flex items-center space-x-2">
               <BarChart3 className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">DataPrism</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">
+                DataPrism
+              </span>
             </Link>
           </div>
-          <DesktopNavigation navigation={navigation} currentPath={location.pathname} />
+          <DesktopNavigation
+            navigation={navigation}
+            currentPath={location.pathname}
+          />
         </div>
       </div>
 
@@ -99,16 +114,20 @@ export function Layout({ children }: LayoutProps) {
 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1 items-center">
-              <StatusIndicator 
-                isInitialized={isInitialized} 
-                error={initializationError} 
+              <StatusIndicator
+                isInitialized={isInitialized}
+                error={initializationError}
               />
             </div>
             <div className="flex items-center gap-x-4 lg:gap-x-6">
               {/* Theme toggle */}
               <button
                 onClick={() => {
-                  const themes: Array<typeof theme> = ['light', 'dark', 'system'];
+                  const themes: Array<typeof theme> = [
+                    "light",
+                    "dark",
+                    "system",
+                  ];
                   const currentIndex = themes.indexOf(theme);
                   const nextIndex = (currentIndex + 1) % themes.length;
                   setTheme(themes[nextIndex]);
@@ -118,7 +137,7 @@ export function Layout({ children }: LayoutProps) {
               >
                 <ThemeIcon className="h-5 w-5" />
               </button>
-              
+
               {/* Version info */}
               <div className="hidden sm:block text-sm text-gray-500 dark:text-gray-400">
                 v1.0.0
@@ -129,9 +148,7 @@ export function Layout({ children }: LayoutProps) {
 
         {/* Page content */}
         <main className="py-10">
-          <div className="px-4 sm:px-6 lg:px-8">
-            {children}
-          </div>
+          <div className="px-4 sm:px-6 lg:px-8">{children}</div>
         </main>
       </div>
     </div>
@@ -156,24 +173,24 @@ function DesktopNavigation({ navigation, currentPath }: NavigationProps) {
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = currentPath === item.href;
-              
+
               return (
                 <li key={item.name}>
                   <Link
                     to={item.href}
                     className={cn(
                       isActive
-                        ? 'bg-gray-100 text-blue-600 dark:bg-gray-700 dark:text-blue-400'
-                        : 'text-gray-700 hover:text-blue-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-700',
-                      'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-medium'
+                        ? "bg-gray-100 text-blue-600 dark:bg-gray-700 dark:text-blue-400"
+                        : "text-gray-700 hover:text-blue-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-700",
+                      "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-medium",
                     )}
                   >
                     <Icon
                       className={cn(
-                        isActive 
-                          ? 'text-blue-600 dark:text-blue-400'
-                          : 'text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400',
-                        'h-6 w-6 shrink-0'
+                        isActive
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400",
+                        "h-6 w-6 shrink-0",
                       )}
                     />
                     {item.name}
@@ -195,24 +212,24 @@ function MobileNavigation({ navigation, currentPath }: NavigationProps) {
         {navigation.map((item) => {
           const Icon = item.icon;
           const isActive = currentPath === item.href;
-          
+
           return (
             <li key={item.name}>
               <Link
                 to={item.href}
                 className={cn(
                   isActive
-                    ? 'bg-gray-100 text-blue-600 dark:bg-gray-700 dark:text-blue-400'
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-700',
-                  'group flex gap-x-3 rounded-md p-2 text-base font-medium'
+                    ? "bg-gray-100 text-blue-600 dark:bg-gray-700 dark:text-blue-400"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-700",
+                  "group flex gap-x-3 rounded-md p-2 text-base font-medium",
                 )}
               >
                 <Icon
                   className={cn(
-                    isActive 
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400',
-                    'h-6 w-6 shrink-0'
+                    isActive
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400",
+                    "h-6 w-6 shrink-0",
                   )}
                 />
                 {item.name}

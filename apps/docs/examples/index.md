@@ -9,15 +9,15 @@ Learn DataPrism Core through practical examples. Each example includes complete,
 The simplest possible DataPrism Core application:
 
 ```typescript
-import { DataPrismEngine } from '@dataprism/core';
+import { DataPrismEngine } from "@dataprism/core";
 
 async function helloWorld() {
   // Initialize the engine
   const engine = new DataPrismEngine();
   await engine.initialize();
-  
+
   // Execute a simple query
-  const result = await engine.query('SELECT 1 as hello, 2 as world');
+  const result = await engine.query("SELECT 1 as hello, 2 as world");
   console.log(result.data); // [{ hello: 1, world: 2 }]
 }
 
@@ -32,11 +32,11 @@ Load data from various sources:
 
 ```typescript [Array of Objects]
 const salesData = [
-  { date: '2024-01-01', product: 'Widget A', revenue: 1500 },
-  { date: '2024-01-02', product: 'Widget B', revenue: 2300 }
+  { date: "2024-01-01", product: "Widget A", revenue: 1500 },
+  { date: "2024-01-02", product: "Widget B", revenue: 2300 },
 ];
 
-await engine.loadData(salesData, 'sales');
+await engine.loadData(salesData, "sales");
 ```
 
 ```typescript [CSV String]
@@ -44,15 +44,15 @@ const csvData = `date,product,revenue
 2024-01-01,Widget A,1500
 2024-01-02,Widget B,2300`;
 
-await engine.loadCSV(csvData, 'sales');
+await engine.loadCSV(csvData, "sales");
 ```
 
 ```typescript [File Upload]
-const fileInput = document.querySelector('#file-input');
-fileInput.addEventListener('change', async (event) => {
+const fileInput = document.querySelector("#file-input");
+fileInput.addEventListener("change", async (event) => {
   const file = event.target.files[0];
   const csvText = await file.text();
-  await engine.loadCSV(csvText, 'uploaded_data');
+  await engine.loadCSV(csvText, "uploaded_data");
 });
 ```
 
@@ -103,8 +103,8 @@ Create a custom hook for DataPrism integration:
 
 ```typescript
 // useDataPrism.ts
-import { useState, useEffect, useCallback } from 'react';
-import { DataPrismEngine } from '@dataprism/core';
+import { useState, useEffect, useCallback } from "react";
+import { DataPrismEngine } from "@dataprism/core";
 
 export function useDataPrism() {
   const [engine, setEngine] = useState<DataPrismEngine | null>(null);
@@ -123,19 +123,25 @@ export function useDataPrism() {
         setIsLoading(false);
       }
     }
-    
+
     initEngine();
   }, []);
 
-  const query = useCallback(async (sql: string) => {
-    if (!engine) throw new Error('Engine not initialized');
-    return await engine.query(sql);
-  }, [engine]);
+  const query = useCallback(
+    async (sql: string) => {
+      if (!engine) throw new Error("Engine not initialized");
+      return await engine.query(sql);
+    },
+    [engine],
+  );
 
-  const loadData = useCallback(async (data: any[], tableName: string) => {
-    if (!engine) throw new Error('Engine not initialized');
-    return await engine.loadData(data, tableName);
-  }, [engine]);
+  const loadData = useCallback(
+    async (data: any[], tableName: string) => {
+      if (!engine) throw new Error("Engine not initialized");
+      return await engine.loadData(data, tableName);
+    },
+    [engine],
+  );
 
   return { engine, isLoading, error, query, loadData };
 }
@@ -143,8 +149,8 @@ export function useDataPrism() {
 
 ```tsx
 // App.tsx
-import React, { useState } from 'react';
-import { useDataPrism } from './useDataPrism';
+import React, { useState } from "react";
+import { useDataPrism } from "./useDataPrism";
 
 function App() {
   const { engine, isLoading, error, query, loadData } = useDataPrism();
@@ -152,14 +158,19 @@ function App() {
 
   const runExample = async () => {
     // Load sample data
-    await loadData([
-      { name: 'Alice', age: 25, city: 'New York' },
-      { name: 'Bob', age: 30, city: 'London' },
-      { name: 'Charlie', age: 35, city: 'Tokyo' }
-    ], 'users');
+    await loadData(
+      [
+        { name: "Alice", age: 25, city: "New York" },
+        { name: "Bob", age: 30, city: "London" },
+        { name: "Charlie", age: 35, city: "Tokyo" },
+      ],
+      "users",
+    );
 
     // Query the data
-    const result = await query('SELECT city, COUNT(*) as count FROM users GROUP BY city');
+    const result = await query(
+      "SELECT city, COUNT(*) as count FROM users GROUP BY city",
+    );
     setResults(result.data);
   };
 
@@ -170,9 +181,7 @@ function App() {
     <div>
       <h1>DataPrism React Example</h1>
       <button onClick={runExample}>Run Example</button>
-      {results && (
-        <pre>{JSON.stringify(results, null, 2)}</pre>
-      )}
+      {results && <pre>{JSON.stringify(results, null, 2)}</pre>}
     </div>
   );
 }
@@ -211,8 +220,8 @@ Vue 3 integration with composition API:
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { DataPrismEngine } from '@dataprism/core';
+import { ref, onMounted, computed } from "vue";
+import { DataPrismEngine } from "@dataprism/core";
 
 const engine = ref<DataPrismEngine | null>(null);
 const isLoading = ref(true);
@@ -228,14 +237,17 @@ onMounted(async () => {
   try {
     const newEngine = new DataPrismEngine();
     await newEngine.initialize();
-    
+
     // Load sample data
-    await newEngine.loadData([
-      { product: 'Widget A', sales: 100, region: 'North' },
-      { product: 'Widget B', sales: 150, region: 'South' },
-      { product: 'Widget C', sales: 200, region: 'East' }
-    ], 'products');
-    
+    await newEngine.loadData(
+      [
+        { product: "Widget A", sales: 100, region: "North" },
+        { product: "Widget B", sales: 150, region: "South" },
+        { product: "Widget C", sales: 200, region: "East" },
+      ],
+      "products",
+    );
+
     engine.value = newEngine;
   } catch (err) {
     error.value = err as Error;
@@ -246,14 +258,14 @@ onMounted(async () => {
 
 const runQuery = async () => {
   if (!engine.value) return;
-  
+
   const result = await engine.value.query(`
     SELECT region, SUM(sales) as total_sales 
     FROM products 
     GROUP BY region 
     ORDER BY total_sales DESC
   `);
-  
+
   results.value = result.data;
 };
 </script>
@@ -266,85 +278,97 @@ const runQuery = async () => {
 Create interactive charts with Chart.js:
 
 ```typescript
-import { Chart } from 'chart.js/auto';
-import { DataPrismEngine } from '@dataprism/core';
+import { Chart } from "chart.js/auto";
+import { DataPrismEngine } from "@dataprism/core";
 
 class DataPrismCharts {
   constructor(private engine: DataPrismEngine) {}
 
-  async createBarChart(containerId: string, sql: string, options: {
-    labelColumn: string;
-    valueColumn: string;
-    title?: string;
-  }) {
+  async createBarChart(
+    containerId: string,
+    sql: string,
+    options: {
+      labelColumn: string;
+      valueColumn: string;
+      title?: string;
+    },
+  ) {
     // Execute query
     const result = await this.engine.query(sql);
-    
+
     // Prepare chart data
     const chartData = {
-      labels: result.data.map(row => row[options.labelColumn]),
-      datasets: [{
-        label: options.valueColumn,
-        data: result.data.map(row => row[options.valueColumn]),
-        backgroundColor: 'rgba(54, 162, 235, 0.8)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1
-      }]
+      labels: result.data.map((row) => row[options.labelColumn]),
+      datasets: [
+        {
+          label: options.valueColumn,
+          data: result.data.map((row) => row[options.valueColumn]),
+          backgroundColor: "rgba(54, 162, 235, 0.8)",
+          borderColor: "rgba(54, 162, 235, 1)",
+          borderWidth: 1,
+        },
+      ],
     };
 
     // Create chart
     const ctx = document.getElementById(containerId) as HTMLCanvasElement;
     return new Chart(ctx, {
-      type: 'bar',
+      type: "bar",
       data: chartData,
       options: {
         responsive: true,
         plugins: {
           title: {
             display: !!options.title,
-            text: options.title
-          }
-        }
-      }
+            text: options.title,
+          },
+        },
+      },
     });
   }
 
-  async createLineChart(containerId: string, sql: string, options: {
-    xColumn: string;
-    yColumn: string;
-    title?: string;
-  }) {
+  async createLineChart(
+    containerId: string,
+    sql: string,
+    options: {
+      xColumn: string;
+      yColumn: string;
+      title?: string;
+    },
+  ) {
     const result = await this.engine.query(sql);
-    
+
     const chartData = {
-      labels: result.data.map(row => row[options.xColumn]),
-      datasets: [{
-        label: options.yColumn,
-        data: result.data.map(row => row[options.yColumn]),
-        borderColor: 'rgba(75, 192, 192, 1)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        tension: 0.1
-      }]
+      labels: result.data.map((row) => row[options.xColumn]),
+      datasets: [
+        {
+          label: options.yColumn,
+          data: result.data.map((row) => row[options.yColumn]),
+          borderColor: "rgba(75, 192, 192, 1)",
+          backgroundColor: "rgba(75, 192, 192, 0.2)",
+          tension: 0.1,
+        },
+      ],
     };
 
     const ctx = document.getElementById(containerId) as HTMLCanvasElement;
     return new Chart(ctx, {
-      type: 'line',
+      type: "line",
       data: chartData,
       options: {
         responsive: true,
         plugins: {
           title: {
             display: !!options.title,
-            text: options.title
-          }
+            text: options.title,
+          },
         },
         scales: {
           y: {
-            beginAtZero: true
-          }
-        }
-      }
+            beginAtZero: true,
+          },
+        },
+      },
     });
   }
 }
@@ -353,34 +377,42 @@ class DataPrismCharts {
 async function createDashboard() {
   const engine = new DataPrismEngine();
   await engine.initialize();
-  
+
   // Load sample data
-  await engine.loadData(salesData, 'sales');
-  
+  await engine.loadData(salesData, "sales");
+
   const charts = new DataPrismCharts(engine);
-  
+
   // Create revenue by region chart
-  await charts.createBarChart('revenue-chart', `
+  await charts.createBarChart(
+    "revenue-chart",
+    `
     SELECT region, SUM(revenue) as total_revenue 
     FROM sales 
     GROUP BY region
-  `, {
-    labelColumn: 'region',
-    valueColumn: 'total_revenue',
-    title: 'Revenue by Region'
-  });
-  
+  `,
+    {
+      labelColumn: "region",
+      valueColumn: "total_revenue",
+      title: "Revenue by Region",
+    },
+  );
+
   // Create sales trend chart
-  await charts.createLineChart('trend-chart', `
+  await charts.createLineChart(
+    "trend-chart",
+    `
     SELECT date, SUM(revenue) as daily_revenue 
     FROM sales 
     GROUP BY date 
     ORDER BY date
-  `, {
-    xColumn: 'date',
-    yColumn: 'daily_revenue',
-    title: 'Daily Sales Trend'
-  });
+  `,
+    {
+      xColumn: "date",
+      yColumn: "daily_revenue",
+      title: "Daily Sales Trend",
+    },
+  );
 }
 ```
 
@@ -389,78 +421,91 @@ async function createDashboard() {
 For more advanced visualizations with D3.js:
 
 ```typescript
-import * as d3 from 'd3';
-import { DataPrismEngine } from '@dataprism/core';
+import * as d3 from "d3";
+import { DataPrismEngine } from "@dataprism/core";
 
 class D3DataPrismViz {
   constructor(private engine: DataPrismEngine) {}
 
-  async createScatterPlot(containerId: string, sql: string, options: {
-    xColumn: string;
-    yColumn: string;
-    colorColumn?: string;
-    width?: number;
-    height?: number;
-  }) {
+  async createScatterPlot(
+    containerId: string,
+    sql: string,
+    options: {
+      xColumn: string;
+      yColumn: string;
+      colorColumn?: string;
+      width?: number;
+      height?: number;
+    },
+  ) {
     const result = await this.engine.query(sql);
     const data = result.data;
-    
+
     const width = options.width || 800;
     const height = options.height || 600;
     const margin = { top: 20, right: 20, bottom: 40, left: 40 };
-    
+
     // Create SVG
-    const svg = d3.select(`#${containerId}`)
-      .append('svg')
-      .attr('width', width)
-      .attr('height', height);
-    
+    const svg = d3
+      .select(`#${containerId}`)
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
     // Scales
-    const xScale = d3.scaleLinear()
-      .domain(d3.extent(data, d => d[options.xColumn]))
+    const xScale = d3
+      .scaleLinear()
+      .domain(d3.extent(data, (d) => d[options.xColumn]))
       .range([margin.left, width - margin.right]);
-    
-    const yScale = d3.scaleLinear()
-      .domain(d3.extent(data, d => d[options.yColumn]))
+
+    const yScale = d3
+      .scaleLinear()
+      .domain(d3.extent(data, (d) => d[options.yColumn]))
       .range([height - margin.bottom, margin.top]);
-    
-    const colorScale = options.colorColumn 
-      ? d3.scaleOrdinal(d3.schemeCategory10)
-          .domain([...new Set(data.map(d => d[options.colorColumn]))])
-      : () => 'steelblue';
-    
+
+    const colorScale = options.colorColumn
+      ? d3
+          .scaleOrdinal(d3.schemeCategory10)
+          .domain([...new Set(data.map((d) => d[options.colorColumn]))])
+      : () => "steelblue";
+
     // Add circles
-    svg.selectAll('circle')
+    svg
+      .selectAll("circle")
       .data(data)
       .enter()
-      .append('circle')
-      .attr('cx', d => xScale(d[options.xColumn]))
-      .attr('cy', d => yScale(d[options.yColumn]))
-      .attr('r', 5)
-      .attr('fill', d => colorScale(d[options.colorColumn] || 'default'))
-      .attr('opacity', 0.7);
-    
+      .append("circle")
+      .attr("cx", (d) => xScale(d[options.xColumn]))
+      .attr("cy", (d) => yScale(d[options.yColumn]))
+      .attr("r", 5)
+      .attr("fill", (d) => colorScale(d[options.colorColumn] || "default"))
+      .attr("opacity", 0.7);
+
     // Add axes
-    svg.append('g')
-      .attr('transform', `translate(0,${height - margin.bottom})`)
+    svg
+      .append("g")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(d3.axisBottom(xScale));
-    
-    svg.append('g')
-      .attr('transform', `translate(${margin.left},0)`)
+
+    svg
+      .append("g")
+      .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(yScale));
-    
+
     // Add axis labels
-    svg.append('text')
-      .attr('x', width / 2)
-      .attr('y', height - 5)
-      .style('text-anchor', 'middle')
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", height - 5)
+      .style("text-anchor", "middle")
       .text(options.xColumn);
-    
-    svg.append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', 15)
-      .attr('x', -(height / 2))
-      .style('text-anchor', 'middle')
+
+    svg
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 15)
+      .attr("x", -(height / 2))
+      .style("text-anchor", "middle")
       .text(options.yColumn);
   }
 }
@@ -475,26 +520,26 @@ Handle millions of rows efficiently:
 ```typescript
 async function processLargeDataset() {
   const engine = new DataPrismEngine({
-    memoryLimit: '2GB',
-    enableOptimizations: true
+    memoryLimit: "2GB",
+    enableOptimizations: true,
   });
   await engine.initialize();
-  
+
   // Generate large dataset (1M rows)
   const largeDataset = Array.from({ length: 1000000 }, (_, i) => ({
     id: i + 1,
     timestamp: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
     user_id: Math.floor(Math.random() * 10000),
-    event_type: ['click', 'view', 'purchase'][Math.floor(Math.random() * 3)],
-    value: Math.random() * 100
+    event_type: ["click", "view", "purchase"][Math.floor(Math.random() * 3)],
+    value: Math.random() * 100,
   }));
-  
-  console.time('Data Loading');
-  await engine.loadData(largeDataset, 'events');
-  console.timeEnd('Data Loading');
-  
+
+  console.time("Data Loading");
+  await engine.loadData(largeDataset, "events");
+  console.timeEnd("Data Loading");
+
   // Complex aggregation query
-  console.time('Complex Query');
+  console.time("Complex Query");
   const result = await engine.query(`
     SELECT 
       event_type,
@@ -508,8 +553,8 @@ async function processLargeDataset() {
     GROUP BY event_type, DATE_TRUNC('day', timestamp)
     ORDER BY day, event_type
   `);
-  console.timeEnd('Complex Query');
-  
+  console.timeEnd("Complex Query");
+
   console.log(`Processed ${result.data.length} rows`);
   return result;
 }
@@ -523,16 +568,16 @@ Process data in batches for memory efficiency:
 async function batchProcessor(data: any[], batchSize = 10000) {
   const engine = new DataPrismEngine();
   await engine.initialize();
-  
+
   const results = [];
-  
+
   for (let i = 0; i < data.length; i += batchSize) {
     const batch = data.slice(i, i + batchSize);
     const tableName = `batch_${Math.floor(i / batchSize)}`;
-    
+
     // Load batch
     await engine.loadData(batch, tableName);
-    
+
     // Process batch
     const batchResult = await engine.query(`
       SELECT 
@@ -542,18 +587,18 @@ async function batchProcessor(data: any[], batchSize = 10000) {
         MAX(timestamp) as max_time
       FROM ${tableName}
     `);
-    
+
     results.push({
       batch: Math.floor(i / batchSize),
-      ...batchResult.data[0]
+      ...batchResult.data[0],
     });
-    
+
     // Clean up to save memory
     await engine.dropTable(tableName);
-    
+
     console.log(`Processed batch ${Math.floor(i / batchSize) + 1}`);
   }
-  
+
   return results;
 }
 ```
@@ -568,15 +613,15 @@ Simulate real-time data processing:
 class RealTimeAnalytics {
   private engine: DataPrismEngine;
   private updateInterval: number;
-  
+
   constructor(updateIntervalMs = 1000) {
     this.updateInterval = updateIntervalMs;
   }
-  
+
   async initialize() {
     this.engine = new DataPrismEngine();
     await this.engine.initialize();
-    
+
     // Create initial table
     await this.engine.query(`
       CREATE TABLE live_events (
@@ -587,25 +632,27 @@ class RealTimeAnalytics {
       )
     `);
   }
-  
+
   startStreaming(onUpdate: (metrics: any) => void) {
     setInterval(async () => {
       // Generate new events
       const newEvents = Array.from({ length: 100 }, () => ({
         timestamp: new Date(),
-        event_type: ['click', 'view', 'purchase'][Math.floor(Math.random() * 3)],
+        event_type: ["click", "view", "purchase"][
+          Math.floor(Math.random() * 3)
+        ],
         user_id: Math.floor(Math.random() * 1000),
-        value: Math.random() * 100
+        value: Math.random() * 100,
       }));
-      
+
       // Insert new events
-      await this.engine.loadData(newEvents, 'temp_events');
+      await this.engine.loadData(newEvents, "temp_events");
       await this.engine.query(`
         INSERT INTO live_events 
         SELECT * FROM temp_events
       `);
-      await this.engine.dropTable('temp_events');
-      
+      await this.engine.dropTable("temp_events");
+
       // Calculate real-time metrics
       const metrics = await this.engine.query(`
         SELECT 
@@ -616,15 +663,14 @@ class RealTimeAnalytics {
         WHERE timestamp >= CURRENT_TIMESTAMP - INTERVAL '1 minute'
         GROUP BY event_type
       `);
-      
+
       onUpdate(metrics.data);
-      
+
       // Clean old data (keep last hour)
       await this.engine.query(`
         DELETE FROM live_events 
         WHERE timestamp < CURRENT_TIMESTAMP - INTERVAL '1 hour'
       `);
-      
     }, this.updateInterval);
   }
 }
@@ -634,7 +680,7 @@ const analytics = new RealTimeAnalytics(5000); // Update every 5 seconds
 await analytics.initialize();
 
 analytics.startStreaming((metrics) => {
-  console.log('Real-time metrics:', metrics);
+  console.log("Real-time metrics:", metrics);
   // Update your dashboard here
 });
 ```
@@ -647,27 +693,60 @@ Complex data relationships:
 async function setupMultiTableExample() {
   const engine = new DataPrismEngine();
   await engine.initialize();
-  
+
   // Load related tables
-  await engine.loadData([
-    { customer_id: 1, name: 'Alice', segment: 'Premium' },
-    { customer_id: 2, name: 'Bob', segment: 'Standard' },
-    { customer_id: 3, name: 'Charlie', segment: 'Premium' }
-  ], 'customers');
-  
-  await engine.loadData([
-    { order_id: 101, customer_id: 1, product: 'Widget A', amount: 100, date: '2024-01-01' },
-    { order_id: 102, customer_id: 2, product: 'Widget B', amount: 200, date: '2024-01-02' },
-    { order_id: 103, customer_id: 1, product: 'Widget C', amount: 150, date: '2024-01-03' },
-    { order_id: 104, customer_id: 3, product: 'Widget A', amount: 300, date: '2024-01-04' }
-  ], 'orders');
-  
-  await engine.loadData([
-    { product: 'Widget A', category: 'Electronics', cost: 50 },
-    { product: 'Widget B', category: 'Home', cost: 80 },
-    { product: 'Widget C', category: 'Electronics', cost: 70 }
-  ], 'products');
-  
+  await engine.loadData(
+    [
+      { customer_id: 1, name: "Alice", segment: "Premium" },
+      { customer_id: 2, name: "Bob", segment: "Standard" },
+      { customer_id: 3, name: "Charlie", segment: "Premium" },
+    ],
+    "customers",
+  );
+
+  await engine.loadData(
+    [
+      {
+        order_id: 101,
+        customer_id: 1,
+        product: "Widget A",
+        amount: 100,
+        date: "2024-01-01",
+      },
+      {
+        order_id: 102,
+        customer_id: 2,
+        product: "Widget B",
+        amount: 200,
+        date: "2024-01-02",
+      },
+      {
+        order_id: 103,
+        customer_id: 1,
+        product: "Widget C",
+        amount: 150,
+        date: "2024-01-03",
+      },
+      {
+        order_id: 104,
+        customer_id: 3,
+        product: "Widget A",
+        amount: 300,
+        date: "2024-01-04",
+      },
+    ],
+    "orders",
+  );
+
+  await engine.loadData(
+    [
+      { product: "Widget A", category: "Electronics", cost: 50 },
+      { product: "Widget B", category: "Home", cost: 80 },
+      { product: "Widget C", category: "Electronics", cost: 70 },
+    ],
+    "products",
+  );
+
   // Complex join query
   const customerAnalysis = await engine.query(`
     SELECT 
@@ -684,9 +763,9 @@ async function setupMultiTableExample() {
     GROUP BY c.customer_id, c.name, c.segment
     ORDER BY total_spent DESC
   `);
-  
-  console.log('Customer Analysis:', customerAnalysis.data);
-  
+
+  console.log("Customer Analysis:", customerAnalysis.data);
+
   return customerAnalysis;
 }
 ```
@@ -696,7 +775,7 @@ async function setupMultiTableExample() {
 These examples provide a foundation for building with DataPrism Core. For more advanced use cases:
 
 - **[Plugin Development](/plugins/)** - Create custom functionality
-- **[Performance Optimization](/guide/performance)** - Handle large datasets efficiently  
+- **[Performance Optimization](/guide/performance)** - Handle large datasets efficiently
 - **[API Reference](/api/)** - Complete API documentation
 - **[GitHub Examples](https://github.com/dataprism/examples)** - Community examples
 

@@ -1,66 +1,103 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 interface LLMIntegrationProps {
   pluginSystem: any;
 }
 
-export const LLMIntegration: React.FC<LLMIntegrationProps> = ({ pluginSystem }) => {
+export const LLMIntegration: React.FC<LLMIntegrationProps> = ({
+  pluginSystem,
+}) => {
   const [providers, setProviders] = useState<any[]>([]);
-  const [selectedProvider, setSelectedProvider] = useState('openai');
-  const [prompt, setPrompt] = useState('Explain the benefits of data visualization in business analytics.');
+  const [selectedProvider, setSelectedProvider] = useState("openai");
+  const [prompt, setPrompt] = useState(
+    "Explain the benefits of data visualization in business analytics.",
+  );
   const [completion, setCompletion] = useState<any>(null);
   const [analysis, setAnalysis] = useState<any>(null);
-  const [query, setQuery] = useState('What is the average salary by city?');
+  const [query, setQuery] = useState("What is the average salary by city?");
   const [queryResult, setQueryResult] = useState<any>(null);
   const [loading, setLoading] = useState<string | null>(null);
 
   // Sample dataset for analysis and queries
   const sampleDataset = {
-    id: 'employee_data',
-    name: 'Employee Data',
+    id: "employee_data",
+    name: "Employee Data",
     data: [
-      { name: 'John Doe', age: 30, city: 'New York', salary: 55000, department: 'Engineering' },
-      { name: 'Jane Smith', age: 25, city: 'Los Angeles', salary: 66000, department: 'Design' },
-      { name: 'Bob Johnson', age: 35, city: 'Chicago', salary: 60500, department: 'Engineering' },
-      { name: 'Alice Brown', age: 28, city: 'Houston', salary: 57200, department: 'Marketing' },
-      { name: 'Charlie Wilson', age: 32, city: 'New York', salary: 72000, department: 'Engineering' }
+      {
+        name: "John Doe",
+        age: 30,
+        city: "New York",
+        salary: 55000,
+        department: "Engineering",
+      },
+      {
+        name: "Jane Smith",
+        age: 25,
+        city: "Los Angeles",
+        salary: 66000,
+        department: "Design",
+      },
+      {
+        name: "Bob Johnson",
+        age: 35,
+        city: "Chicago",
+        salary: 60500,
+        department: "Engineering",
+      },
+      {
+        name: "Alice Brown",
+        age: 28,
+        city: "Houston",
+        salary: 57200,
+        department: "Marketing",
+      },
+      {
+        name: "Charlie Wilson",
+        age: 32,
+        city: "New York",
+        salary: 72000,
+        department: "Engineering",
+      },
     ],
-    metadata: { source: 'hr_system', createdAt: new Date().toISOString() }
+    metadata: { source: "hr_system", createdAt: new Date().toISOString() },
   };
 
   useEffect(() => {
     const loadProviders = async () => {
       if (!pluginSystem) return;
-      
+
       try {
-        const providerList = await pluginSystem.getPluginManager().executePlugin('llm-integration', 'providers');
+        const providerList = await pluginSystem
+          .getPluginManager()
+          .executePlugin("llm-integration", "providers");
         setProviders(providerList);
       } catch (error) {
-        console.error('Failed to load providers:', error);
+        console.error("Failed to load providers:", error);
       }
     };
 
     loadProviders();
   }, [pluginSystem]);
 
-
   const handleGenerateCompletion = async () => {
     if (!pluginSystem || !prompt.trim()) return;
-    
-    setLoading('completion');
+
+    setLoading("completion");
     try {
-      const result = await pluginSystem.getPluginManager().executePlugin('llm-integration', 'completion', {
-        prompt,
-        options: {
-          provider: selectedProvider,
-          maxTokens: 150,
-          temperature: 0.7
-        }
-      });
+      const result = await pluginSystem
+        .getPluginManager()
+        .executePlugin("llm-integration", "completion", {
+          prompt,
+          options: {
+            provider: selectedProvider,
+            maxTokens: 150,
+            temperature: 0.7,
+          },
+        });
       setCompletion(result);
     } catch (error) {
-      console.error('Completion failed:', error);
-      alert('Failed to generate completion');
+      console.error("Completion failed:", error);
+      alert("Failed to generate completion");
     } finally {
       setLoading(null);
     }
@@ -68,20 +105,22 @@ export const LLMIntegration: React.FC<LLMIntegrationProps> = ({ pluginSystem }) 
 
   const handleAnalyzeDataset = async () => {
     if (!pluginSystem) return;
-    
-    setLoading('analysis');
+
+    setLoading("analysis");
     try {
-      const result = await pluginSystem.getPluginManager().executePlugin('llm-integration', 'analyze', {
-        dataset: sampleDataset,
-        options: {
-          provider: selectedProvider,
-          focus: 'salary analysis and employee demographics'
-        }
-      });
+      const result = await pluginSystem
+        .getPluginManager()
+        .executePlugin("llm-integration", "analyze", {
+          dataset: sampleDataset,
+          options: {
+            provider: selectedProvider,
+            focus: "salary analysis and employee demographics",
+          },
+        });
       setAnalysis(result);
     } catch (error) {
-      console.error('Analysis failed:', error);
-      alert('Failed to analyze dataset');
+      console.error("Analysis failed:", error);
+      alert("Failed to analyze dataset");
     } finally {
       setLoading(null);
     }
@@ -89,20 +128,22 @@ export const LLMIntegration: React.FC<LLMIntegrationProps> = ({ pluginSystem }) 
 
   const handleProcessQuery = async () => {
     if (!pluginSystem || !query.trim()) return;
-    
-    setLoading('query');
+
+    setLoading("query");
     try {
-      const result = await pluginSystem.getPluginManager().executePlugin('llm-integration', 'query', {
-        query,
-        dataset: sampleDataset,
-        options: {
-          provider: selectedProvider
-        }
-      });
+      const result = await pluginSystem
+        .getPluginManager()
+        .executePlugin("llm-integration", "query", {
+          query,
+          dataset: sampleDataset,
+          options: {
+            provider: selectedProvider,
+          },
+        });
       setQueryResult(result);
     } catch (error) {
-      console.error('Query processing failed:', error);
-      alert('Failed to process query');
+      console.error("Query processing failed:", error);
+      alert("Failed to process query");
     } finally {
       setLoading(null);
     }
@@ -112,7 +153,10 @@ export const LLMIntegration: React.FC<LLMIntegrationProps> = ({ pluginSystem }) 
     <div>
       <div className="component-card">
         <h2>🤖 LLM Integration</h2>
-        <p>Leverage AI language models for data analysis and natural language processing.</p>
+        <p>
+          Leverage AI language models for data analysis and natural language
+          processing.
+        </p>
 
         <div className="form-group">
           <label htmlFor="provider-select">LLM Provider:</label>
@@ -121,9 +165,9 @@ export const LLMIntegration: React.FC<LLMIntegrationProps> = ({ pluginSystem }) 
             value={selectedProvider}
             onChange={(e) => setSelectedProvider(e.target.value)}
           >
-            {providers.map(provider => (
+            {providers.map((provider) => (
               <option key={provider.name} value={provider.name}>
-                {provider.name} ({provider.models?.join(', ')})
+                {provider.name} ({provider.models?.join(", ")})
               </option>
             ))}
           </select>
@@ -147,19 +191,34 @@ export const LLMIntegration: React.FC<LLMIntegrationProps> = ({ pluginSystem }) 
         <button
           className="btn btn-primary"
           onClick={handleGenerateCompletion}
-          disabled={loading === 'completion' || !prompt.trim()}
+          disabled={loading === "completion" || !prompt.trim()}
         >
-          {loading === 'completion' ? '⏳ Generating...' : '✨ Generate Completion'}
+          {loading === "completion"
+            ? "⏳ Generating..."
+            : "✨ Generate Completion"}
         </button>
 
         {completion && (
           <div className="result-container">
             <h4>📝 Completion Result:</h4>
-            <div style={{ background: 'white', padding: '1rem', borderRadius: '6px', border: '1px solid #e0e0e0' }}>
+            <div
+              style={{
+                background: "white",
+                padding: "1rem",
+                borderRadius: "6px",
+                border: "1px solid #e0e0e0",
+              }}
+            >
               <p>{completion.text}</p>
-              <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '1rem' }}>
-                <strong>Provider:</strong> {completion.provider} | 
-                <strong> Model:</strong> {completion.model} | 
+              <div
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#666",
+                  marginTop: "1rem",
+                }}
+              >
+                <strong>Provider:</strong> {completion.provider} |
+                <strong> Model:</strong> {completion.model} |
                 <strong> Tokens:</strong> {completion.tokens}
               </div>
             </div>
@@ -172,19 +231,34 @@ export const LLMIntegration: React.FC<LLMIntegrationProps> = ({ pluginSystem }) 
         <h3>📊 Dataset Analysis</h3>
         <div className="grid grid-2">
           <div>
-            <p>Analyze the sample employee dataset using AI to generate insights:</p>
+            <p>
+              Analyze the sample employee dataset using AI to generate insights:
+            </p>
             <button
               className="btn btn-success"
               onClick={handleAnalyzeDataset}
-              disabled={loading === 'analysis'}
+              disabled={loading === "analysis"}
             >
-              {loading === 'analysis' ? '⏳ Analyzing...' : '🔍 Analyze Dataset'}
+              {loading === "analysis"
+                ? "⏳ Analyzing..."
+                : "🔍 Analyze Dataset"}
             </button>
           </div>
           <div>
             <h4>Sample Data Preview:</h4>
-            <div style={{ fontSize: '0.8rem', background: '#f8f9fa', padding: '1rem', borderRadius: '6px', maxHeight: '200px', overflow: 'auto' }}>
-              <pre>{JSON.stringify(sampleDataset.data.slice(0, 3), null, 2)}...</pre>
+            <div
+              style={{
+                fontSize: "0.8rem",
+                background: "#f8f9fa",
+                padding: "1rem",
+                borderRadius: "6px",
+                maxHeight: "200px",
+                overflow: "auto",
+              }}
+            >
+              <pre>
+                {JSON.stringify(sampleDataset.data.slice(0, 3), null, 2)}...
+              </pre>
             </div>
           </div>
         </div>
@@ -204,14 +278,19 @@ export const LLMIntegration: React.FC<LLMIntegrationProps> = ({ pluginSystem }) 
               <div>
                 <h5>📋 Recommendations:</h5>
                 <ul>
-                  {analysis.recommendations.map((rec: string, index: number) => (
-                    <li key={index}>{rec}</li>
-                  ))}
+                  {analysis.recommendations.map(
+                    (rec: string, index: number) => (
+                      <li key={index}>{rec}</li>
+                    ),
+                  )}
                 </ul>
               </div>
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '1rem' }}>
-              <strong>Analyzed:</strong> {new Date(analysis.metadata.analyzedAt).toLocaleString()} | 
+            <div
+              style={{ fontSize: "0.85rem", color: "#666", marginTop: "1rem" }}
+            >
+              <strong>Analyzed:</strong>{" "}
+              {new Date(analysis.metadata.analyzedAt).toLocaleString()} |
               <strong> Provider:</strong> {analysis.metadata.provider}
             </div>
           </div>
@@ -235,24 +314,24 @@ export const LLMIntegration: React.FC<LLMIntegrationProps> = ({ pluginSystem }) 
         <button
           className="btn btn-primary"
           onClick={handleProcessQuery}
-          disabled={loading === 'query' || !query.trim()}
+          disabled={loading === "query" || !query.trim()}
         >
-          {loading === 'query' ? '⏳ Processing...' : '🔍 Process Query'}
+          {loading === "query" ? "⏳ Processing..." : "🔍 Process Query"}
         </button>
 
-        <div style={{ marginTop: '1rem' }}>
+        <div style={{ marginTop: "1rem" }}>
           <h4>Example queries you can try:</h4>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
             {[
-              'What is the average salary by department?',
-              'Who are the highest paid employees?',
-              'How many employees work in each city?',
-              'What is the age distribution?'
-            ].map(exampleQuery => (
+              "What is the average salary by department?",
+              "Who are the highest paid employees?",
+              "How many employees work in each city?",
+              "What is the age distribution?",
+            ].map((exampleQuery) => (
               <button
                 key={exampleQuery}
                 className="btn btn-secondary"
-                style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}
+                style={{ fontSize: "0.8rem", padding: "0.5rem 1rem" }}
                 onClick={() => setQuery(exampleQuery)}
               >
                 {exampleQuery}
@@ -268,19 +347,31 @@ export const LLMIntegration: React.FC<LLMIntegrationProps> = ({ pluginSystem }) 
               <div>
                 <h5>🎯 Interpretation:</h5>
                 <p>{queryResult.interpretation}</p>
-                
+
                 <h5>💡 Original Query:</h5>
-                <p style={{ fontStyle: 'italic' }}>"{queryResult.originalQuery}"</p>
+                <p style={{ fontStyle: "italic" }}>
+                  "{queryResult.originalQuery}"
+                </p>
               </div>
               <div>
                 <h5>🗄️ Suggested SQL:</h5>
-                <div style={{ background: 'white', padding: '1rem', borderRadius: '6px', border: '1px solid #e0e0e0' }}>
-                  <code>{queryResult.suggestedSQL || 'No SQL generated'}</code>
+                <div
+                  style={{
+                    background: "white",
+                    padding: "1rem",
+                    borderRadius: "6px",
+                    border: "1px solid #e0e0e0",
+                  }}
+                >
+                  <code>{queryResult.suggestedSQL || "No SQL generated"}</code>
                 </div>
               </div>
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '1rem' }}>
-              <strong>Processed:</strong> {new Date(queryResult.metadata.processedAt).toLocaleString()}
+            <div
+              style={{ fontSize: "0.85rem", color: "#666", marginTop: "1rem" }}
+            >
+              <strong>Processed:</strong>{" "}
+              {new Date(queryResult.metadata.processedAt).toLocaleString()}
             </div>
           </div>
         )}
@@ -302,23 +393,47 @@ export const LLMIntegration: React.FC<LLMIntegrationProps> = ({ pluginSystem }) 
           <div>
             <h4>Supported Operations:</h4>
             <ul>
-              <li><code>completion</code> - Generate text completions</li>
-              <li><code>analyze</code> - Analyze datasets for insights</li>
-              <li><code>query</code> - Process natural language queries</li>
-              <li><code>embedding</code> - Generate text embeddings</li>
-              <li><code>providers</code> - List available providers</li>
+              <li>
+                <code>completion</code> - Generate text completions
+              </li>
+              <li>
+                <code>analyze</code> - Analyze datasets for insights
+              </li>
+              <li>
+                <code>query</code> - Process natural language queries
+              </li>
+              <li>
+                <code>embedding</code> - Generate text embeddings
+              </li>
+              <li>
+                <code>providers</code> - List available providers
+              </li>
             </ul>
           </div>
         </div>
 
-        <div style={{ marginTop: '1.5rem' }}>
+        <div style={{ marginTop: "1.5rem" }}>
           <h4>Available Providers:</h4>
           <div className="grid grid-3">
-            {providers.map(provider => (
-              <div key={provider.name} style={{ padding: '1rem', background: '#f8f9fa', borderRadius: '6px' }}>
-                <h5 style={{ margin: '0 0 0.5rem 0', textTransform: 'capitalize' }}>{provider.name}</h5>
-                <p style={{ fontSize: '0.8rem', margin: 0 }}>
-                  Models: {provider.models?.join(', ') || 'N/A'}
+            {providers.map((provider) => (
+              <div
+                key={provider.name}
+                style={{
+                  padding: "1rem",
+                  background: "#f8f9fa",
+                  borderRadius: "6px",
+                }}
+              >
+                <h5
+                  style={{
+                    margin: "0 0 0.5rem 0",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {provider.name}
+                </h5>
+                <p style={{ fontSize: "0.8rem", margin: 0 }}>
+                  Models: {provider.models?.join(", ") || "N/A"}
                 </p>
               </div>
             ))}

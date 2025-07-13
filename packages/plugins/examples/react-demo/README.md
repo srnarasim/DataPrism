@@ -14,23 +14,26 @@ This demo showcases:
 
 ## 📋 Prerequisites
 
-- Node.js 16+ 
+- Node.js 16+
 - npm or yarn
 - Modern browser (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+)
 
 ## 🛠 Installation
 
 1. **Navigate to the demo directory:**
+
    ```bash
    cd /path/to/DataPrism/packages/plugins/examples/react-demo
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Start the development server:**
+
    ```bash
    npm start
    ```
@@ -41,35 +44,41 @@ This demo showcases:
 ## 🎯 Demo Sections
 
 ### 1. Overview Dashboard
+
 - Plugin system status and health metrics
 - Active plugin summary
 - System performance indicators
 
 ### 2. Data Processing
+
 - **CSV Parser**: Upload and parse CSV data
 - **Data Validation**: Check data quality and integrity
 - **Transformations**: Apply rules and transformations
 - **Real-time Processing**: Stream and batch processing examples
 
 ### 3. Chart Visualization
+
 - **Multiple Chart Types**: Bar, line, pie, scatter plots
 - **Interactive Features**: Hover effects, tooltips, zoom
 - **Export Options**: SVG, PNG, PDF formats
 - **Responsive Design**: Mobile-friendly charts
 
 ### 4. LLM Integration
+
 - **Text Completion**: Generate content with AI
 - **Data Analysis**: AI-powered dataset insights
 - **Natural Language Queries**: Ask questions about data
 - **Multiple Providers**: OpenAI, Anthropic, local models
 
 ### 5. System Monitor
+
 - **Performance Metrics**: CPU, memory, response time tracking
 - **Health Checks**: Comprehensive system diagnostics
 - **Security Scanning**: Vulnerability detection and assessment
 - **Real-time Updates**: Auto-refresh monitoring
 
 ### 6. Plugin Manager
+
 - **Plugin Lifecycle**: Activate, deactivate, load, unload
 - **Resource Monitoring**: Memory usage and performance tracking
 - **Plugin Details**: Capabilities, permissions, metadata
@@ -117,6 +126,7 @@ The demo uses a modern, responsive design with:
 The demo includes realistic sample datasets:
 
 ### Employee Data
+
 ```json
 [
   { "name": "John Doe", "age": 30, "city": "New York", "salary": 55000 },
@@ -125,6 +135,7 @@ The demo includes realistic sample datasets:
 ```
 
 ### Sales Data
+
 ```json
 [
   { "product": "Laptop", "category": "Electronics", "sales": 1200 },
@@ -135,24 +146,28 @@ The demo includes realistic sample datasets:
 ## 🧪 Testing Features
 
 ### Data Processing Tests
+
 - Parse various CSV formats
 - Validate data quality
 - Apply transformation rules
 - Handle malformed data
 
 ### Visualization Tests
+
 - Render different chart types
 - Export to various formats
 - Test responsive behavior
 - Interactive features
 
 ### LLM Integration Tests
+
 - Generate text completions
 - Analyze datasets for insights
 - Process natural language queries
 - Test multiple AI providers
 
 ### System Monitoring Tests
+
 - Real-time performance tracking
 - Health check diagnostics
 - Security vulnerability scanning
@@ -161,26 +176,29 @@ The demo includes realistic sample datasets:
 ## 🔍 Advanced Features
 
 ### Plugin Hot-Reload
+
 ```typescript
 // Dynamic plugin loading
-const plugin = await pluginSystem.loadPlugin('new-plugin');
+const plugin = await pluginSystem.loadPlugin("new-plugin");
 await plugin.activate();
 ```
 
 ### Error Recovery
+
 ```typescript
 // Graceful error handling
 try {
-  await plugin.execute('operation', params);
+  await plugin.execute("operation", params);
 } catch (error) {
   await plugin.recover(error);
 }
 ```
 
 ### Performance Optimization
+
 ```typescript
 // Intelligent caching
-const cachedResult = await plugin.executeWithCache('operation', params);
+const cachedResult = await plugin.executeWithCache("operation", params);
 ```
 
 ## 📈 Performance Metrics
@@ -219,16 +237,19 @@ This demo is part of the DataPrism Plugin System and is available under the MIT 
 ### Common Issues
 
 **Plugin Not Loading:**
+
 - Check browser console for errors
 - Verify plugin is properly registered
 - Ensure all dependencies are installed
 
 **Performance Issues:**
+
 - Monitor memory usage in Plugin Manager
 - Deactivate unused plugins
 - Check network connectivity for external services
 
 **Styling Problems:**
+
 - Clear browser cache
 - Check for CSS conflicts
 - Verify responsive breakpoints
@@ -236,6 +257,7 @@ This demo is part of the DataPrism Plugin System and is available under the MIT 
 ### Support
 
 For support and questions:
+
 - Check the main DataPrism documentation
 - Review plugin examples and patterns
 - Examine component source code for implementation details

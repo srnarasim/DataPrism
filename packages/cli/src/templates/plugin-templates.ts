@@ -1,8 +1,12 @@
-import fs from 'fs-extra';
-import path from 'path';
-import { logger } from '../utils/logger.js';
+import fs from "fs-extra";
+import path from "path";
+import { logger } from "../utils/logger.js";
 
-export type PluginType = 'data-processor' | 'visualization' | 'integration' | 'utility';
+export type PluginType =
+  | "data-processor"
+  | "visualization"
+  | "integration"
+  | "utility";
 
 export interface CreatePluginOptions {
   name: string;
@@ -11,7 +15,9 @@ export interface CreatePluginOptions {
   typescript: boolean;
 }
 
-export async function createPlugin(options: CreatePluginOptions): Promise<void> {
+export async function createPlugin(
+  options: CreatePluginOptions,
+): Promise<void> {
   const { name, path: pluginPath, type, typescript } = options;
 
   // Create plugin directory
@@ -19,7 +25,9 @@ export async function createPlugin(options: CreatePluginOptions): Promise<void> 
 
   // Create package.json
   const packageJson = createPluginPackageJson(name, type, typescript);
-  await fs.writeJson(path.join(pluginPath, 'package.json'), packageJson, { spaces: 2 });
+  await fs.writeJson(path.join(pluginPath, "package.json"), packageJson, {
+    spaces: 2,
+  });
 
   // Create plugin structure
   await createPluginStructure(pluginPath, name, type, typescript);
@@ -30,106 +38,117 @@ export async function createPlugin(options: CreatePluginOptions): Promise<void> 
   logger.debug(`Created plugin ${name} with type ${type}`);
 }
 
-function createPluginPackageJson(name: string, type: PluginType, typescript: boolean) {
+function createPluginPackageJson(
+  name: string,
+  type: PluginType,
+  typescript: boolean,
+) {
   const base = {
     name: `@dataprism/plugin-${name}`,
-    version: '0.1.0',
-    type: 'module',
+    version: "0.1.0",
+    type: "module",
     description: `DataPrism ${type} plugin: ${name}`,
-    keywords: ['dataprism', 'plugin', type],
-    main: typescript ? './dist/index.js' : './src/index.js',
-    types: typescript ? './dist/index.d.ts' : undefined,
+    keywords: ["dataprism", "plugin", type],
+    main: typescript ? "./dist/index.js" : "./src/index.js",
+    types: typescript ? "./dist/index.d.ts" : undefined,
     exports: {
-      '.': {
-        import: typescript ? './dist/index.js' : './src/index.js',
-        types: typescript ? './dist/index.d.ts' : undefined
-      }
+      ".": {
+        import: typescript ? "./dist/index.js" : "./src/index.js",
+        types: typescript ? "./dist/index.d.ts" : undefined,
+      },
     },
-    files: typescript ? ['dist/', 'README.md'] : ['src/', 'README.md'],
+    files: typescript ? ["dist/", "README.md"] : ["src/", "README.md"],
     scripts: {
-      build: typescript ? 'tsc' : 'echo "No build step required for JavaScript"',
-      'build:watch': typescript ? 'tsc --watch' : undefined,
-      dev: 'npm run build:watch',
-      test: 'vitest',
-      'test:coverage': 'vitest --coverage',
-      lint: typescript ? 'eslint src --ext .ts' : 'eslint src --ext .js',
-      format: 'prettier --write src',
-      clean: typescript ? 'rm -rf dist' : undefined,
-      prepare: typescript ? 'npm run build' : undefined
+      build: typescript
+        ? "tsc"
+        : 'echo "No build step required for JavaScript"',
+      "build:watch": typescript ? "tsc --watch" : undefined,
+      dev: "npm run build:watch",
+      test: "vitest",
+      "test:coverage": "vitest --coverage",
+      lint: typescript ? "eslint src --ext .ts" : "eslint src --ext .js",
+      format: "prettier --write src",
+      clean: typescript ? "rm -rf dist" : undefined,
+      prepare: typescript ? "npm run build" : undefined,
     },
     dependencies: {
-      '@dataprism/plugin-framework': '^1.0.0'
+      "@dataprism/plugin-framework": "^1.0.0",
     },
     devDependencies: {
-      vitest: '^1.0.0',
-      '@vitest/coverage-v8': '^1.0.0',
-      eslint: '^8.50.0',
-      prettier: '^3.0.0'
+      vitest: "^1.0.0",
+      "@vitest/coverage-v8": "^1.0.0",
+      eslint: "^8.50.0",
+      prettier: "^3.0.0",
     },
     peerDependencies: {
-      '@dataprism/core': '^1.0.0'
+      "@dataprism/core": "^1.0.0",
     },
     engines: {
-      node: '>=18.0.0'
+      node: ">=18.0.0",
     },
     dataprism: {
       plugin: {
         type,
-        version: '1.0.0',
-        entry: typescript ? './dist/index.js' : './src/index.js'
-      }
-    }
+        version: "1.0.0",
+        entry: typescript ? "./dist/index.js" : "./src/index.js",
+      },
+    },
   };
 
   // Add type-specific dependencies
-  if (type === 'visualization') {
+  if (type === "visualization") {
     Object.assign(base.dependencies, {
-      'd3': '^7.8.5',
-      'chart.js': '^4.4.0'
+      d3: "^7.8.5",
+      "chart.js": "^4.4.0",
     });
   }
 
-  if (type === 'integration') {
+  if (type === "integration") {
     Object.assign(base.dependencies, {
-      'node-fetch': '^3.3.2'
+      "node-fetch": "^3.3.2",
     });
   }
 
   // Add TypeScript dependencies
   if (typescript) {
     Object.assign(base.devDependencies, {
-      typescript: '^5.2.0',
-      '@types/node': '^20.0.0',
-      '@typescript-eslint/eslint-plugin': '^6.0.0',
-      '@typescript-eslint/parser': '^6.0.0'
+      typescript: "^5.2.0",
+      "@types/node": "^20.0.0",
+      "@typescript-eslint/eslint-plugin": "^6.0.0",
+      "@typescript-eslint/parser": "^6.0.0",
     });
 
-    if (type === 'visualization') {
+    if (type === "visualization") {
       Object.assign(base.devDependencies, {
-        '@types/d3': '^7.4.0'
+        "@types/d3": "^7.4.0",
       });
     }
   }
 
   // Remove undefined values
   base.scripts = Object.fromEntries(
-    Object.entries(base.scripts).filter(([_, value]) => value !== undefined)
+    Object.entries(base.scripts).filter(([_, value]) => value !== undefined),
   );
 
   if (!typescript) {
     delete base.types;
-    if (base.exports['.']) {
-      delete base.exports['.'].types;
+    if (base.exports["."]) {
+      delete base.exports["."].types;
     }
   }
 
   return base;
 }
 
-async function createPluginStructure(pluginPath: string, name: string, type: PluginType, typescript: boolean): Promise<void> {
-  const ext = typescript ? 'ts' : 'js';
-  const srcDir = path.join(pluginPath, 'src');
-  const testsDir = path.join(pluginPath, 'tests');
+async function createPluginStructure(
+  pluginPath: string,
+  name: string,
+  type: PluginType,
+  typescript: boolean,
+): Promise<void> {
+  const ext = typescript ? "ts" : "js";
+  const srcDir = path.join(pluginPath, "src");
+  const testsDir = path.join(pluginPath, "tests");
 
   await fs.ensureDir(srcDir);
   await fs.ensureDir(testsDir);
@@ -144,25 +163,30 @@ async function createPluginStructure(pluginPath: string, name: string, type: Plu
 
   // Create type-specific additional files
   switch (type) {
-    case 'data-processor':
+    case "data-processor":
       await createDataProcessorFiles(srcDir, typescript);
       break;
-    case 'visualization':
+    case "visualization":
       await createVisualizationFiles(srcDir, typescript);
       break;
-    case 'integration':
+    case "integration":
       await createIntegrationFiles(srcDir, typescript);
       break;
-    case 'utility':
+    case "utility":
       await createUtilityFiles(srcDir, typescript);
       break;
   }
 }
 
-function createPluginMainFile(name: string, type: PluginType, typescript: boolean): string {
+function createPluginMainFile(
+  name: string,
+  type: PluginType,
+  typescript: boolean,
+): string {
   const className = toPascalCase(name);
-  
-  const imports = typescript ? `
+
+  const imports = typescript
+    ? `
 import { PluginBase, PluginMetadata, DataPrismContext } from '@dataprism/plugin-framework';
 
 interface ${className}Options {
@@ -176,11 +200,13 @@ interface ${className}Result {
   error?: string;
   metadata?: Record<string, any>;
 }
-` : `
+`
+    : `
 import { PluginBase } from '@dataprism/plugin-framework';
 `;
 
-  const classDefinition = typescript ? `
+  const classDefinition = typescript
+    ? `
 export class ${className}Plugin extends PluginBase {
   static metadata: PluginMetadata = {
     name: '${name}',
@@ -245,7 +271,8 @@ export class ${className}Plugin extends PluginBase {
     // Plugin cleanup logic here
   }
 }
-` : `
+`
+    : `
 export class ${className}Plugin extends PluginBase {
   static metadata = {
     name: '${name}',
@@ -318,23 +345,27 @@ export default ${className}Plugin;
 `;
 }
 
-function createPluginTestFile(name: string, type: PluginType, typescript: boolean): string {
+function createPluginTestFile(
+  name: string,
+  type: PluginType,
+  typescript: boolean,
+): string {
   const className = toPascalCase(name);
-  const ext = typescript ? '' : '.js';
-  
+  const ext = typescript ? "" : ".js";
+
   return `
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ${className}Plugin } from '../src/index${ext}';
 
 describe('${className}Plugin', () => {
-  let plugin${typescript ? `: ${className}Plugin` : ''};
-  let mockContext${typescript ? ': any' : ''};
+  let plugin${typescript ? `: ${className}Plugin` : ""};
+  let mockContext${typescript ? ": any" : ""};
 
   beforeEach(() => {
     plugin = new ${className}Plugin({ debug: true });
     mockContext = {
       engine: {
-        query: async (sql${typescript ? ': string' : ''}) => ({ data: [], metadata: {} })
+        query: async (sql${typescript ? ": string" : ""}) => ({ data: [], metadata: {} })
       },
       logger: {
         info: console.log,
@@ -387,37 +418,40 @@ function toPascalCase(str: string): string {
 
 function getTypeSpecificComment(type: PluginType): string {
   switch (type) {
-    case 'data-processor':
-      return 'Transform and process the input data';
-    case 'visualization':
-      return 'Generate visualization from the data';
-    case 'integration':
-      return 'Integrate with external service';
-    case 'utility':
-      return 'Perform utility operation on the data';
+    case "data-processor":
+      return "Transform and process the input data";
+    case "visualization":
+      return "Generate visualization from the data";
+    case "integration":
+      return "Integrate with external service";
+    case "utility":
+      return "Perform utility operation on the data";
     default:
-      return 'Process the data';
+      return "Process the data";
   }
 }
 
 function getTypeSpecificMethod(type: PluginType): string {
   switch (type) {
-    case 'data-processor':
-      return 'transformData';
-    case 'visualization':
-      return 'generateVisualization';
-    case 'integration':
-      return 'integrateWithService';
-    case 'utility':
-      return 'performUtilityOperation';
+    case "data-processor":
+      return "transformData";
+    case "visualization":
+      return "generateVisualization";
+    case "integration":
+      return "integrateWithService";
+    case "utility":
+      return "performUtilityOperation";
     default:
-      return 'processData';
+      return "processData";
   }
 }
 
-function getTypeSpecificImplementation(type: PluginType, typescript: boolean): string {
+function getTypeSpecificImplementation(
+  type: PluginType,
+  typescript: boolean,
+): string {
   switch (type) {
-    case 'data-processor':
+    case "data-processor":
       return `
     // Example data transformation
     if (Array.isArray(data)) {
@@ -434,7 +468,7 @@ function getTypeSpecificImplementation(type: PluginType, typescript: boolean): s
       timestamp: new Date().toISOString()
     };`;
 
-    case 'visualization':
+    case "visualization":
       return `
     // Example visualization generation
     const chartConfig = {
@@ -460,7 +494,7 @@ function getTypeSpecificImplementation(type: PluginType, typescript: boolean): s
     
     return chartConfig;`;
 
-    case 'integration':
+    case "integration":
       return `
     // Example external service integration
     // Note: Replace with actual service integration
@@ -478,7 +512,7 @@ function getTypeSpecificImplementation(type: PluginType, typescript: boolean): s
     
     return await response.json();`;
 
-    case 'utility':
+    case "utility":
       return `
     // Example utility operation
     if (Array.isArray(data)) {
@@ -508,62 +542,79 @@ function getTypeSpecificImplementation(type: PluginType, typescript: boolean): s
 
 function getTestData(type: PluginType): string {
   switch (type) {
-    case 'data-processor':
+    case "data-processor":
       return `[
       { name: 'John', age: 25, score: 85 },
       { name: 'Jane', age: 30, score: 92 }
     ]`;
-    case 'visualization':
+    case "visualization":
       return `[10, 20, 30, 40, 50]`;
-    case 'integration':
+    case "integration":
       return `{ userId: 123, action: 'test' }`;
-    case 'utility':
+    case "utility":
       return `['apple', 'banana', 'cherry']`;
     default:
       return `{ test: true }`;
   }
 }
 
-async function createDataProcessorFiles(srcDir: string, typescript: boolean): Promise<void> {
+async function createDataProcessorFiles(
+  srcDir: string,
+  typescript: boolean,
+): Promise<void> {
   // Additional files specific to data processors can be added here
 }
 
-async function createVisualizationFiles(srcDir: string, typescript: boolean): Promise<void> {
+async function createVisualizationFiles(
+  srcDir: string,
+  typescript: boolean,
+): Promise<void> {
   // Additional files specific to visualizations can be added here
 }
 
-async function createIntegrationFiles(srcDir: string, typescript: boolean): Promise<void> {
+async function createIntegrationFiles(
+  srcDir: string,
+  typescript: boolean,
+): Promise<void> {
   // Additional files specific to integrations can be added here
 }
 
-async function createUtilityFiles(srcDir: string, typescript: boolean): Promise<void> {
+async function createUtilityFiles(
+  srcDir: string,
+  typescript: boolean,
+): Promise<void> {
   // Additional files specific to utilities can be added here
 }
 
-async function createPluginConfigFiles(pluginPath: string, typescript: boolean): Promise<void> {
+async function createPluginConfigFiles(
+  pluginPath: string,
+  typescript: boolean,
+): Promise<void> {
   // Create TypeScript config if needed
   if (typescript) {
     const tsConfig = {
       compilerOptions: {
-        target: 'ES2020',
-        module: 'ESNext',
-        lib: ['ES2020'],
-        moduleResolution: 'bundler',
+        target: "ES2020",
+        module: "ESNext",
+        lib: ["ES2020"],
+        moduleResolution: "bundler",
         allowSyntheticDefaultImports: true,
         esModuleInterop: true,
         declaration: true,
-        outDir: './dist',
-        rootDir: './src',
+        outDir: "./dist",
+        rootDir: "./src",
         strict: true,
         noUnusedLocals: true,
         noUnusedParameters: true,
-        skipLibCheck: true
+        skipLibCheck: true,
       },
-      include: ['src/**/*'],
-      exclude: ['node_modules', 'dist', 'tests']
+      include: ["src/**/*"],
+      exclude: ["node_modules", "dist", "tests"],
     };
 
-    await fs.writeJson(path.join(pluginPath, 'tsconfig.json'), tsConfig, { spaces: 2 });
+    await fs.writeJson(path.join(pluginPath, "tsconfig.json"), tsConfig, {
+      spaces: 2,
+    });
   }
 
   // Create README
@@ -588,7 +639,7 @@ npm run lint       # Lint code
 
 ## Usage
 
-\`\`\`${typescript ? 'typescript' : 'javascript'}
+\`\`\`${typescript ? "typescript" : "javascript"}
 import { MyPlugin } from '@dataprism/plugin-my-plugin';
 
 const plugin = new MyPlugin();
@@ -601,5 +652,5 @@ const result = await plugin.process(data, context);
 Visit [https://docs.dataprism.dev/plugins](https://docs.dataprism.dev/plugins) for plugin development documentation.
 `;
 
-  await fs.writeFile(path.join(pluginPath, 'README.md'), readme);
+  await fs.writeFile(path.join(pluginPath, "README.md"), readme);
 }

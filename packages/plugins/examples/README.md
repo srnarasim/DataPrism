@@ -25,7 +25,7 @@ examples/
 ### 1. Basic Plugin Usage
 
 ```typescript
-import { DataPrismPluginSystem } from '@dataprism/plugins';
+import { DataPrismPluginSystem } from "@dataprism/plugins";
 
 // Initialize the plugin system
 const pluginSystem = await DataPrismPluginSystem.create();
@@ -34,15 +34,16 @@ const pluginSystem = await DataPrismPluginSystem.create();
 await pluginSystem.getPluginManager().registerPlugin(manifest);
 
 // Load and activate a plugin
-await pluginSystem.getPluginManager().loadPlugin('csv-processor');
-await pluginSystem.getPluginManager().activatePlugin('csv-processor');
+await pluginSystem.getPluginManager().loadPlugin("csv-processor");
+await pluginSystem.getPluginManager().activatePlugin("csv-processor");
 
 // Execute plugin operations
-const result = await pluginSystem.getPluginManager().executePlugin(
-  'csv-processor',
-  'process',
-  { dataset: myData, options: { validation: true } }
-);
+const result = await pluginSystem
+  .getPluginManager()
+  .executePlugin("csv-processor", "process", {
+    dataset: myData,
+    options: { validation: true },
+  });
 ```
 
 ### 2. Using the Example Plugins
@@ -51,10 +52,10 @@ Each example plugin can be used as a starting point for your own plugin developm
 
 ```typescript
 // Import example plugins
-import CSVProcessorPlugin from './data-processor/csv-processor.js';
-import ChartRendererPlugin from './visualization/chart-renderer.js';
-import LLMIntegrationPlugin from './integration/llm-integration.js';
-import PerformanceMonitorPlugin from './utility/performance-monitor.js';
+import CSVProcessorPlugin from "./data-processor/csv-processor.js";
+import ChartRendererPlugin from "./visualization/chart-renderer.js";
+import LLMIntegrationPlugin from "./integration/llm-integration.js";
+import PerformanceMonitorPlugin from "./utility/performance-monitor.js";
 
 // Use them directly or extend them
 class MyCustomProcessor extends CSVProcessorPlugin {
@@ -67,6 +68,7 @@ class MyCustomProcessor extends CSVProcessorPlugin {
 The **CSV Processor Plugin** demonstrates advanced data processing capabilities:
 
 ### Features
+
 - ✅ CSV parsing with configurable delimiters
 - ✅ Data validation and quality checks
 - ✅ Statistical transformations
@@ -74,6 +76,7 @@ The **CSV Processor Plugin** demonstrates advanced data processing capabilities:
 - ✅ Error handling and metrics
 
 ### Usage Example
+
 ```typescript
 const processor = new CSVProcessorPlugin();
 await processor.initialize(context);
@@ -82,13 +85,13 @@ await processor.activate();
 // Process CSV data
 const result = await processor.process(dataset, {
   validation: true,
-  mode: 'async'
+  mode: "async",
 });
 
 // Apply transformations
 const transformed = await processor.transform(dataset, [
-  { field: 'name', operation: 'uppercase', parameters: {} },
-  { field: 'price', operation: 'multiply', parameters: { factor: 1.1 } }
+  { field: "name", operation: "uppercase", parameters: {} },
+  { field: "price", operation: "multiply", parameters: { factor: 1.1 } },
 ]);
 ```
 
@@ -97,6 +100,7 @@ const transformed = await processor.transform(dataset, [
 The **Chart Renderer Plugin** shows how to create interactive visualizations:
 
 ### Features
+
 - ✅ Multiple chart types (bar, line, pie, scatter, heatmap)
 - ✅ Interactive features (tooltips, zoom, pan)
 - ✅ Export capabilities (SVG, PNG, PDF, HTML)
@@ -104,6 +108,7 @@ The **Chart Renderer Plugin** shows how to create interactive visualizations:
 - ✅ Real-time updates
 
 ### Usage Example
+
 ```typescript
 const renderer = new ChartRendererPlugin();
 await renderer.initialize(context);
@@ -111,14 +116,14 @@ await renderer.activate();
 
 // Render a chart
 await renderer.render(containerElement, dataset, {
-  chartType: 'bar',
-  theme: 'dark',
+  chartType: "bar",
+  theme: "dark",
   responsive: true,
-  animation: true
+  animation: true,
 });
 
 // Export chart
-const svgBlob = await renderer.export('svg');
+const svgBlob = await renderer.export("svg");
 ```
 
 ## 🔗 Integration Plugin Example
@@ -126,6 +131,7 @@ const svgBlob = await renderer.export('svg');
 The **LLM Integration Plugin** demonstrates external service integration:
 
 ### Features
+
 - ✅ Multiple LLM provider support (OpenAI, Anthropic, Local)
 - ✅ Intelligent caching and rate limiting
 - ✅ Data analysis and insight generation
@@ -133,6 +139,7 @@ The **LLM Integration Plugin** demonstrates external service integration:
 - ✅ Error handling and fallbacks
 
 ### Usage Example
+
 ```typescript
 const llmPlugin = new LLMIntegrationPlugin();
 await llmPlugin.initialize(context);
@@ -140,14 +147,14 @@ await llmPlugin.activate();
 
 // Generate insights from data
 const analysis = await llmPlugin.analyzeDataset(dataset, {
-  provider: 'openai',
-  focus: 'trends and patterns'
+  provider: "openai",
+  focus: "trends and patterns",
 });
 
 // Process natural language queries
 const queryResult = await llmPlugin.processNaturalLanguageQuery(
   "What are the top selling products this month?",
-  dataset
+  dataset,
 );
 ```
 
@@ -156,6 +163,7 @@ const queryResult = await llmPlugin.processNaturalLanguageQuery(
 The **Performance Monitor Plugin** shows system monitoring capabilities:
 
 ### Features
+
 - ✅ Real-time performance monitoring
 - ✅ Health checks and diagnostics
 - ✅ Security scanning and vulnerability detection
@@ -163,6 +171,7 @@ The **Performance Monitor Plugin** shows system monitoring capabilities:
 - ✅ Performance optimization
 
 ### Usage Example
+
 ```typescript
 const monitor = new PerformanceMonitorPlugin();
 await monitor.initialize(context);
@@ -194,8 +203,12 @@ export class MyPlugin implements IDataProcessorPlugin {
   private active = false;
 
   // Implement required interface methods
-  getName(): string { return 'my-plugin'; }
-  getVersion(): string { return '1.0.0'; }
+  getName(): string {
+    return "my-plugin";
+  }
+  getVersion(): string {
+    return "1.0.0";
+  }
   // ... other required methods
 
   // Lifecycle management
@@ -206,7 +219,7 @@ export class MyPlugin implements IDataProcessorPlugin {
 
   async activate(): Promise<void> {
     if (!this.initialized) {
-      throw new Error('Plugin must be initialized before activation');
+      throw new Error("Plugin must be initialized before activation");
     }
     this.active = true;
   }
@@ -214,7 +227,7 @@ export class MyPlugin implements IDataProcessorPlugin {
   // Core operations
   async execute(operation: string, params: any): Promise<any> {
     if (!this.active) {
-      throw new Error('Plugin is not active');
+      throw new Error("Plugin is not active");
     }
     // Implementation
   }
@@ -226,11 +239,11 @@ export class MyPlugin implements IDataProcessorPlugin {
 ```typescript
 try {
   const result = await this.performOperation(params);
-  this.emit('operation:success', { result });
+  this.emit("operation:success", { result });
   return result;
 } catch (error) {
-  this.log('error', 'Operation failed', error);
-  this.emit('operation:error', { error: String(error) });
+  this.log("error", "Operation failed", error);
+  this.emit("operation:error", { error: String(error) });
   throw error;
 }
 ```
@@ -239,10 +252,13 @@ try {
 
 ```typescript
 // Emit events
-this.emit('data:processed', { dataset: result });
+this.emit("data:processed", { dataset: result });
 
 // Listen to events
-this.context?.eventBus.subscribe('data:updated', this.handleDataUpdate.bind(this));
+this.context?.eventBus.subscribe(
+  "data:updated",
+  this.handleDataUpdate.bind(this),
+);
 ```
 
 ### Configuration Management
@@ -250,13 +266,13 @@ this.context?.eventBus.subscribe('data:updated', this.handleDataUpdate.bind(this
 ```typescript
 async configure(settings: any): Promise<void> {
   this.log('info', 'Updating configuration', settings);
-  
+
   // Validate settings
   this.validateConfiguration(settings);
-  
+
   // Apply settings
   Object.assign(this.config, settings);
-  
+
   // Notify about changes
   this.emit('config:changed', this.config);
 }
@@ -268,30 +284,30 @@ Each plugin includes a comprehensive manifest:
 
 ```typescript
 export const manifest: PluginManifest = {
-  name: 'example-plugin',
-  version: '1.0.0',
-  description: 'Example plugin demonstrating best practices',
-  author: 'DataPrism Team',
-  license: 'MIT',
-  keywords: ['example', 'tutorial'],
-  category: 'data-processing',
-  entryPoint: './example-plugin.js',
+  name: "example-plugin",
+  version: "1.0.0",
+  description: "Example plugin demonstrating best practices",
+  author: "DataPrism Team",
+  license: "MIT",
+  keywords: ["example", "tutorial"],
+  category: "data-processing",
+  entryPoint: "./example-plugin.js",
   dependencies: [],
   permissions: [
-    { resource: 'data', access: 'read' },
-    { resource: 'data', access: 'write' }
+    { resource: "data", access: "read" },
+    { resource: "data", access: "write" },
   ],
   configuration: {
     option1: {
-      type: 'string',
-      default: 'default-value',
-      description: 'Configuration option description'
-    }
+      type: "string",
+      default: "default-value",
+      description: "Configuration option description",
+    },
   },
   compatibility: {
-    minCoreVersion: '0.1.0',
-    browsers: ['chrome', 'firefox', 'safari', 'edge']
-  }
+    minCoreVersion: "0.1.0",
+    browsers: ["chrome", "firefox", "safari", "edge"],
+  },
 };
 ```
 
@@ -300,10 +316,10 @@ export const manifest: PluginManifest = {
 Example test structure for plugins:
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest';
-import { MyPlugin } from './my-plugin.js';
+import { describe, it, expect, beforeEach } from "vitest";
+import { MyPlugin } from "./my-plugin.js";
 
-describe('MyPlugin', () => {
+describe("MyPlugin", () => {
   let plugin: MyPlugin;
   let mockContext: PluginContext;
 
@@ -314,8 +330,8 @@ describe('MyPlugin', () => {
     await plugin.activate();
   });
 
-  it('should process data correctly', async () => {
-    const result = await plugin.execute('process', { data: testData });
+  it("should process data correctly", async () => {
+    const result = await plugin.execute("process", { data: testData });
     expect(result).toBeDefined();
   });
 });
@@ -324,6 +340,7 @@ describe('MyPlugin', () => {
 ## 🚀 Performance Considerations
 
 ### Memory Management
+
 ```typescript
 // Clean up resources in cleanup method
 async cleanup(): Promise<void> {
@@ -335,6 +352,7 @@ async cleanup(): Promise<void> {
 ```
 
 ### Efficient Data Processing
+
 ```typescript
 // Use streaming for large datasets
 async stream(dataStream: ReadableStream<Dataset>): Promise<ReadableStream<Dataset>> {
@@ -347,6 +365,7 @@ async stream(dataStream: ReadableStream<Dataset>): Promise<ReadableStream<Datase
 ```
 
 ### Caching Strategies
+
 ```typescript
 // Implement intelligent caching
 private cache = new Map<string, CachedResult>();

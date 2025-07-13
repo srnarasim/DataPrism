@@ -88,20 +88,18 @@ Always validate and sanitize data before processing:
 
 ```typescript
 // Good: Validate data before loading
-const isValidData = data.every(row => 
-  typeof row === 'object' && 
-  Object.keys(row).every(key => typeof key === 'string')
+const isValidData = data.every(
+  (row) =>
+    typeof row === "object" &&
+    Object.keys(row).every((key) => typeof key === "string"),
 );
 
 if (isValidData) {
-  await engine.loadData(data, 'table_name');
+  await engine.loadData(data, "table_name");
 }
 
 // Good: Use parameterized queries
-const result = await engine.query(
-  'SELECT * FROM users WHERE id = ?', 
-  [userId]
-);
+const result = await engine.query("SELECT * FROM users WHERE id = ?", [userId]);
 ```
 
 #### Memory Management
@@ -110,8 +108,8 @@ Monitor memory usage to prevent DoS attacks:
 
 ```typescript
 const engine = new DataPrismEngine({
-  memoryLimit: '512MB', // Set appropriate limits
-  queryTimeout: 30000   // Prevent long-running queries
+  memoryLimit: "512MB", // Set appropriate limits
+  queryTimeout: 30000, // Prevent long-running queries
 });
 
 // Monitor memory usage
@@ -163,6 +161,7 @@ We maintain comprehensive security testing:
 ### Security Contact
 
 For general security questions (not vulnerabilities), contact:
+
 - **Email**: security@dataprism.dev
 - **GitHub Discussions**: [Security Category](https://github.com/dataprism/core/discussions/categories/security)
 
@@ -179,6 +178,7 @@ We believe in recognizing security researchers who help improve our security. Wi
 This security policy is subject to our [Terms of Service](https://dataprism.dev/terms) and [Privacy Policy](https://dataprism.dev/privacy).
 
 We will not pursue legal action against security researchers who:
+
 - Make a good faith effort to avoid privacy violations and service disruption
 - Report vulnerabilities through the proper channels
 - Avoid accessing or modifying data belonging to others

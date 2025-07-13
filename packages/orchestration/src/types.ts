@@ -1,7 +1,7 @@
 export interface DataPrismError {
   message: string;
   code: string;
-  source: 'wasm' | 'duckdb' | 'orchestration';
+  source: "wasm" | "duckdb" | "orchestration";
 }
 
 export interface PerformanceMetrics {
@@ -20,7 +20,7 @@ export interface EngineStatus {
   uptime: number;
 }
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export interface Logger {
   debug(message: string, ...args: any[]): void;

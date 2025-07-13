@@ -11,7 +11,7 @@ export class ResourceManager {
       maxTotalMemoryMB: 1024, // 1GB total for all plugins
       maxTotalCPUPercent: 80,
       maxConcurrentPlugins: 20,
-      maxExecutionTimeMs: 300000 // 5 minutes
+      maxExecutionTimeMs: 300000, // 5 minutes
     };
   }
 
@@ -25,7 +25,7 @@ export class ResourceManager {
 
   async allocate(pluginName: string): Promise<ResourceAllocation> {
     if (!this.initialized) {
-      throw new Error('ResourceManager not initialized');
+      throw new Error("ResourceManager not initialized");
     }
 
     const quota = this.getQuota(pluginName);
@@ -33,7 +33,9 @@ export class ResourceManager {
 
     // Check if allocation would exceed global limits
     if (!this.canAllocate(quota, currentUsage)) {
-      throw new ResourceError(`Resource allocation would exceed global limits for plugin: ${pluginName}`);
+      throw new ResourceError(
+        `Resource allocation would exceed global limits for plugin: ${pluginName}`,
+      );
     }
 
     const allocation: ResourceAllocation = {
@@ -43,7 +45,7 @@ export class ResourceManager {
       diskMB: quota.diskMB,
       networkBandwidthKbps: quota.networkBandwidthKbps,
       allocatedAt: Date.now(),
-      status: 'allocated'
+      status: "allocated",
     };
 
     // Track allocation
@@ -67,7 +69,7 @@ export class ResourceManager {
   async createMonitor(pluginName: string): Promise<ResourceMonitor> {
     const quota = this.getQuota(pluginName);
     const monitor = new ResourceMonitor(pluginName, quota);
-    
+
     await monitor.start();
     this.activeMonitors.set(pluginName, monitor);
 
@@ -85,7 +87,7 @@ export class ResourceManager {
       cpuPercent: 10,
       diskMB: 100,
       networkBandwidthKbps: 1000,
-      maxExecutionTimeMs: 30000
+      maxExecutionTimeMs: 30000,
     };
   }
 
@@ -129,7 +131,7 @@ export class ResourceManager {
         usage,
         quota,
         violations,
-        efficiency: this.calculateEfficiency(usage, quota)
+        efficiency: this.calculateEfficiency(usage, quota),
       });
     }
 
@@ -141,7 +143,7 @@ export class ResourceManager {
       summary,
       plugins: pluginReports,
       globalLimits: this.globalLimits,
-      recommendations: this.generateRecommendations(pluginReports, summary)
+      recommendations: this.generateRecommendations(pluginReports, summary),
     };
   }
 
@@ -151,15 +153,16 @@ export class ResourceManager {
 
     // Identify over-allocated plugins
     for (const plugin of report.plugins) {
-      if (plugin.efficiency < 0.3) { // Using less than 30% of allocated resources
+      if (plugin.efficiency < 0.3) {
+        // Using less than 30% of allocated resources
         optimizations.push({
           pluginName: plugin.pluginName,
-          type: 'reduce_allocation',
+          type: "reduce_allocation",
           description: `Reduce allocation for underutilized plugin`,
           estimatedSavings: {
             memoryMB: plugin.quota.memoryMB * 0.5,
-            cpuPercent: plugin.quota.cpuPercent * 0.5
-          }
+            cpuPercent: plugin.quota.cpuPercent * 0.5,
+          },
         });
       }
 
@@ -167,12 +170,12 @@ export class ResourceManager {
       if (plugin.violations.length > 0) {
         optimizations.push({
           pluginName: plugin.pluginName,
-          type: 'increase_allocation',
+          type: "increase_allocation",
           description: `Increase allocation for over-utilized plugin`,
           estimatedSavings: {
             memoryMB: -plugin.quota.memoryMB * 0.2,
-            cpuPercent: -plugin.quota.cpuPercent * 0.2
-          }
+            cpuPercent: -plugin.quota.cpuPercent * 0.2,
+          },
         });
       }
     }
@@ -180,7 +183,7 @@ export class ResourceManager {
     return {
       totalOptimizations: optimizations.length,
       optimizations,
-      estimatedTotalSavings: this.calculateTotalSavings(optimizations)
+      estimatedTotalSavings: this.calculateTotalSavings(optimizations),
     };
   }
 
@@ -195,16 +198,24 @@ export class ResourceManager {
         const pluginViolations = this.detectViolations(usage, quota);
 
         if (pluginViolations.length > 0) {
-          violations.push(...pluginViolations.map(v => ({ ...v, pluginName })));
+          violations.push(
+            ...pluginViolations.map((v) => ({ ...v, pluginName })),
+          );
 
           // Take enforcement actions
           for (const violation of pluginViolations) {
-            const action = await this.takeEnforcementAction(pluginName, violation);
+            const action = await this.takeEnforcementAction(
+              pluginName,
+              violation,
+            );
             actions.push(action);
           }
         }
       } catch (error) {
-        console.warn(`Failed to enforce quotas for plugin ${pluginName}:`, error);
+        console.warn(
+          `Failed to enforce quotas for plugin ${pluginName}:`,
+          error,
+        );
       }
     }
 
@@ -214,9 +225,9 @@ export class ResourceManager {
       actions,
       summary: {
         totalViolations: violations.length,
-        actionsSuccessful: actions.filter(a => a.success).length,
-        actionsFailed: actions.filter(a => !a.success).length
-      }
+        actionsSuccessful: actions.filter((a) => a.success).length,
+        actionsFailed: actions.filter((a) => !a.success).length,
+      },
     };
   }
 
@@ -226,14 +237,14 @@ export class ResourceManager {
       try {
         await this.checkGlobalLimits();
       } catch (error) {
-        console.warn('Global resource monitoring failed:', error);
+        console.warn("Global resource monitoring failed:", error);
       }
     }, 5000); // Check every 5 seconds
   }
 
   private async getCurrentGlobalUsage(): Promise<GlobalResourceUsage> {
     const allUsage = await this.getAllUsage();
-    
+
     let totalMemoryMB = 0;
     let totalCPUPercent = 0;
     let totalDiskMB = 0;
@@ -252,111 +263,151 @@ export class ResourceManager {
       totalDiskMB,
       totalNetworkKbps,
       activePlugins: allUsage.size,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
-  private canAllocate(quota: ResourceQuota, currentUsage: GlobalResourceUsage): boolean {
+  private canAllocate(
+    quota: ResourceQuota,
+    currentUsage: GlobalResourceUsage,
+  ): boolean {
     return (
-      (currentUsage.totalMemoryMB + quota.memoryMB) <= this.globalLimits.maxTotalMemoryMB &&
-      (currentUsage.totalCPUPercent + quota.cpuPercent) <= this.globalLimits.maxTotalCPUPercent &&
+      currentUsage.totalMemoryMB + quota.memoryMB <=
+        this.globalLimits.maxTotalMemoryMB &&
+      currentUsage.totalCPUPercent + quota.cpuPercent <=
+        this.globalLimits.maxTotalCPUPercent &&
       currentUsage.activePlugins < this.globalLimits.maxConcurrentPlugins
     );
   }
 
   private trackAllocation(allocation: ResourceAllocation): void {
     // In production, this would persist allocation data
-    console.debug('Resource allocated:', allocation);
+    console.debug("Resource allocated:", allocation);
   }
 
   private cleanupAllocation(pluginName: string): void {
     // Clean up allocation tracking
-    console.debug('Resource allocation cleaned up:', pluginName);
+    console.debug("Resource allocation cleaned up:", pluginName);
   }
 
-  private detectViolations(usage: ResourceUsage, quota: ResourceQuota): ResourceViolation[] {
+  private detectViolations(
+    usage: ResourceUsage,
+    quota: ResourceQuota,
+  ): ResourceViolation[] {
     const violations: ResourceViolation[] = [];
 
     if (usage.memoryMB > quota.memoryMB) {
       violations.push({
-        type: 'memory_exceeded',
-        severity: 'high',
+        type: "memory_exceeded",
+        severity: "high",
         current: usage.memoryMB,
         limit: quota.memoryMB,
-        description: `Memory usage (${usage.memoryMB}MB) exceeds quota (${quota.memoryMB}MB)`
+        description: `Memory usage (${usage.memoryMB}MB) exceeds quota (${quota.memoryMB}MB)`,
       });
     }
 
     if (usage.cpuPercent > quota.cpuPercent) {
       violations.push({
-        type: 'cpu_exceeded',
-        severity: 'medium',
+        type: "cpu_exceeded",
+        severity: "medium",
         current: usage.cpuPercent,
         limit: quota.cpuPercent,
-        description: `CPU usage (${usage.cpuPercent}%) exceeds quota (${quota.cpuPercent}%)`
+        description: `CPU usage (${usage.cpuPercent}%) exceeds quota (${quota.cpuPercent}%)`,
       });
     }
 
     if (usage.diskMB > quota.diskMB) {
       violations.push({
-        type: 'disk_exceeded',
-        severity: 'low',
+        type: "disk_exceeded",
+        severity: "low",
         current: usage.diskMB,
         limit: quota.diskMB,
-        description: `Disk usage (${usage.diskMB}MB) exceeds quota (${quota.diskMB}MB)`
+        description: `Disk usage (${usage.diskMB}MB) exceeds quota (${quota.diskMB}MB)`,
       });
     }
 
     return violations;
   }
 
-  private calculateEfficiency(usage: ResourceUsage, quota: ResourceQuota): number {
+  private calculateEfficiency(
+    usage: ResourceUsage,
+    quota: ResourceQuota,
+  ): number {
     // Calculate resource utilization efficiency (0-1)
     const memoryEfficiency = Math.min(usage.memoryMB / quota.memoryMB, 1);
     const cpuEfficiency = Math.min(usage.cpuPercent / quota.cpuPercent, 1);
-    
+
     return (memoryEfficiency + cpuEfficiency) / 2;
   }
 
-  private calculateSummary(reports: PluginResourceReport[], globalUsage: GlobalResourceUsage): ResourceSummary {
-    const totalAllocatedMemory = reports.reduce((sum, r) => sum + r.quota.memoryMB, 0);
-    const totalUsedMemory = reports.reduce((sum, r) => sum + r.usage.memoryMB, 0);
-    const totalViolations = reports.reduce((sum, r) => sum + r.violations.length, 0);
+  private calculateSummary(
+    reports: PluginResourceReport[],
+    globalUsage: GlobalResourceUsage,
+  ): ResourceSummary {
+    const totalAllocatedMemory = reports.reduce(
+      (sum, r) => sum + r.quota.memoryMB,
+      0,
+    );
+    const totalUsedMemory = reports.reduce(
+      (sum, r) => sum + r.usage.memoryMB,
+      0,
+    );
+    const totalViolations = reports.reduce(
+      (sum, r) => sum + r.violations.length,
+      0,
+    );
 
     return {
       totalPlugins: reports.length,
       totalAllocatedMemoryMB: totalAllocatedMemory,
       totalUsedMemoryMB: totalUsedMemory,
-      memoryUtilization: totalAllocatedMemory > 0 ? totalUsedMemory / totalAllocatedMemory : 0,
+      memoryUtilization:
+        totalAllocatedMemory > 0 ? totalUsedMemory / totalAllocatedMemory : 0,
       totalViolations,
-      globalUsage
+      globalUsage,
     };
   }
 
-  private generateRecommendations(reports: PluginResourceReport[], summary: ResourceSummary): string[] {
+  private generateRecommendations(
+    reports: PluginResourceReport[],
+    summary: ResourceSummary,
+  ): string[] {
     const recommendations: string[] = [];
 
     if (summary.memoryUtilization < 0.3) {
-      recommendations.push('Consider reducing memory allocations - overall utilization is low');
+      recommendations.push(
+        "Consider reducing memory allocations - overall utilization is low",
+      );
     }
 
     if (summary.totalViolations > 0) {
-      recommendations.push(`${summary.totalViolations} quota violations detected - review plugin resource requirements`);
+      recommendations.push(
+        `${summary.totalViolations} quota violations detected - review plugin resource requirements`,
+      );
     }
 
-    const inefficientPlugins = reports.filter(r => r.efficiency < 0.2).length;
+    const inefficientPlugins = reports.filter((r) => r.efficiency < 0.2).length;
     if (inefficientPlugins > 0) {
-      recommendations.push(`${inefficientPlugins} plugins are underutilizing resources - consider optimization`);
+      recommendations.push(
+        `${inefficientPlugins} plugins are underutilizing resources - consider optimization`,
+      );
     }
 
-    if (summary.globalUsage.totalMemoryMB > this.globalLimits.maxTotalMemoryMB * 0.9) {
-      recommendations.push('Approaching global memory limit - consider optimization or limit increases');
+    if (
+      summary.globalUsage.totalMemoryMB >
+      this.globalLimits.maxTotalMemoryMB * 0.9
+    ) {
+      recommendations.push(
+        "Approaching global memory limit - consider optimization or limit increases",
+      );
     }
 
     return recommendations;
   }
 
-  private calculateTotalSavings(optimizations: ResourceOptimization[]): ResourceSavings {
+  private calculateTotalSavings(
+    optimizations: ResourceOptimization[],
+  ): ResourceSavings {
     let totalMemoryMB = 0;
     let totalCPUPercent = 0;
 
@@ -370,38 +421,47 @@ export class ResourceManager {
     return { memoryMB: totalMemoryMB, cpuPercent: totalCPUPercent };
   }
 
-  private async takeEnforcementAction(pluginName: string, violation: ResourceViolation): Promise<EnforcementAction> {
+  private async takeEnforcementAction(
+    pluginName: string,
+    violation: ResourceViolation,
+  ): Promise<EnforcementAction> {
     try {
       switch (violation.type) {
-        case 'memory_exceeded':
+        case "memory_exceeded":
           // In production, this might trigger memory cleanup or plugin throttling
-          console.warn(`Memory violation for plugin ${pluginName} - implementing throttling`);
+          console.warn(
+            `Memory violation for plugin ${pluginName} - implementing throttling`,
+          );
           break;
-        case 'cpu_exceeded':
+        case "cpu_exceeded":
           // Implement CPU throttling
-          console.warn(`CPU violation for plugin ${pluginName} - implementing throttling`);
+          console.warn(
+            `CPU violation for plugin ${pluginName} - implementing throttling`,
+          );
           break;
-        case 'disk_exceeded':
+        case "disk_exceeded":
           // Clean up temporary files
-          console.warn(`Disk violation for plugin ${pluginName} - cleaning up resources`);
+          console.warn(
+            `Disk violation for plugin ${pluginName} - cleaning up resources`,
+          );
           break;
       }
 
       return {
         pluginName,
         violationType: violation.type,
-        action: 'throttle',
+        action: "throttle",
         success: true,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     } catch (error) {
       return {
         pluginName,
         violationType: violation.type,
-        action: 'throttle',
+        action: "throttle",
         success: false,
         error: String(error),
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     }
   }
@@ -410,12 +470,20 @@ export class ResourceManager {
     const globalUsage = await this.getCurrentGlobalUsage();
 
     if (globalUsage.totalMemoryMB > this.globalLimits.maxTotalMemoryMB) {
-      console.warn('Global memory limit exceeded:', globalUsage.totalMemoryMB, 'MB');
+      console.warn(
+        "Global memory limit exceeded:",
+        globalUsage.totalMemoryMB,
+        "MB",
+      );
       // Trigger global resource cleanup
     }
 
     if (globalUsage.totalCPUPercent > this.globalLimits.maxTotalCPUPercent) {
-      console.warn('Global CPU limit exceeded:', globalUsage.totalCPUPercent, '%');
+      console.warn(
+        "Global CPU limit exceeded:",
+        globalUsage.totalCPUPercent,
+        "%",
+      );
       // Trigger CPU throttling
     }
   }
@@ -426,7 +494,7 @@ export class ResourceManager {
       try {
         await monitor.stop();
       } catch (error) {
-        console.warn('Failed to stop resource monitor:', error);
+        console.warn("Failed to stop resource monitor:", error);
       }
     }
 
@@ -451,7 +519,7 @@ export class ResourceMonitor {
       cpuPercent: 0,
       diskMB: 0,
       networkKbps: 0,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
@@ -463,7 +531,10 @@ export class ResourceMonitor {
       try {
         await this.updateUsage();
       } catch (error) {
-        console.warn(`Resource monitoring failed for ${this.pluginName}:`, error);
+        console.warn(
+          `Resource monitoring failed for ${this.pluginName}:`,
+          error,
+        );
       }
     }, 1000); // Update every second
   }
@@ -490,7 +561,7 @@ export class ResourceMonitor {
       cpuPercent: Math.random() * this.quota.cpuPercent * 0.7,
       diskMB: Math.random() * this.quota.diskMB * 0.5,
       networkKbps: Math.random() * this.quota.networkBandwidthKbps * 0.3,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 }
@@ -498,7 +569,7 @@ export class ResourceMonitor {
 export class ResourceError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'ResourceError';
+    this.name = "ResourceError";
   }
 }
 
@@ -526,12 +597,16 @@ export interface ResourceAllocation {
   diskMB: number;
   networkBandwidthKbps: number;
   allocatedAt: number;
-  status: 'allocated' | 'released';
+  status: "allocated" | "released";
 }
 
 export interface ResourceViolation {
-  type: 'memory_exceeded' | 'cpu_exceeded' | 'disk_exceeded' | 'network_exceeded';
-  severity: 'low' | 'medium' | 'high';
+  type:
+    | "memory_exceeded"
+    | "cpu_exceeded"
+    | "disk_exceeded"
+    | "network_exceeded";
+  severity: "low" | "medium" | "high";
   current: number;
   limit: number;
   description: string;
@@ -584,7 +659,11 @@ export interface GlobalResourceUsage {
 
 export interface ResourceOptimization {
   pluginName: string;
-  type: 'reduce_allocation' | 'increase_allocation' | 'merge_resources' | 'schedule_differently';
+  type:
+    | "reduce_allocation"
+    | "increase_allocation"
+    | "merge_resources"
+    | "schedule_differently";
   description: string;
   estimatedSavings?: ResourceSavings;
 }
@@ -603,7 +682,7 @@ export interface OptimizationResult {
 export interface EnforcementAction {
   pluginName: string;
   violationType: string;
-  action: 'throttle' | 'suspend' | 'terminate' | 'cleanup';
+  action: "throttle" | "suspend" | "terminate" | "cleanup";
   success: boolean;
   error?: string;
   timestamp: number;

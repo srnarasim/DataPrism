@@ -1,6 +1,6 @@
-export { DataPrismEngine } from './engine.js';
-export { DuckDBManager } from './duckdb-manager.js';
-export { ErrorHandler } from './error-handler.js';
+export { DataPrismEngine } from "./engine.js";
+export { DuckDBManager } from "./duckdb-manager.js";
+export { ErrorHandler } from "./error-handler.js";
 
 export type {
   DataPrismConfig,
@@ -10,16 +10,16 @@ export type {
   PerformanceMetrics,
   EngineStatus,
   Logger,
-  LogLevel
-} from './types.js';
+  LogLevel,
+} from "./types.js";
 
 // Version information
-export const version = '0.1.0';
-export const name = 'DataPrism Core';
+export const version = "0.1.0";
+export const name = "DataPrism Core";
 
 // Re-export classes
-import { DataPrismEngine } from './engine.js';
-import type { DataPrismConfig } from './types.js';
+import { DataPrismEngine } from "./engine.js";
+import type { DataPrismConfig } from "./types.js";
 
 // Utility functions
 export function createEngine(config?: Partial<DataPrismConfig>) {

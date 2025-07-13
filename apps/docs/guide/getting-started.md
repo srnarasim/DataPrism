@@ -48,8 +48,8 @@ Include DataPrism Core directly from our CDN:
 
 ```html
 <script type="module">
-  import { DataPrismEngine } from 'https://cdn.dataprism.dev/v1.0.0/core.min.js';
-  
+  import { DataPrismEngine } from "https://cdn.dataprism.dev/v1.0.0/core.min.js";
+
   // Your code here
 </script>
 ```
@@ -61,18 +61,18 @@ Let's build a simple analytics application that loads CSV data and runs queries.
 ### Step 1: Initialize the Engine
 
 ```typescript
-import { DataPrismEngine } from '@dataprism/core';
+import { DataPrismEngine } from "@dataprism/core";
 
 async function initializeApp() {
   // Create and initialize the engine
   const engine = new DataPrismEngine({
-    memoryLimit: '512MB',
-    enableOptimizations: true
+    memoryLimit: "512MB",
+    enableOptimizations: true,
   });
-  
+
   await engine.initialize();
-  console.log('✅ DataPrism Core initialized!');
-  
+  console.log("✅ DataPrism Core initialized!");
+
   return engine;
 }
 ```
@@ -83,16 +83,46 @@ async function initializeApp() {
 async function loadSampleData(engine) {
   // Sample sales data
   const salesData = [
-    { date: '2024-01-01', product: 'Widget A', region: 'North', revenue: 1500, quantity: 10 },
-    { date: '2024-01-01', product: 'Widget B', region: 'South', revenue: 2300, quantity: 15 },
-    { date: '2024-01-02', product: 'Widget A', region: 'East', revenue: 1800, quantity: 12 },
-    { date: '2024-01-02', product: 'Widget C', region: 'West', revenue: 2100, quantity: 14 },
-    { date: '2024-01-03', product: 'Widget B', region: 'North', revenue: 1900, quantity: 13 }
+    {
+      date: "2024-01-01",
+      product: "Widget A",
+      region: "North",
+      revenue: 1500,
+      quantity: 10,
+    },
+    {
+      date: "2024-01-01",
+      product: "Widget B",
+      region: "South",
+      revenue: 2300,
+      quantity: 15,
+    },
+    {
+      date: "2024-01-02",
+      product: "Widget A",
+      region: "East",
+      revenue: 1800,
+      quantity: 12,
+    },
+    {
+      date: "2024-01-02",
+      product: "Widget C",
+      region: "West",
+      revenue: 2100,
+      quantity: 14,
+    },
+    {
+      date: "2024-01-03",
+      product: "Widget B",
+      region: "North",
+      revenue: 1900,
+      quantity: 13,
+    },
   ];
-  
+
   // Load data into DuckDB table
-  await engine.loadData(salesData, 'sales');
-  console.log('📊 Sample data loaded!');
+  await engine.loadData(salesData, "sales");
+  console.log("📊 Sample data loaded!");
 }
 ```
 
@@ -111,9 +141,9 @@ async function runQueries(engine) {
     GROUP BY region 
     ORDER BY total_revenue DESC
   `);
-  
-  console.log('Revenue by Region:', regionStats.data);
-  
+
+  console.log("Revenue by Region:", regionStats.data);
+
   // Query 2: Daily trends
   const dailyTrends = await engine.query(`
     SELECT 
@@ -124,9 +154,9 @@ async function runQueries(engine) {
     GROUP BY date 
     ORDER BY date
   `);
-  
-  console.log('Daily Trends:', dailyTrends.data);
-  
+
+  console.log("Daily Trends:", dailyTrends.data);
+
   // Query 3: Product performance
   const productPerformance = await engine.query(`
     SELECT 
@@ -138,8 +168,8 @@ async function runQueries(engine) {
     GROUP BY product 
     ORDER BY total_revenue DESC
   `);
-  
-  console.log('Product Performance:', productPerformance.data);
+
+  console.log("Product Performance:", productPerformance.data);
 }
 ```
 
@@ -148,42 +178,43 @@ async function runQueries(engine) {
 Here's the complete application:
 
 ```typescript
-import { DataPrismEngine } from '@dataprism/core';
+import { DataPrismEngine } from "@dataprism/core";
 
 async function main() {
   try {
     // Initialize engine
     const engine = await initializeApp();
-    
+
     // Load sample data
     await loadSampleData(engine);
-    
+
     // Run analytics queries
     await runQueries(engine);
-    
+
     // Display results in the browser
     displayResults(engine);
-    
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error("❌ Error:", error);
   }
 }
 
 async function displayResults(engine) {
   // Create a simple HTML dashboard
-  const dashboard = document.createElement('div');
+  const dashboard = document.createElement("div");
   dashboard.innerHTML = `
     <h1>DataPrism Analytics Dashboard</h1>
     <div id="results"></div>
     <button id="refresh">Refresh Data</button>
   `;
-  
+
   document.body.appendChild(dashboard);
-  
+
   // Add refresh functionality
-  document.getElementById('refresh').addEventListener('click', async () => {
-    const newResults = await engine.query('SELECT COUNT(*) as total_records FROM sales');
-    document.getElementById('results').innerHTML = 
+  document.getElementById("refresh").addEventListener("click", async () => {
+    const newResults = await engine.query(
+      "SELECT COUNT(*) as total_records FROM sales",
+    );
+    document.getElementById("results").innerHTML =
       `<p>Total Records: ${newResults.data[0].total_records}</p>`;
   });
 }
@@ -197,7 +228,7 @@ main();
 Enhance your application with charts and visualizations:
 
 ```typescript
-import { Chart } from 'chart.js/auto';
+import { Chart } from "chart.js/auto";
 
 async function createCharts(engine) {
   // Get data for visualization
@@ -206,28 +237,30 @@ async function createCharts(engine) {
     FROM sales 
     GROUP BY region
   `);
-  
+
   // Create a bar chart
-  const ctx = document.getElementById('revenueChart').getContext('2d');
+  const ctx = document.getElementById("revenueChart").getContext("2d");
   new Chart(ctx, {
-    type: 'bar',
+    type: "bar",
     data: {
-      labels: chartData.data.map(row => row.region),
-      datasets: [{
-        label: 'Revenue by Region',
-        data: chartData.data.map(row => row.revenue),
-        backgroundColor: 'rgba(54, 162, 235, 0.8)'
-      }]
+      labels: chartData.data.map((row) => row.region),
+      datasets: [
+        {
+          label: "Revenue by Region",
+          data: chartData.data.map((row) => row.revenue),
+          backgroundColor: "rgba(54, 162, 235, 0.8)",
+        },
+      ],
     },
     options: {
       responsive: true,
       plugins: {
         title: {
           display: true,
-          text: 'Revenue by Region'
-        }
-      }
-    }
+          text: "Revenue by Region",
+        },
+      },
+    },
   });
 }
 ```
@@ -238,32 +271,32 @@ Add CSV file upload functionality:
 
 ```typescript
 function setupFileUpload(engine) {
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = '.csv';
-  
-  fileInput.addEventListener('change', async (event) => {
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = ".csv";
+
+  fileInput.addEventListener("change", async (event) => {
     const file = event.target.files[0];
     if (file) {
       const text = await file.text();
-      
+
       // Parse CSV and load into DataPrism
-      await engine.loadCSV(text, 'uploaded_data');
-      
+      await engine.loadCSV(text, "uploaded_data");
+
       // Show success message
       console.log(`✅ Loaded ${file.name} successfully!`);
-      
+
       // Run a quick analysis
       const summary = await engine.query(`
         SELECT COUNT(*) as rows, 
                COUNT(DISTINCT *) as unique_rows
         FROM uploaded_data
       `);
-      
-      console.log('Data Summary:', summary.data[0]);
+
+      console.log("Data Summary:", summary.data[0]);
     }
   });
-  
+
   document.body.appendChild(fileInput);
 }
 ```
@@ -276,12 +309,12 @@ Monitor your application's performance:
 async function setupMonitoring(engine) {
   // Get performance metrics
   const metrics = await engine.getMetrics();
-  console.log('Performance Metrics:', {
+  console.log("Performance Metrics:", {
     memoryUsage: metrics.memoryUsage,
     queryCount: metrics.queryCount,
-    avgQueryTime: metrics.avgQueryTime
+    avgQueryTime: metrics.avgQueryTime,
   });
-  
+
   // Set up real-time monitoring
   setInterval(async () => {
     const currentMetrics = await engine.getMetrics();
@@ -290,7 +323,7 @@ async function setupMonitoring(engine) {
 }
 
 function updateDashboard(metrics) {
-  const dashboardElement = document.getElementById('metrics-dashboard');
+  const dashboardElement = document.getElementById("metrics-dashboard");
   if (dashboardElement) {
     dashboardElement.innerHTML = `
       <div class="metrics">
@@ -317,21 +350,25 @@ function updateDashboard(metrics) {
 Congratulations! You've built your first DataPrism Core application. Here's what to explore next:
 
 ### Learn Core Concepts
+
 - **[Architecture](/guide/architecture)** - Understand how DataPrism Core works under the hood
 - **[Data Loading](/guide/data-loading)** - Learn about different data input methods
 - **[Query Engine](/guide/query-engine)** - Master SQL queries and optimizations
 
 ### Build Advanced Features
+
 - **[Custom Plugins](/guide/plugins)** - Extend functionality with plugins
 - **[Performance Optimization](/guide/performance)** - Optimize for large datasets
 - **[Memory Management](/guide/memory-management)** - Handle memory efficiently
 
 ### Explore Examples
+
 - **[React Integration](/examples/react)** - Build React applications with DataPrism
 - **[Real-time Analytics](/examples/realtime)** - Process streaming data
 - **[Complex Queries](/examples/aggregations)** - Advanced SQL examples
 
 ### Join the Community
+
 - **[GitHub Discussions](https://github.com/dataprism/core/discussions)** - Ask questions and share ideas
 - **[Examples Repository](https://github.com/dataprism/examples)** - Community-contributed examples
 - **[Newsletter](https://dataprism.dev/newsletter)** - Stay updated with latest features
@@ -341,27 +378,30 @@ Congratulations! You've built your first DataPrism Core application. Here's what
 ### Common Issues
 
 **WebAssembly not supported**
+
 ```javascript
-if (!('WebAssembly' in window)) {
-  console.error('WebAssembly not supported in this browser');
+if (!("WebAssembly" in window)) {
+  console.error("WebAssembly not supported in this browser");
   // Show fallback message to user
 }
 ```
 
 **Memory limit exceeded**
+
 ```javascript
 try {
-  await engine.loadData(largeDataset, 'table');
+  await engine.loadData(largeDataset, "table");
 } catch (error) {
-  if (error.message.includes('memory')) {
+  if (error.message.includes("memory")) {
     // Reduce dataset size or increase memory limit
-    const engine = new DataPrismEngine({ memoryLimit: '1GB' });
+    const engine = new DataPrismEngine({ memoryLimit: "1GB" });
   }
 }
 ```
 
 **Cross-origin issues**
 Ensure your server sends the required headers:
+
 ```
 Cross-Origin-Embedder-Policy: require-corp
 Cross-Origin-Opener-Policy: same-origin

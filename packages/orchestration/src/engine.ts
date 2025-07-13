@@ -1,6 +1,11 @@
-import { DuckDBManager } from './duckdb-manager.js';
-import { QueryResult, DataPrismConfig, EngineStatus, PerformanceMetrics } from './types.js';
-import { ErrorHandler } from './error-handler.js';
+import { DuckDBManager } from "./duckdb-manager.js";
+import {
+  QueryResult,
+  DataPrismConfig,
+  EngineStatus,
+  PerformanceMetrics,
+} from "./types.js";
+import { ErrorHandler } from "./error-handler.js";
 
 // WASM module will be available after build
 interface WasmModule {
@@ -22,7 +27,7 @@ export class DataPrismEngine {
     queryCount: 0,
     totalExecutionTime: 0,
     averageResponseTime: 0,
-    memoryPeakUsage: 0
+    memoryPeakUsage: 0,
   };
 
   constructor(config: Partial<DataPrismConfig> = {}) {
@@ -30,8 +35,8 @@ export class DataPrismEngine {
       enableWasmOptimizations: true,
       maxMemoryMB: 4096,
       queryTimeoutMs: 30000,
-      logLevel: 'info',
-      ...config
+      logLevel: "info",
+      ...config,
     };
     this.duckdb = new DuckDBManager();
   }
@@ -42,21 +47,24 @@ export class DataPrismEngine {
     try {
       // Initialize DuckDB first
       await this.duckdb.initialize();
-      this.log('info', 'DuckDB initialized successfully');
+      this.log("info", "DuckDB initialized successfully");
 
       // Try to initialize WASM module if available
       try {
         await this.initializeWasm();
-        this.log('info', 'WASM module initialized successfully');
+        this.log("info", "WASM module initialized successfully");
       } catch (wasmError) {
-        this.log('warn', 'WASM module not available, continuing without WASM optimizations');
+        this.log(
+          "warn",
+          "WASM module not available, continuing without WASM optimizations",
+        );
         this.config.enableWasmOptimizations = false;
       }
 
       this.initialized = true;
-      this.log('info', 'DataPrism Engine initialized successfully');
+      this.log("info", "DataPrism Engine initialized successfully");
     } catch (error) {
-      this.errorHandler.handleError(error, 'orchestration');
+      this.errorHandler.handleError(error, "orchestration");
       throw error;
     }
   }
@@ -64,16 +72,16 @@ export class DataPrismEngine {
   private async initializeWasm(): Promise<void> {
     try {
       // Dynamic import of WASM module - this will be available after build
-      const wasmPath = '../../../packages/core/pkg/dataprism_core.js';
+      const wasmPath = "../../../packages/core/pkg/dataprism_core.js";
       const wasmModule = await import(wasmPath);
-      
+
       await wasmModule.default(); // Initialize WASM
       wasmModule.init_panic_hook();
-      
+
       this.wasmModule = wasmModule;
       this.wasmEngine = new wasmModule.QueryEngine();
-      
-      this.log('info', `WASM module version: ${wasmModule.get_version()}`);
+
+      this.log("info", `WASM module version: ${wasmModule.get_version()}`);
     } catch (error) {
       throw new Error(`WASM initialization failed: ${error}`);
     }
@@ -81,7 +89,7 @@ export class DataPrismEngine {
 
   async query(sql: string): Promise<QueryResult> {
     if (!this.initialized) {
-      throw new Error('Engine not initialized');
+      throw new Error("Engine not initialized");
     }
 
     const startTime = performance.now();
@@ -90,39 +98,47 @@ export class DataPrismEngine {
     try {
       // Route query through DuckDB for analytical processing
       const result = await this.duckdb.query(sql);
-      
+
       // Apply WASM optimizations if enabled and beneficial
-      if (this.config.enableWasmOptimizations && 
-          this.wasmEngine && 
-          this.shouldUseWasmOptimization(result)) {
+      if (
+        this.config.enableWasmOptimizations &&
+        this.wasmEngine &&
+        this.shouldUseWasmOptimization(result)
+      ) {
         return await this.applyWasmOptimizations(result);
       }
 
-      this.updateMetrics(performance.now() - startTime, result.metadata.memoryUsage);
+      this.updateMetrics(
+        performance.now() - startTime,
+        result.metadata.memoryUsage,
+      );
       return result;
     } catch (error) {
-      this.errorHandler.handleError(error, 'orchestration');
+      this.errorHandler.handleError(error, "orchestration");
       throw error;
     }
   }
 
-  async loadData(data: any[], tableName: string = 'main_table'): Promise<void> {
+  async loadData(data: any[], tableName: string = "main_table"): Promise<void> {
     if (!this.initialized) {
-      throw new Error('Engine not initialized');
+      throw new Error("Engine not initialized");
     }
 
     try {
       await this.duckdb.insertData(tableName, data);
-      this.log('info', `Loaded ${data.length} rows into table ${tableName}`);
+      this.log("info", `Loaded ${data.length} rows into table ${tableName}`);
     } catch (error) {
-      this.errorHandler.handleError(error, 'orchestration');
+      this.errorHandler.handleError(error, "orchestration");
       throw error;
     }
   }
 
-  async createTable(tableName: string, schema: Record<string, string>): Promise<void> {
+  async createTable(
+    tableName: string,
+    schema: Record<string, string>,
+  ): Promise<void> {
     if (!this.initialized) {
-      throw new Error('Engine not initialized');
+      throw new Error("Engine not initialized");
     }
 
     await this.duckdb.createTable(tableName, schema);
@@ -130,7 +146,7 @@ export class DataPrismEngine {
 
   async listTables(): Promise<string[]> {
     if (!this.initialized) {
-      throw new Error('Engine not initialized');
+      throw new Error("Engine not initialized");
     }
 
     return await this.duckdb.listTables();
@@ -138,7 +154,7 @@ export class DataPrismEngine {
 
   async getTableInfo(tableName: string): Promise<any[]> {
     if (!this.initialized) {
-      throw new Error('Engine not initialized');
+      throw new Error("Engine not initialized");
     }
 
     return await this.duckdb.getTableInfo(tableName);
@@ -150,7 +166,9 @@ export class DataPrismEngine {
     return result.data.length > 1000 || result.metadata.executionTime > 1000;
   }
 
-  private async applyWasmOptimizations(result: QueryResult): Promise<QueryResult> {
+  private async applyWasmOptimizations(
+    result: QueryResult,
+  ): Promise<QueryResult> {
     if (!this.wasmEngine) {
       return result;
     }
@@ -158,28 +176,39 @@ export class DataPrismEngine {
     try {
       // Convert data to bytes for WASM processing
       const dataBytes = new TextEncoder().encode(JSON.stringify(result.data));
-      
+
       // Process through WASM engine
       const wasmResult = await this.wasmEngine.process_data(dataBytes);
-      
+
       return {
         data: JSON.parse(wasmResult.data),
         metadata: {
           rowCount: wasmResult.row_count,
-          executionTime: result.metadata.executionTime + wasmResult.execution_time_ms,
-          memoryUsage: Math.max(result.metadata.memoryUsage, wasmResult.memory_used_bytes)
-        }
+          executionTime:
+            result.metadata.executionTime + wasmResult.execution_time_ms,
+          memoryUsage: Math.max(
+            result.metadata.memoryUsage,
+            wasmResult.memory_used_bytes,
+          ),
+        },
       };
     } catch (error) {
-      this.log('warn', `WASM optimization failed, falling back to original result: ${error}`);
+      this.log(
+        "warn",
+        `WASM optimization failed, falling back to original result: ${error}`,
+      );
       return result;
     }
   }
 
   private updateMetrics(executionTime: number, memoryUsage: number): void {
     this.metrics.totalExecutionTime += executionTime;
-    this.metrics.averageResponseTime = this.metrics.totalExecutionTime / this.metrics.queryCount;
-    this.metrics.memoryPeakUsage = Math.max(this.metrics.memoryPeakUsage, memoryUsage);
+    this.metrics.averageResponseTime =
+      this.metrics.totalExecutionTime / this.metrics.queryCount;
+    this.metrics.memoryPeakUsage = Math.max(
+      this.metrics.memoryPeakUsage,
+      memoryUsage,
+    );
   }
 
   getMemoryUsage(): number {
@@ -199,23 +228,31 @@ export class DataPrismEngine {
       wasmModuleLoaded: !!this.wasmModule,
       duckdbConnected: this.duckdb.isInitialized(),
       memoryUsage: this.getMemoryUsage(),
-      uptime: Date.now() - this.startTime
+      uptime: Date.now() - this.startTime,
     };
   }
 
   getVersion(): string {
-    return this.wasmModule?.get_version() || '0.1.0';
+    return this.wasmModule?.get_version() || "0.1.0";
   }
 
   getBuildInfo(): any {
-    return this.wasmModule?.get_build_info() || { version: '0.1.0', source: 'typescript' };
+    return (
+      this.wasmModule?.get_build_info() || {
+        version: "0.1.0",
+        source: "typescript",
+      }
+    );
   }
 
   private log(level: string, message: string): void {
-    if (this.config.logLevel === 'debug' || 
-        (this.config.logLevel === 'info' && level !== 'debug') ||
-        (this.config.logLevel === 'warn' && (level === 'warn' || level === 'error')) ||
-        (this.config.logLevel === 'error' && level === 'error')) {
+    if (
+      this.config.logLevel === "debug" ||
+      (this.config.logLevel === "info" && level !== "debug") ||
+      (this.config.logLevel === "warn" &&
+        (level === "warn" || level === "error")) ||
+      (this.config.logLevel === "error" && level === "error")
+    ) {
       console.log(`[DataPrism:${level.toUpperCase()}] ${message}`);
     }
   }
@@ -225,6 +262,6 @@ export class DataPrismEngine {
     this.wasmEngine = null;
     this.wasmModule = null;
     this.initialized = false;
-    this.log('info', 'DataPrism Engine closed');
+    this.log("info", "DataPrism Engine closed");
   }
 }

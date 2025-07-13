@@ -1,16 +1,16 @@
-import { chromium } from 'playwright';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { chromium } from "playwright";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 async function runBrowserTests() {
-  console.log('Starting browser integration tests...');
-  
+  console.log("Starting browser integration tests...");
+
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
-  
+
   try {
     // Create a test HTML page
     const testHtml = `
@@ -38,32 +38,33 @@ async function runBrowserTests() {
 </body>
 </html>
     `;
-    
+
     await page.setContent(testHtml);
     await page.waitForTimeout(1000); // Wait for script execution
-    
+
     // Test basic page functionality
     const testResults = await page.evaluate(() => window.testResults);
-    
-    console.log('Browser test results:', testResults);
-    
+
+    console.log("Browser test results:", testResults);
+
     // Validate results
     if (!testResults.initialization.success) {
-      throw new Error('Initialization test failed');
+      throw new Error("Initialization test failed");
     }
-    
+
     if (testResults.initialization.time > 5000) {
-      throw new Error(`Initialization too slow: ${testResults.initialization.time}ms > 5000ms`);
+      throw new Error(
+        `Initialization too slow: ${testResults.initialization.time}ms > 5000ms`,
+      );
     }
-    
+
     if (testResults.query.time > 2000) {
       throw new Error(`Query too slow: ${testResults.query.time}ms > 2000ms`);
     }
-    
-    console.log('✅ Browser integration tests passed!');
-    
+
+    console.log("✅ Browser integration tests passed!");
   } catch (error) {
-    console.error('❌ Browser integration tests failed:', error);
+    console.error("❌ Browser integration tests failed:", error);
     throw error;
   } finally {
     await browser.close();
@@ -72,8 +73,8 @@ async function runBrowserTests() {
 
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  runBrowserTests().catch(error => {
-    console.error('Test execution failed:', error);
+  runBrowserTests().catch((error) => {
+    console.error("Test execution failed:", error);
     process.exit(1);
   });
 }

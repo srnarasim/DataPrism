@@ -1,7 +1,7 @@
-import { 
-  IDataProcessorPlugin, 
-  Dataset, 
-  ProcessingOptions, 
+import {
+  IDataProcessorPlugin,
+  Dataset,
+  ProcessingOptions,
   ValidationResult,
   TransformationRule,
   ProcessingCapability,
@@ -10,12 +10,12 @@ import {
   PluginContext,
   PluginCapability,
   PluginManifest,
-  PluginDependency
-} from '../../src/interfaces/index.js';
+  PluginDependency,
+} from "../../src/interfaces/index.js";
 
 /**
  * CSV Data Processor Plugin
- * 
+ *
  * This plugin demonstrates data processing capabilities including:
  * - CSV parsing and formatting
  * - Data validation and cleaning
@@ -30,24 +30,24 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
     totalProcessed: 0,
     averageProcessingTime: 0,
     errorsEncountered: 0,
-    dataQualityScore: 100
+    dataQualityScore: 100,
   };
 
   // Plugin Identity
   getName(): string {
-    return 'csv-processor';
+    return "csv-processor";
   }
 
   getVersion(): string {
-    return '1.0.0';
+    return "1.0.0";
   }
 
   getDescription(): string {
-    return 'Advanced CSV data processing plugin with validation and transformation capabilities';
+    return "Advanced CSV data processing plugin with validation and transformation capabilities";
   }
 
   getAuthor(): string {
-    return 'DataPrism Team';
+    return "DataPrism Team";
   }
 
   getDependencies(): PluginDependency[] {
@@ -60,137 +60,137 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
       version: this.getVersion(),
       description: this.getDescription(),
       author: this.getAuthor(),
-      license: 'MIT',
-      keywords: ['csv', 'data-processing', 'validation', 'transformation'],
-      category: 'data-processing',
-      entryPoint: './csv-processor.js',
+      license: "MIT",
+      keywords: ["csv", "data-processing", "validation", "transformation"],
+      category: "data-processing",
+      entryPoint: "./csv-processor.js",
       dependencies: [],
       permissions: [
-        { resource: 'data', access: 'read' },
-        { resource: 'data', access: 'write' },
-        { resource: 'storage', access: 'read' }
+        { resource: "data", access: "read" },
+        { resource: "data", access: "write" },
+        { resource: "storage", access: "read" },
       ],
       configuration: {
         delimiter: {
-          type: 'string',
-          default: ',',
-          description: 'CSV delimiter character'
+          type: "string",
+          default: ",",
+          description: "CSV delimiter character",
         },
         hasHeader: {
-          type: 'boolean',
+          type: "boolean",
           default: true,
-          description: 'Whether CSV has header row'
+          description: "Whether CSV has header row",
         },
         validateData: {
-          type: 'boolean',
+          type: "boolean",
           default: true,
-          description: 'Enable data validation'
+          description: "Enable data validation",
         },
         maxRows: {
-          type: 'number',
+          type: "number",
           default: 1000000,
-          description: 'Maximum rows to process'
-        }
+          description: "Maximum rows to process",
+        },
       },
       compatibility: {
-        minCoreVersion: '0.1.0',
-        browsers: ['chrome', 'firefox', 'safari', 'edge']
-      }
+        minCoreVersion: "0.1.0",
+        browsers: ["chrome", "firefox", "safari", "edge"],
+      },
     };
   }
 
   getCapabilities(): PluginCapability[] {
     return [
       {
-        name: 'csv-parsing',
-        description: 'Parse CSV data with customizable delimiters',
-        type: 'processing',
-        version: '1.0.0',
+        name: "csv-parsing",
+        description: "Parse CSV data with customizable delimiters",
+        type: "processing",
+        version: "1.0.0",
         async: true,
-        inputTypes: ['text/csv', 'text/plain'],
-        outputTypes: ['application/json']
+        inputTypes: ["text/csv", "text/plain"],
+        outputTypes: ["application/json"],
       },
       {
-        name: 'data-validation',
-        description: 'Validate data quality and detect anomalies',
-        type: 'processing',
-        version: '1.0.0',
+        name: "data-validation",
+        description: "Validate data quality and detect anomalies",
+        type: "processing",
+        version: "1.0.0",
         async: true,
-        inputTypes: ['application/json'],
-        outputTypes: ['application/json']
+        inputTypes: ["application/json"],
+        outputTypes: ["application/json"],
       },
       {
-        name: 'statistical-transform',
-        description: 'Apply statistical transformations to datasets',
-        type: 'processing',
-        version: '1.0.0',
+        name: "statistical-transform",
+        description: "Apply statistical transformations to datasets",
+        type: "processing",
+        version: "1.0.0",
         async: true,
-        inputTypes: ['application/json'],
-        outputTypes: ['application/json']
-      }
+        inputTypes: ["application/json"],
+        outputTypes: ["application/json"],
+      },
     ];
   }
 
   isCompatible(coreVersion: string): boolean {
     // Simple version compatibility check
-    return coreVersion >= '0.1.0';
+    return coreVersion >= "0.1.0";
   }
 
   // Lifecycle Management
   async initialize(context: PluginContext): Promise<void> {
     this.context = context;
-    this.log('info', 'Initializing CSV Processor Plugin');
-    
+    this.log("info", "Initializing CSV Processor Plugin");
+
     // Initialize configuration from context
     const config = this.context.config;
-    this.log('debug', 'Plugin configuration:', config);
-    
+    this.log("debug", "Plugin configuration:", config);
+
     this.initialized = true;
-    this.log('info', 'CSV Processor Plugin initialized successfully');
+    this.log("info", "CSV Processor Plugin initialized successfully");
   }
 
   async activate(): Promise<void> {
     if (!this.initialized) {
-      throw new Error('Plugin must be initialized before activation');
+      throw new Error("Plugin must be initialized before activation");
     }
-    
+
     this.active = true;
-    this.log('info', 'CSV Processor Plugin activated');
-    
+    this.log("info", "CSV Processor Plugin activated");
+
     // Register event listeners
-    this.context?.eventBus.subscribe('data:new', this.handleNewData.bind(this));
+    this.context?.eventBus.subscribe("data:new", this.handleNewData.bind(this));
   }
 
   async deactivate(): Promise<void> {
     this.active = false;
-    this.log('info', 'CSV Processor Plugin deactivated');
+    this.log("info", "CSV Processor Plugin deactivated");
   }
 
   async cleanup(): Promise<void> {
     this.context = null;
     this.initialized = false;
     this.active = false;
-    this.log('info', 'CSV Processor Plugin cleaned up');
+    this.log("info", "CSV Processor Plugin cleaned up");
   }
 
   // Core Operations
   async execute(operation: string, params: any): Promise<any> {
     if (!this.active) {
-      throw new Error('Plugin is not active');
+      throw new Error("Plugin is not active");
     }
 
-    this.log('debug', `Executing operation: ${operation}`, params);
+    this.log("debug", `Executing operation: ${operation}`, params);
 
     switch (operation) {
-      case 'parse':
+      case "parse":
         return this.parseCSV(params.data, params.options);
-      case 'validate':
+      case "validate":
         return this.validate(params.dataset);
-      case 'transform':
+      case "transform":
         return this.transform(params.dataset, params.rules);
-      case 'process':
+      case "process":
         return this.process(params.dataset, params.options);
-      case 'getMetrics':
+      case "getMetrics":
         return this.getPerformanceMetrics();
       default:
         throw new Error(`Unknown operation: ${operation}`);
@@ -198,7 +198,7 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
   }
 
   async configure(settings: any): Promise<void> {
-    this.log('info', 'Updating plugin configuration', settings);
+    this.log("info", "Updating plugin configuration", settings);
     // Update internal configuration
     // In a real implementation, this would update the plugin's behavior
   }
@@ -206,7 +206,10 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
   // Data Processing Operations
   async process(data: Dataset, options?: ProcessingOptions): Promise<Dataset> {
     const startTime = Date.now();
-    this.log('info', `Processing dataset: ${data.name} (${data.data.length} rows)`);
+    this.log(
+      "info",
+      `Processing dataset: ${data.name} (${data.data.length} rows)`,
+    );
 
     try {
       let processedData = [...data.data];
@@ -218,7 +221,7 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
       if (options?.validation) {
         const validation = await this.validate(data);
         if (!validation.isValid) {
-          this.log('warn', 'Data validation failed', validation.errors);
+          this.log("warn", "Data validation failed", validation.errors);
         }
       }
 
@@ -235,23 +238,29 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
           processedAt: new Date().toISOString(),
           processingTime: processingTime,
           originalRowCount: data.data.length,
-          processedRowCount: processedData.length
-        }
+          processedRowCount: processedData.length,
+        },
       };
 
-      this.log('info', `Processing completed in ${processingTime}ms`);
-      this.emit('processing:complete', { dataset: result, metrics: this.metrics });
+      this.log("info", `Processing completed in ${processingTime}ms`);
+      this.emit("processing:complete", {
+        dataset: result,
+        metrics: this.metrics,
+      });
 
       return result;
     } catch (error) {
       this.metrics.errorsEncountered++;
-      this.log('error', 'Processing failed', error);
+      this.log("error", "Processing failed", error);
       throw error;
     }
   }
 
-  async transform(data: Dataset, rules: TransformationRule[]): Promise<Dataset> {
-    this.log('info', `Applying ${rules.length} transformation rules`);
+  async transform(
+    data: Dataset,
+    rules: TransformationRule[],
+  ): Promise<Dataset> {
+    this.log("info", `Applying ${rules.length} transformation rules`);
 
     let transformedData = [...data.data];
 
@@ -267,13 +276,16 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
         ...data.metadata,
         transformedBy: this.getName(),
         transformedAt: new Date().toISOString(),
-        transformationRules: rules.map(r => ({ field: r.field, operation: r.operation }))
-      }
+        transformationRules: rules.map((r) => ({
+          field: r.field,
+          operation: r.operation,
+        })),
+      },
     };
   }
 
   async validate(data: Dataset): Promise<ValidationResult> {
-    this.log('info', `Validating dataset: ${data.name}`);
+    this.log("info", `Validating dataset: ${data.name}`);
 
     const errors: any[] = [];
     const warnings: any[] = [];
@@ -281,19 +293,19 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
       totalRows: data.data.length,
       nullValues: 0,
       duplicateRows: 0,
-      dataTypes: {} as Record<string, string>
+      dataTypes: {} as Record<string, string>,
     };
 
     // Check for null/undefined values
     data.data.forEach((row, index) => {
       Object.entries(row).forEach(([key, value]) => {
-        if (value === null || value === undefined || value === '') {
+        if (value === null || value === undefined || value === "") {
           statistics.nullValues++;
           warnings.push({
-            type: 'null_value',
+            type: "null_value",
             row: index,
             field: key,
-            message: `Null value found in field '${key}' at row ${index}`
+            message: `Null value found in field '${key}' at row ${index}`,
           });
         }
       });
@@ -306,9 +318,9 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
       if (rowHashes.has(hash)) {
         statistics.duplicateRows++;
         warnings.push({
-          type: 'duplicate_row',
+          type: "duplicate_row",
           row: index,
-          message: `Duplicate row found at index ${index}`
+          message: `Duplicate row found at index ${index}`,
         });
       } else {
         rowHashes.add(hash);
@@ -317,21 +329,23 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
 
     // Analyze data types
     if (data.data.length > 0) {
-      Object.keys(data.data[0]).forEach(key => {
-        const values = data.data.map(row => row[key]).filter(v => v !== null && v !== undefined);
+      Object.keys(data.data[0]).forEach((key) => {
+        const values = data.data
+          .map((row) => row[key])
+          .filter((v) => v !== null && v !== undefined);
         statistics.dataTypes[key] = this.inferDataType(values);
       });
     }
 
     const isValid = errors.length === 0;
-    
-    this.log('info', `Validation complete: ${isValid ? 'PASSED' : 'FAILED'}`);
+
+    this.log("info", `Validation complete: ${isValid ? "PASSED" : "FAILED"}`);
 
     return {
       isValid,
       errors,
       warnings,
-      statistics
+      statistics,
     };
   }
 
@@ -339,39 +353,40 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
   getProcessingCapabilities(): ProcessingCapability[] {
     return [
       {
-        name: 'csv-parsing',
-        description: 'Parse CSV files with configurable delimiters and headers',
-        inputTypes: ['text/csv'],
-        outputTypes: ['application/json'],
-        complexity: 'low',
-        async: true
+        name: "csv-parsing",
+        description: "Parse CSV files with configurable delimiters and headers",
+        inputTypes: ["text/csv"],
+        outputTypes: ["application/json"],
+        complexity: "low",
+        async: true,
       },
       {
-        name: 'data-cleaning',
-        description: 'Clean and normalize data removing duplicates and null values',
-        inputTypes: ['application/json'],
-        outputTypes: ['application/json'],
-        complexity: 'medium',
-        async: true
+        name: "data-cleaning",
+        description:
+          "Clean and normalize data removing duplicates and null values",
+        inputTypes: ["application/json"],
+        outputTypes: ["application/json"],
+        complexity: "medium",
+        async: true,
       },
       {
-        name: 'statistical-analysis',
-        description: 'Perform statistical analysis and generate insights',
-        inputTypes: ['application/json'],
-        outputTypes: ['application/json'],
-        complexity: 'high',
-        async: true
-      }
+        name: "statistical-analysis",
+        description: "Perform statistical analysis and generate insights",
+        inputTypes: ["application/json"],
+        outputTypes: ["application/json"],
+        complexity: "high",
+        async: true,
+      },
     ];
   }
 
   getSupportedDataTypes(): DataType[] {
     return [
-      { name: 'string', description: 'Text data' },
-      { name: 'number', description: 'Numeric data (integer or float)' },
-      { name: 'boolean', description: 'Boolean true/false values' },
-      { name: 'date', description: 'Date and time values' },
-      { name: 'currency', description: 'Monetary values' }
+      { name: "string", description: "Text data" },
+      { name: "number", description: "Numeric data (integer or float)" },
+      { name: "boolean", description: "Boolean true/false values" },
+      { name: "date", description: "Date and time values" },
+      { name: "currency", description: "Monetary values" },
     ];
   }
 
@@ -381,7 +396,7 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
 
   // Advanced Features
   async batch(datasets: Dataset[]): Promise<Dataset[]> {
-    this.log('info', `Batch processing ${datasets.length} datasets`);
+    this.log("info", `Batch processing ${datasets.length} datasets`);
 
     const results: Dataset[] = [];
     for (const dataset of datasets) {
@@ -389,60 +404,68 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
         const processed = await this.process(dataset);
         results.push(processed);
       } catch (error) {
-        this.log('error', `Failed to process dataset ${dataset.id}`, error);
+        this.log("error", `Failed to process dataset ${dataset.id}`, error);
         // Continue with other datasets
       }
     }
 
-    this.log('info', `Batch processing complete: ${results.length}/${datasets.length} successful`);
+    this.log(
+      "info",
+      `Batch processing complete: ${results.length}/${datasets.length} successful`,
+    );
     return results;
   }
 
-  async stream(dataStream: ReadableStream<Dataset>): Promise<ReadableStream<Dataset>> {
+  async stream(
+    dataStream: ReadableStream<Dataset>,
+  ): Promise<ReadableStream<Dataset>> {
     const plugin = this;
-    
+
     return new ReadableStream({
       start(controller) {
         const reader = dataStream.getReader();
-        
+
         function pump(): Promise<any> {
           return reader.read().then(({ done, value }) => {
             if (done) {
               controller.close();
               return;
             }
-            
+
             // Process the dataset
-            plugin.process(value).then(processed => {
-              controller.enqueue(processed);
-              return pump();
-            }).catch(error => {
-              plugin.log('error', 'Stream processing error', error);
-              controller.error(error);
-            });
+            plugin
+              .process(value)
+              .then((processed) => {
+                controller.enqueue(processed);
+                return pump();
+              })
+              .catch((error) => {
+                plugin.log("error", "Stream processing error", error);
+                controller.error(error);
+              });
           });
         }
-        
+
         return pump();
-      }
+      },
     });
   }
 
   // Helper Methods
   private async parseCSV(csvData: string, options: any = {}): Promise<Dataset> {
-    const delimiter = options.delimiter || ',';
+    const delimiter = options.delimiter || ",";
     const hasHeader = options.hasHeader !== false;
-    
-    const lines = csvData.trim().split('\n');
+
+    const lines = csvData.trim().split("\n");
     const headers = hasHeader ? this.parseCSVLine(lines[0], delimiter) : null;
     const dataLines = hasHeader ? lines.slice(1) : lines;
-    
+
     const data = dataLines.map((line, index) => {
       const values = this.parseCSVLine(line, delimiter);
       if (headers) {
         const row: any = {};
         headers.forEach((header, i) => {
-          row[header] = this.parseValue(values[i] || '');
+          row[header] = this.parseValue(values[i] || "");
         });
         return row;
       } else {
@@ -455,67 +478,72 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
 
     return {
       id: `csv_${Date.now()}`,
-      name: 'CSV Dataset',
+      name: "CSV Dataset",
       schema: this.generateSchema(data),
       data,
       metadata: {
-        source: 'csv_parser',
+        source: "csv_parser",
         createdAt: new Date().toISOString(),
         rowCount: data.length,
-        columnCount: headers?.length || (data[0] ? Object.keys(data[0]).length : 0)
-      }
+        columnCount:
+          headers?.length || (data[0] ? Object.keys(data[0]).length : 0),
+      },
     };
   }
 
   private parseCSVLine(line: string, delimiter: string): string[] {
     const result: string[] = [];
-    let current = '';
+    let current = "";
     let inQuotes = false;
-    
+
     for (let i = 0; i < line.length; i++) {
       const char = line[i];
-      
+
       if (char === '"') {
         inQuotes = !inQuotes;
       } else if (char === delimiter && !inQuotes) {
         result.push(current.trim());
-        current = '';
+        current = "";
       } else {
         current += char;
       }
     }
-    
+
     result.push(current.trim());
     return result;
   }
 
   private parseValue(value: string): any {
-    if (!value || value === '') return null;
-    
+    if (!value || value === "") return null;
+
     // Try number
     const num = Number(value);
     if (!isNaN(num)) return num;
-    
+
     // Try boolean
-    if (value.toLowerCase() === 'true') return true;
-    if (value.toLowerCase() === 'false') return false;
-    
+    if (value.toLowerCase() === "true") return true;
+    if (value.toLowerCase() === "false") return false;
+
     // Try date
     const date = new Date(value);
-    if (!isNaN(date.getTime()) && value.includes('-')) {
+    if (!isNaN(date.getTime()) && value.includes("-")) {
       return date.toISOString();
     }
-    
+
     return value;
   }
 
   private cleanData(data: any[]): any[] {
     return data
-      .filter(row => Object.values(row).some(value => value !== null && value !== undefined))
-      .map(row => {
+      .filter((row) =>
+        Object.values(row).some(
+          (value) => value !== null && value !== undefined,
+        ),
+      )
+      .map((row) => {
         const cleaned: any = {};
         Object.entries(row).forEach(([key, value]) => {
-          if (typeof value === 'string') {
+          if (typeof value === "string") {
             cleaned[key] = value.trim();
           } else {
             cleaned[key] = value;
@@ -525,27 +553,38 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
       });
   }
 
-  private applyTransformationRule(data: any[], rule: TransformationRule): any[] {
-    return data.map(row => {
+  private applyTransformationRule(
+    data: any[],
+    rule: TransformationRule,
+  ): any[] {
+    return data.map((row) => {
       const value = row[rule.field];
       let transformedValue = value;
 
       switch (rule.operation) {
-        case 'uppercase':
-          transformedValue = typeof value === 'string' ? value.toUpperCase() : value;
+        case "uppercase":
+          transformedValue =
+            typeof value === "string" ? value.toUpperCase() : value;
           break;
-        case 'lowercase':
-          transformedValue = typeof value === 'string' ? value.toLowerCase() : value;
+        case "lowercase":
+          transformedValue =
+            typeof value === "string" ? value.toLowerCase() : value;
           break;
-        case 'multiply':
-          transformedValue = typeof value === 'number' ? value * (rule.parameters.factor || 1) : value;
+        case "multiply":
+          transformedValue =
+            typeof value === "number"
+              ? value * (rule.parameters.factor || 1)
+              : value;
           break;
-        case 'round':
-          transformedValue = typeof value === 'number' ? Math.round(value) : value;
+        case "round":
+          transformedValue =
+            typeof value === "number" ? Math.round(value) : value;
           break;
-        case 'replace':
-          transformedValue = typeof value === 'string' ? 
-            value.replace(rule.parameters.from, rule.parameters.to) : value;
+        case "replace":
+          transformedValue =
+            typeof value === "string"
+              ? value.replace(rule.parameters.from, rule.parameters.to)
+              : value;
           break;
         default:
           // No transformation
@@ -559,12 +598,16 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
   private generateSchema(data: any[]): any {
     if (data.length === 0) return { fields: [] };
 
-    const fields = Object.keys(data[0]).map(key => {
-      const values = data.map(row => row[key]).filter(v => v !== null && v !== undefined);
+    const fields = Object.keys(data[0]).map((key) => {
+      const values = data
+        .map((row) => row[key])
+        .filter((v) => v !== null && v !== undefined);
       return {
         name: key,
         type: this.inferDataType(values),
-        nullable: data.some(row => row[key] === null || row[key] === undefined)
+        nullable: data.some(
+          (row) => row[key] === null || row[key] === undefined,
+        ),
       };
     });
 
@@ -572,29 +615,36 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
   }
 
   private inferDataType(values: any[]): string {
-    if (values.length === 0) return 'unknown';
+    if (values.length === 0) return "unknown";
 
     const firstValue = values[0];
-    if (typeof firstValue === 'number') return 'number';
-    if (typeof firstValue === 'boolean') return 'boolean';
-    if (firstValue instanceof Date || (typeof firstValue === 'string' && !isNaN(Date.parse(firstValue)))) {
-      return 'date';
+    if (typeof firstValue === "number") return "number";
+    if (typeof firstValue === "boolean") return "boolean";
+    if (
+      firstValue instanceof Date ||
+      (typeof firstValue === "string" && !isNaN(Date.parse(firstValue)))
+    ) {
+      return "date";
     }
-    return 'string';
+    return "string";
   }
 
   private updateMetrics(rowsProcessed: number, processingTime: number): void {
     this.metrics.totalProcessed += rowsProcessed;
-    this.metrics.averageProcessingTime = 
+    this.metrics.averageProcessingTime =
       (this.metrics.averageProcessingTime + processingTime) / 2;
   }
 
   private handleNewData(data: any): void {
-    this.log('debug', 'New data event received', data);
+    this.log("debug", "New data event received", data);
     // Handle new data availability
   }
 
-  private log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]): void {
+  private log(
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    ...args: any[]
+  ): void {
     if (this.context?.logger) {
       this.context.logger[level](message, ...args);
     } else {
@@ -611,36 +661,37 @@ export class CSVProcessorPlugin implements IDataProcessorPlugin {
 
 // Plugin manifest for auto-discovery
 export const manifest: PluginManifest = {
-  name: 'csv-processor',
-  version: '1.0.0',
-  description: 'Advanced CSV data processing plugin with validation and transformation capabilities',
-  author: 'DataPrism Team',
-  license: 'MIT',
-  keywords: ['csv', 'data-processing', 'validation', 'transformation'],
-  category: 'data-processing',
-  entryPoint: './csv-processor.js',
+  name: "csv-processor",
+  version: "1.0.0",
+  description:
+    "Advanced CSV data processing plugin with validation and transformation capabilities",
+  author: "DataPrism Team",
+  license: "MIT",
+  keywords: ["csv", "data-processing", "validation", "transformation"],
+  category: "data-processing",
+  entryPoint: "./csv-processor.js",
   dependencies: [],
   permissions: [
-    { resource: 'data', access: 'read' },
-    { resource: 'data', access: 'write' },
-    { resource: 'storage', access: 'read' }
+    { resource: "data", access: "read" },
+    { resource: "data", access: "write" },
+    { resource: "storage", access: "read" },
   ],
   configuration: {
     delimiter: {
-      type: 'string',
-      default: ',',
-      description: 'CSV delimiter character'
+      type: "string",
+      default: ",",
+      description: "CSV delimiter character",
     },
     hasHeader: {
-      type: 'boolean',
+      type: "boolean",
       default: true,
-      description: 'Whether CSV has header row'
-    }
+      description: "Whether CSV has header row",
+    },
   },
   compatibility: {
-    minCoreVersion: '0.1.0',
-    browsers: ['chrome', 'firefox', 'safari', 'edge']
-  }
+    minCoreVersion: "0.1.0",
+    browsers: ["chrome", "firefox", "safari", "edge"],
+  },
 };
 
 // Export the plugin class as default

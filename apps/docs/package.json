@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "type": "module",
   "description": "DataPrism Core interactive documentation portal with API explorer",
-  "keywords": ["dataprism", "documentation", "api", "explorer", "docs"],
+  "keywords": [
+    "dataprism",
+    "documentation",
+    "api",
+    "explorer",
+    "docs"
+  ],
   "private": true,
   "scripts": {
     "dev": "vitepress dev",

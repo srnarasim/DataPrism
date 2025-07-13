@@ -1,16 +1,16 @@
-import { IPlugin } from './plugin.js';
+import { IPlugin } from "./plugin.js";
 
 export interface IDataProcessorPlugin extends IPlugin {
   // Data Processing Operations
   process(data: Dataset, options?: ProcessingOptions): Promise<Dataset>;
   transform(data: Dataset, rules: TransformationRule[]): Promise<Dataset>;
   validate(data: Dataset): Promise<ValidationResult>;
-  
+
   // Processing Capabilities
   getProcessingCapabilities(): ProcessingCapability[];
   getSupportedDataTypes(): DataType[];
   getPerformanceMetrics(): ProcessingMetrics;
-  
+
   // Advanced Features
   batch(datasets: Dataset[]): Promise<Dataset[]>;
   stream(dataStream: ReadableStream<Dataset>): Promise<ReadableStream<Dataset>>;
@@ -42,11 +42,11 @@ export interface DataIndex {
   name: string;
   fields: string[];
   unique: boolean;
-  type: 'btree' | 'hash' | 'fulltext';
+  type: "btree" | "hash" | "fulltext";
 }
 
 export interface FieldConstraint {
-  type: 'min' | 'max' | 'pattern' | 'enum' | 'unique';
+  type: "min" | "max" | "pattern" | "enum" | "unique";
   value: any;
 }
 
@@ -60,26 +60,26 @@ export interface DataMetadata {
   [key: string]: any;
 }
 
-export type DataType = 
-  | 'string' 
-  | 'number' 
-  | 'integer'
-  | 'boolean' 
-  | 'date' 
-  | 'datetime'
-  | 'json' 
-  | 'array' 
-  | 'object'
-  | 'binary';
+export type DataType =
+  | "string"
+  | "number"
+  | "integer"
+  | "boolean"
+  | "date"
+  | "datetime"
+  | "json"
+  | "array"
+  | "object"
+  | "binary";
 
 export interface ProcessingOptions {
-  mode: 'sync' | 'async' | 'streaming';
+  mode: "sync" | "async" | "streaming";
   batchSize?: number;
   timeout?: number;
   validation?: boolean;
   caching?: boolean;
   parallel?: boolean;
-  priority?: 'low' | 'normal' | 'high';
+  priority?: "low" | "normal" | "high";
 }
 
 export interface TransformationRule {
@@ -126,7 +126,7 @@ export interface ValidationStatistics {
 
 export interface ValidationSummary {
   overallScore: number; // 0-100
-  dataQuality: 'excellent' | 'good' | 'fair' | 'poor';
+  dataQuality: "excellent" | "good" | "fair" | "poor";
   recommendations: string[];
 }
 
@@ -135,7 +135,7 @@ export interface ProcessingCapability {
   description: string;
   inputTypes: DataType[];
   outputTypes: DataType[];
-  complexity: 'low' | 'medium' | 'high';
+  complexity: "low" | "medium" | "high";
   async: boolean;
   streaming: boolean;
   batchSupport: boolean;

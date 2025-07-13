@@ -1,4 +1,4 @@
-import { IPlugin, PluginManifest } from '../interfaces/plugin.js';
+import { IPlugin, PluginManifest } from "../interfaces/plugin.js";
 
 export class PluginLoader {
   private loadedModules: Map<string, any>;
@@ -15,7 +15,10 @@ export class PluginLoader {
     try {
       // Check if already loaded
       if (this.loadedModules.has(pluginName)) {
-        return this.createPluginInstance(this.loadedModules.get(pluginName), manifest);
+        return this.createPluginInstance(
+          this.loadedModules.get(pluginName),
+          manifest,
+        );
       }
 
       // Load the plugin module
@@ -25,16 +28,18 @@ export class PluginLoader {
       // Create plugin instance
       return this.createPluginInstance(module, manifest);
     } catch (error) {
-      throw new PluginLoadError(`Failed to load plugin ${pluginName}: ${error}`);
+      throw new PluginLoadError(
+        `Failed to load plugin ${pluginName}: ${error}`,
+      );
     }
   }
 
   async unload(pluginName: string): Promise<void> {
     if (this.loadedModules.has(pluginName)) {
       const module = this.loadedModules.get(pluginName);
-      
+
       // Call cleanup if available
-      if (module && typeof module.cleanup === 'function') {
+      if (module && typeof module.cleanup === "function") {
         try {
           await module.cleanup();
         } catch (error) {
@@ -54,10 +59,10 @@ export class PluginLoader {
 
     // Clear from cache first
     this.moduleCache.delete(pluginName);
-    
+
     // Force reload
     this.loadedModules.delete(pluginName);
-    
+
     return this.load(manifest);
   }
 
@@ -81,7 +86,7 @@ export class PluginLoader {
       // Try to load manifest.json from plugin directory
       const manifestPath = this.resolveManifestPath(pluginPath);
       const manifestModule = await this.loadModule(manifestPath);
-      
+
       if (manifestModule.default) {
         return manifestModule.default;
       } else if (manifestModule.manifest) {
@@ -91,7 +96,9 @@ export class PluginLoader {
         return manifestModule;
       }
     } catch (error) {
-      throw new PluginLoadError(`Failed to load manifest from ${pluginPath}: ${error}`);
+      throw new PluginLoadError(
+        `Failed to load manifest from ${pluginPath}: ${error}`,
+      );
     }
   }
 
@@ -112,11 +119,13 @@ export class PluginLoader {
     return this.loadedModules.has(pluginName);
   }
 
-  async validatePlugin(manifest: PluginManifest): Promise<PluginValidationResult> {
+  async validatePlugin(
+    manifest: PluginManifest,
+  ): Promise<PluginValidationResult> {
     const result: PluginValidationResult = {
       isValid: true,
       errors: [],
-      warnings: []
+      warnings: [],
     };
 
     try {
@@ -125,27 +134,34 @@ export class PluginLoader {
 
       // Check for required exports
       if (!this.hasValidPluginClass(module)) {
-        result.errors.push('Plugin must export a valid plugin class or factory function');
+        result.errors.push(
+          "Plugin must export a valid plugin class or factory function",
+        );
         result.isValid = false;
       }
 
       // Validate plugin metadata
       const instance = this.createPluginInstance(module, manifest);
       const pluginCapabilities = instance.getCapabilities();
-      
+
       if (!pluginCapabilities || pluginCapabilities.length === 0) {
-        result.warnings.push('Plugin does not declare any capabilities');
+        result.warnings.push("Plugin does not declare any capabilities");
       }
 
       // Check for required methods
-      const requiredMethods = ['initialize', 'activate', 'execute', 'deactivate', 'cleanup'];
+      const requiredMethods = [
+        "initialize",
+        "activate",
+        "execute",
+        "deactivate",
+        "cleanup",
+      ];
       for (const method of requiredMethods) {
-        if (typeof (instance as any)[method] !== 'function') {
+        if (typeof (instance as any)[method] !== "function") {
           result.errors.push(`Plugin missing required method: ${method}`);
           result.isValid = false;
         }
       }
-
     } catch (error) {
       result.errors.push(`Plugin validation failed: ${error}`);
       result.isValid = false;
@@ -165,7 +181,9 @@ export class PluginLoader {
         return await this.loadCommonJSModule(modulePath);
       }
     } catch (error) {
-      throw new PluginLoadError(`Module loading failed for ${modulePath}: ${error}`);
+      throw new PluginLoadError(
+        `Module loading failed for ${modulePath}: ${error}`,
+      );
     }
   }
 
@@ -180,19 +198,19 @@ export class PluginLoader {
     const resolvedPath = this.resolvePath(modulePath);
     const wasmModule = await WebAssembly.compileStreaming(fetch(resolvedPath));
     const wasmInstance = await WebAssembly.instantiate(wasmModule);
-    
+
     return {
       module: wasmModule,
       instance: wasmInstance,
-      exports: wasmInstance.exports
+      exports: wasmInstance.exports,
     };
   }
 
   private async loadCommonJSModule(modulePath: string): Promise<any> {
     // For CommonJS modules, we'll need to handle differently in browser vs Node
     const resolvedPath = this.resolvePath(modulePath);
-    
-    if (typeof require !== 'undefined') {
+
+    if (typeof require !== "undefined") {
       // Node.js environment
       delete require.cache[require.resolve(resolvedPath)];
       return require(resolvedPath);
@@ -206,25 +224,30 @@ export class PluginLoader {
     let PluginClass: any;
 
     // Determine the plugin class from the module
-    if (module.default && typeof module.default === 'function') {
+    if (module.default && typeof module.default === "function") {
       PluginClass = module.default;
-    } else if (module[manifest.name] && typeof module[manifest.name] === 'function') {
+    } else if (
+      module[manifest.name] &&
+      typeof module[manifest.name] === "function"
+    ) {
       PluginClass = module[manifest.name];
-    } else if (module.Plugin && typeof module.Plugin === 'function') {
+    } else if (module.Plugin && typeof module.Plugin === "function") {
       PluginClass = module.Plugin;
-    } else if (typeof module === 'function') {
+    } else if (typeof module === "function") {
       PluginClass = module;
     } else {
-      throw new PluginLoadError('No valid plugin class found in module');
+      throw new PluginLoadError("No valid plugin class found in module");
     }
 
     // Create instance
     try {
       const instance = new PluginClass(manifest);
-      
+
       // Validate that instance implements IPlugin interface
       if (!this.implementsIPlugin(instance)) {
-        throw new PluginLoadError('Plugin instance does not implement IPlugin interface');
+        throw new PluginLoadError(
+          "Plugin instance does not implement IPlugin interface",
+        );
       }
 
       return instance;
@@ -235,18 +258,30 @@ export class PluginLoader {
 
   private implementsIPlugin(instance: any): boolean {
     const requiredMethods = [
-      'getName', 'getVersion', 'getDescription', 'getAuthor', 'getCapabilities',
-      'getDependencies', 'initialize', 'activate', 'execute', 'deactivate', 'cleanup', 'configure'
+      "getName",
+      "getVersion",
+      "getDescription",
+      "getAuthor",
+      "getCapabilities",
+      "getDependencies",
+      "initialize",
+      "activate",
+      "execute",
+      "deactivate",
+      "cleanup",
+      "configure",
     ];
 
-    return requiredMethods.every(method => typeof instance[method] === 'function');
+    return requiredMethods.every(
+      (method) => typeof instance[method] === "function",
+    );
   }
 
   private hasValidPluginClass(module: any): boolean {
     return (
-      (module.default && typeof module.default === 'function') ||
-      (module.Plugin && typeof module.Plugin === 'function') ||
-      (typeof module === 'function')
+      (module.default && typeof module.default === "function") ||
+      (module.Plugin && typeof module.Plugin === "function") ||
+      typeof module === "function"
     );
   }
 
@@ -260,7 +295,7 @@ export class PluginLoader {
         `${searchPath}/data-processor-csv`,
         `${searchPath}/visualization-charts`,
         `${searchPath}/integration-api`,
-        `${searchPath}/utility-performance`
+        `${searchPath}/utility-performance`,
       ];
 
       // Validate each path has a manifest
@@ -283,13 +318,16 @@ export class PluginLoader {
 
   private resolvePath(modulePath: string): string {
     // Handle relative and absolute paths
-    if (modulePath.startsWith('./') || modulePath.startsWith('../')) {
+    if (modulePath.startsWith("./") || modulePath.startsWith("../")) {
       // Relative path - resolve relative to current location
       return new URL(modulePath, import.meta.url).href;
-    } else if (modulePath.startsWith('/')) {
+    } else if (modulePath.startsWith("/")) {
       // Absolute path
       return modulePath;
-    } else if (modulePath.startsWith('http://') || modulePath.startsWith('https://')) {
+    } else if (
+      modulePath.startsWith("http://") ||
+      modulePath.startsWith("https://")
+    ) {
       // URL
       return modulePath;
     } else {
@@ -300,8 +338,8 @@ export class PluginLoader {
 
   private resolveManifestPath(pluginPath: string): string {
     // Try different manifest file names
-    const manifestNames = ['manifest.json', 'plugin.json', 'package.json'];
-    
+    const manifestNames = ["manifest.json", "plugin.json", "package.json"];
+
     for (const name of manifestNames) {
       const manifestPath = `${pluginPath}/${name}`;
       // In real implementation, check if file exists
@@ -312,11 +350,15 @@ export class PluginLoader {
   }
 
   private isESModule(modulePath: string): boolean {
-    return modulePath.endsWith('.js') || modulePath.endsWith('.mjs') || modulePath.endsWith('.ts');
+    return (
+      modulePath.endsWith(".js") ||
+      modulePath.endsWith(".mjs") ||
+      modulePath.endsWith(".ts")
+    );
   }
 
   private isWebAssembly(modulePath: string): boolean {
-    return modulePath.endsWith('.wasm');
+    return modulePath.endsWith(".wasm");
   }
 
   async getModuleInfo(pluginName: string): Promise<PluginModuleInfo | null> {
@@ -325,21 +367,21 @@ export class PluginLoader {
 
     return {
       pluginName,
-      modulePath: module.path || 'unknown',
+      modulePath: module.path || "unknown",
       loadTime: module.loadTime || Date.now(),
       size: module.size || 0,
       type: this.getModuleType(module),
-      exports: Object.keys(module).filter(key => key !== 'default')
+      exports: Object.keys(module).filter((key) => key !== "default"),
     };
   }
 
   private getModuleType(module: any): ModuleType {
     if (module.instance && module.exports) {
-      return 'webassembly';
+      return "webassembly";
     } else if (module.__esModule || module.default) {
-      return 'esmodule';
+      return "esmodule";
     } else {
-      return 'commonjs';
+      return "commonjs";
     }
   }
 
@@ -362,7 +404,7 @@ export class PluginLoader {
 export class PluginLoadError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'PluginLoadError';
+    this.name = "PluginLoadError";
   }
 }
 
@@ -381,4 +423,4 @@ export interface PluginModuleInfo {
   exports: string[];
 }
 
-export type ModuleType = 'esmodule' | 'commonjs' | 'webassembly';
+export type ModuleType = "esmodule" | "commonjs" | "webassembly";

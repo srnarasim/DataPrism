@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface DataProcessorProps {
   pluginSystem: any;
 }
 
-export const DataProcessor: React.FC<DataProcessorProps> = ({ pluginSystem }) => {
+export const DataProcessor: React.FC<DataProcessorProps> = ({
+  pluginSystem,
+}) => {
   const [csvData, setCsvData] = useState(`name,age,city,salary
 John Doe,30,New York,50000
 Jane Smith,25,Los Angeles,60000
@@ -17,17 +19,19 @@ Alice Brown,28,Houston,52000`);
 
   const handleParseCSV = async () => {
     if (!pluginSystem) return;
-    
-    setLoading('parse');
+
+    setLoading("parse");
     try {
-      const result = await pluginSystem.getPluginManager().executePlugin('csv-processor', 'parse', {
-        data: csvData,
-        options: { hasHeader: true, delimiter: ',' }
-      });
+      const result = await pluginSystem
+        .getPluginManager()
+        .executePlugin("csv-processor", "parse", {
+          data: csvData,
+          options: { hasHeader: true, delimiter: "," },
+        });
       setParsedData(result);
     } catch (error) {
-      console.error('Parse failed:', error);
-      alert('Failed to parse CSV data');
+      console.error("Parse failed:", error);
+      alert("Failed to parse CSV data");
     } finally {
       setLoading(null);
     }
@@ -35,16 +39,18 @@ Alice Brown,28,Houston,52000`);
 
   const handleValidateData = async () => {
     if (!pluginSystem || !parsedData) return;
-    
-    setLoading('validate');
+
+    setLoading("validate");
     try {
-      const result = await pluginSystem.getPluginManager().executePlugin('csv-processor', 'validate', {
-        dataset: parsedData
-      });
+      const result = await pluginSystem
+        .getPluginManager()
+        .executePlugin("csv-processor", "validate", {
+          dataset: parsedData,
+        });
       setValidationResult(result);
     } catch (error) {
-      console.error('Validation failed:', error);
-      alert('Failed to validate data');
+      console.error("Validation failed:", error);
+      alert("Failed to validate data");
     } finally {
       setLoading(null);
     }
@@ -52,20 +58,26 @@ Alice Brown,28,Houston,52000`);
 
   const handleTransformData = async () => {
     if (!pluginSystem || !parsedData) return;
-    
-    setLoading('transform');
+
+    setLoading("transform");
     try {
-      const result = await pluginSystem.getPluginManager().executePlugin('csv-processor', 'transform', {
-        dataset: parsedData,
-        rules: [
-          { field: 'name', operation: 'uppercase', parameters: {} },
-          { field: 'salary', operation: 'multiply', parameters: { factor: 1.1 } }
-        ]
-      });
+      const result = await pluginSystem
+        .getPluginManager()
+        .executePlugin("csv-processor", "transform", {
+          dataset: parsedData,
+          rules: [
+            { field: "name", operation: "uppercase", parameters: {} },
+            {
+              field: "salary",
+              operation: "multiply",
+              parameters: { factor: 1.1 },
+            },
+          ],
+        });
       setTransformedData(result);
     } catch (error) {
-      console.error('Transform failed:', error);
-      alert('Failed to transform data');
+      console.error("Transform failed:", error);
+      alert("Failed to transform data");
     } finally {
       setLoading(null);
     }
@@ -79,11 +91,11 @@ Alice Brown,28,Houston,52000`);
     return (
       <div className="component-card">
         <h3>{title}</h3>
-        <div style={{ overflowX: 'auto' }}>
+        <div style={{ overflowX: "auto" }}>
           <table className="data-table">
             <thead>
               <tr>
-                {columns.map(col => (
+                {columns.map((col) => (
                   <th key={col}>{col}</th>
                 ))}
               </tr>
@@ -91,7 +103,7 @@ Alice Brown,28,Houston,52000`);
             <tbody>
               {data.map((row, index) => (
                 <tr key={index}>
-                  {columns.map(col => (
+                  {columns.map((col) => (
                     <td key={col}>{String(row[col])}</td>
                   ))}
                 </tr>
@@ -107,7 +119,10 @@ Alice Brown,28,Houston,52000`);
     <div>
       <div className="component-card">
         <h2>📊 CSV Data Processor</h2>
-        <p>Process and transform CSV data using the DataPrism CSV Processor Plugin.</p>
+        <p>
+          Process and transform CSV data using the DataPrism CSV Processor
+          Plugin.
+        </p>
 
         <div className="form-group">
           <label htmlFor="csv-input">CSV Data:</label>
@@ -120,65 +135,95 @@ Alice Brown,28,Houston,52000`);
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <button
             className="btn btn-primary"
             onClick={handleParseCSV}
-            disabled={loading === 'parse' || !csvData.trim()}
+            disabled={loading === "parse" || !csvData.trim()}
           >
-            {loading === 'parse' ? '⏳ Parsing...' : '🔍 Parse CSV'}
+            {loading === "parse" ? "⏳ Parsing..." : "🔍 Parse CSV"}
           </button>
 
           <button
             className="btn btn-secondary"
             onClick={handleValidateData}
-            disabled={loading === 'validate' || !parsedData}
+            disabled={loading === "validate" || !parsedData}
           >
-            {loading === 'validate' ? '⏳ Validating...' : '✅ Validate Data'}
+            {loading === "validate" ? "⏳ Validating..." : "✅ Validate Data"}
           </button>
 
           <button
             className="btn btn-success"
             onClick={handleTransformData}
-            disabled={loading === 'transform' || !parsedData}
+            disabled={loading === "transform" || !parsedData}
           >
-            {loading === 'transform' ? '⏳ Transforming...' : '🔄 Transform Data'}
+            {loading === "transform"
+              ? "⏳ Transforming..."
+              : "🔄 Transform Data"}
           </button>
         </div>
       </div>
 
-      {parsedData && renderDataTable(parsedData.data, `📋 Parsed Data (${parsedData.data.length} rows)`)}
+      {parsedData &&
+        renderDataTable(
+          parsedData.data,
+          `📋 Parsed Data (${parsedData.data.length} rows)`,
+        )}
 
       {validationResult && (
         <div className="component-card">
           <h3>✅ Validation Results</h3>
           <div className="grid grid-2">
             <div>
-              <p><strong>Status:</strong> <span className={`status ${validationResult.isValid ? 'healthy' : 'critical'}`}>
-                {validationResult.isValid ? 'Valid' : 'Invalid'}
-              </span></p>
-              <p><strong>Total Rows:</strong> {validationResult.statistics?.totalRows}</p>
-              <p><strong>Valid Rows:</strong> {validationResult.statistics?.validRows}</p>
-              <p><strong>Error Rows:</strong> {validationResult.statistics?.errorRows}</p>
+              <p>
+                <strong>Status:</strong>{" "}
+                <span
+                  className={`status ${validationResult.isValid ? "healthy" : "critical"}`}
+                >
+                  {validationResult.isValid ? "Valid" : "Invalid"}
+                </span>
+              </p>
+              <p>
+                <strong>Total Rows:</strong>{" "}
+                {validationResult.statistics?.totalRows}
+              </p>
+              <p>
+                <strong>Valid Rows:</strong>{" "}
+                {validationResult.statistics?.validRows}
+              </p>
+              <p>
+                <strong>Error Rows:</strong>{" "}
+                {validationResult.statistics?.errorRows}
+              </p>
             </div>
             <div>
               {validationResult.warnings?.length > 0 && (
                 <div>
-                  <p><strong>Warnings:</strong></p>
+                  <p>
+                    <strong>Warnings:</strong>
+                  </p>
                   <ul>
-                    {validationResult.warnings.map((warning: string, index: number) => (
-                      <li key={index}>{warning}</li>
-                    ))}
+                    {validationResult.warnings.map(
+                      (warning: string, index: number) => (
+                        <li key={index}>{warning}</li>
+                      ),
+                    )}
                   </ul>
                 </div>
               )}
               {validationResult.errors?.length > 0 && (
                 <div>
-                  <p><strong>Errors:</strong></p>
+                  <p>
+                    <strong>Errors:</strong>
+                  </p>
                   <ul>
-                    {validationResult.errors.map((error: string, index: number) => (
-                      <li key={index} style={{ color: '#dc3545' }}>{error}</li>
-                    ))}
+                    {validationResult.errors.map(
+                      (error: string, index: number) => (
+                        <li key={index} style={{ color: "#dc3545" }}>
+                          {error}
+                        </li>
+                      ),
+                    )}
                   </ul>
                 </div>
               )}
@@ -187,7 +232,8 @@ Alice Brown,28,Houston,52000`);
         </div>
       )}
 
-      {transformedData && renderDataTable(transformedData.data, '🔄 Transformed Data')}
+      {transformedData &&
+        renderDataTable(transformedData.data, "🔄 Transformed Data")}
 
       <div className="component-card">
         <h3>ℹ️ About CSV Processor Plugin</h3>
@@ -205,11 +251,21 @@ Alice Brown,28,Houston,52000`);
           <div>
             <h4>Supported Operations:</h4>
             <ul>
-              <li><code>parse</code> - Parse CSV text into structured data</li>
-              <li><code>validate</code> - Validate data quality and integrity</li>
-              <li><code>transform</code> - Apply transformation rules</li>
-              <li><code>batch</code> - Process multiple datasets</li>
-              <li><code>stream</code> - Process data streams</li>
+              <li>
+                <code>parse</code> - Parse CSV text into structured data
+              </li>
+              <li>
+                <code>validate</code> - Validate data quality and integrity
+              </li>
+              <li>
+                <code>transform</code> - Apply transformation rules
+              </li>
+              <li>
+                <code>batch</code> - Process multiple datasets
+              </li>
+              <li>
+                <code>stream</code> - Process data streams
+              </li>
             </ul>
           </div>
         </div>

@@ -23,23 +23,23 @@ features:
   - icon: 🚀
     title: WebAssembly Powered
     details: Near-native performance with WebAssembly runtime, processing millions of rows in milliseconds
-  
+
   - icon: 🦆
     title: DuckDB Integration
     details: Columnar analytics engine optimized for OLAP workloads with full SQL support
-  
+
   - icon: 🔌
     title: Plugin Architecture
     details: Extensible plugin system for custom data processors, visualizations, and integrations
-  
+
   - icon: 🛡️
     title: Browser Native
     details: No server required - everything runs locally with full privacy and security
-  
+
   - icon: 📊
     title: Rich Visualizations
     details: Built-in support for D3.js, Chart.js, and Observable Plot with interactive dashboards
-  
+
   - icon: ⚡
     title: Performance First
     details: Intelligent caching, memory management, and query optimization for maximum efficiency
@@ -74,7 +74,7 @@ npm run dev
 ## Basic Usage
 
 ```typescript
-import { DataPrismEngine } from '@dataprism/core';
+import { DataPrismEngine } from "@dataprism/core";
 
 // Initialize the engine
 const engine = new DataPrismEngine();
@@ -86,7 +86,7 @@ Alice,25,New York
 Bob,30,London
 Charlie,35,Tokyo`;
 
-await engine.loadCSV(csvData, 'users');
+await engine.loadCSV(csvData, "users");
 
 // Execute SQL queries
 const result = await engine.query(`
@@ -152,7 +152,7 @@ Try DataPrism Core right in your browser:
 </div>
 
 - 💬 [GitHub Discussions](https://github.com/dataprism/core/discussions) - Ask questions and share ideas
-- 🐛 [Issues](https://github.com/dataprism/core/issues) - Report bugs and request features  
+- 🐛 [Issues](https://github.com/dataprism/core/issues) - Report bugs and request features
 - 📧 [Newsletter](https://dataprism.dev/newsletter) - Stay updated with latest releases
 - 🐦 [Twitter](https://twitter.com/dataprism) - Follow for updates and tips
 
@@ -160,8 +160,8 @@ Try DataPrism Core right in your browser:
 
 DataPrism Core supports all modern browsers with WebAssembly:
 
-| Browser | Version | WebAssembly | Status |
-|---------|---------|-------------|--------|
+| Browser | Version | WebAssembly | Status             |
+| ------- | ------- | ----------- | ------------------ |
 | Chrome  | 90+     | ✅          | ✅ Fully Supported |
 | Firefox | 88+     | ✅          | ✅ Fully Supported |
 | Safari  | 14+     | ✅          | ✅ Fully Supported |

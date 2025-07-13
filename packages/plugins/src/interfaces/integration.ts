@@ -1,5 +1,5 @@
-import { IPlugin } from './plugin.js';
-import { Dataset } from './data-processor.js';
+import { IPlugin } from "./plugin.js";
+import { Dataset } from "./data-processor.js";
 
 export interface IIntegrationPlugin extends IPlugin {
   // Connection Management
@@ -7,16 +7,16 @@ export interface IIntegrationPlugin extends IPlugin {
   disconnect(): Promise<void>;
   isConnected(): boolean;
   testConnection(): Promise<ConnectionTestResult>;
-  
+
   // Authentication
   authenticate(credentials: Credentials): Promise<boolean>;
   refreshAuthentication(): Promise<boolean>;
-  
+
   // Data Operations
   sync(data: Dataset): Promise<SyncResult>;
   import(source: DataSource): Promise<Dataset>;
   export(data: Dataset, target: DataTarget): Promise<ExportResult>;
-  
+
   // Integration Capabilities
   getIntegrationCapabilities(): IntegrationCapability[];
   getSupportedProtocols(): Protocol[];
@@ -31,7 +31,11 @@ export interface Connection {
   lastActivity: string;
 }
 
-export type ConnectionStatus = 'connected' | 'disconnected' | 'error' | 'connecting';
+export type ConnectionStatus =
+  | "connected"
+  | "disconnected"
+  | "error"
+  | "connecting";
 
 export interface ConnectionMetadata {
   protocol: string;
@@ -66,7 +70,7 @@ export interface ConnectionTestResult {
 }
 
 export interface Credentials {
-  type: 'api-key' | 'oauth' | 'basic' | 'bearer' | 'custom';
+  type: "api-key" | "oauth" | "basic" | "bearer" | "custom";
   data: CredentialData;
   expires?: string;
   refreshable?: boolean;
@@ -94,7 +98,7 @@ export interface SyncError {
 }
 
 export interface DataSource {
-  type: 'file' | 'url' | 'database' | 'api' | 'stream';
+  type: "file" | "url" | "database" | "api" | "stream";
   location: string;
   format: DataFormat;
   options: SourceOptions;
@@ -102,7 +106,7 @@ export interface DataSource {
 }
 
 export interface DataTarget {
-  type: 'file' | 'url' | 'database' | 'api' | 'storage';
+  type: "file" | "url" | "database" | "api" | "storage";
   location: string;
   format: DataFormat;
   options: TargetOptions;
@@ -115,14 +119,14 @@ export interface SourceOptions {
   headers?: boolean;
   skipRows?: number;
   maxRows?: number;
-  compression?: 'gzip' | 'zip' | 'brotli';
+  compression?: "gzip" | "zip" | "brotli";
   [key: string]: any;
 }
 
 export interface TargetOptions {
   overwrite?: boolean;
   append?: boolean;
-  compression?: 'gzip' | 'zip' | 'brotli';
+  compression?: "gzip" | "zip" | "brotli";
   batchSize?: number;
   [key: string]: any;
 }
@@ -140,7 +144,7 @@ export interface ExportResult {
 export interface IntegrationCapability {
   name: string;
   description: string;
-  type: 'import' | 'export' | 'sync' | 'stream';
+  type: "import" | "export" | "sync" | "stream";
   protocols: Protocol[];
   formats: DataFormat[];
   bidirectional: boolean;
@@ -155,27 +159,30 @@ export interface Protocol {
   authentication: string[];
 }
 
-export type DataFormat = 
-  | 'json' 
-  | 'csv' 
-  | 'xml' 
-  | 'parquet' 
-  | 'avro'
-  | 'orc'
-  | 'excel'
-  | 'yaml'
-  | 'toml'
-  | 'binary'
-  | 'custom';
+export type DataFormat =
+  | "json"
+  | "csv"
+  | "xml"
+  | "parquet"
+  | "avro"
+  | "orc"
+  | "excel"
+  | "yaml"
+  | "toml"
+  | "binary"
+  | "custom";
 
 // Specialized Integration Plugin Types
 
 export interface ILLMIntegrationPlugin extends IIntegrationPlugin {
   // LLM-specific operations
-  generateCompletion(prompt: string, options?: CompletionOptions): Promise<CompletionResult>;
+  generateCompletion(
+    prompt: string,
+    options?: CompletionOptions,
+  ): Promise<CompletionResult>;
   generateEmbedding(text: string): Promise<number[]>;
   analyzeData(data: Dataset, query: string): Promise<AnalysisResult>;
-  
+
   // Model Management
   listModels(): Promise<ModelInfo[]>;
   getModelInfo(modelId: string): Promise<ModelInfo>;
@@ -217,7 +224,7 @@ export interface ModelInfo {
   name: string;
   description: string;
   provider: string;
-  type: 'completion' | 'embedding' | 'classification';
+  type: "completion" | "embedding" | "classification";
   maxTokens: number;
   costPer1kTokens: number;
 }

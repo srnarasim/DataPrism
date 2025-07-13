@@ -11,13 +11,15 @@ class EventEmitter {
 
   emit(event: string, ...args: any[]): void {
     if (this.listeners[event]) {
-      this.listeners[event].forEach(listener => listener(...args));
+      this.listeners[event].forEach((listener) => listener(...args));
     }
   }
 
   removeListener(event: string, listener: Function): void {
     if (this.listeners[event]) {
-      this.listeners[event] = this.listeners[event].filter(l => l !== listener);
+      this.listeners[event] = this.listeners[event].filter(
+        (l) => l !== listener,
+      );
     }
   }
 }
@@ -33,8 +35,8 @@ export interface PerformanceMetrics {
 }
 
 export interface PerformanceAlert {
-  type: 'memory' | 'fps' | 'query' | 'cpu';
-  severity: 'warning' | 'critical';
+  type: "memory" | "fps" | "query" | "cpu";
+  severity: "warning" | "critical";
   message: string;
   value: number;
   threshold: number;
@@ -57,22 +59,24 @@ export class PerformanceTracker extends EventEmitter {
   private fpsStartTime = 0;
   private lastFrameTime = 0;
 
-  constructor(thresholds: PerformanceThresholds = {
-    maxMemoryMB: 1000,
-    minFps: 30,
-    maxQueryTimeMs: 5000,
-    maxCpuPercent: 80
-  }) {
+  constructor(
+    thresholds: PerformanceThresholds = {
+      maxMemoryMB: 1000,
+      minFps: 30,
+      maxQueryTimeMs: 5000,
+      maxCpuPercent: 80,
+    },
+  ) {
     super();
     this.thresholds = thresholds;
   }
 
   public start(): void {
     if (this.isTracking) return;
-    
+
     this.isTracking = true;
     this.fpsStartTime = performance.now();
-    
+
     // Track metrics every second
     this.trackingInterval = window.setInterval(() => {
       this.collectMetrics();
@@ -84,7 +88,7 @@ export class PerformanceTracker extends EventEmitter {
 
   public stop(): void {
     if (!this.isTracking) return;
-    
+
     this.isTracking = false;
     if (this.trackingInterval) {
       clearInterval(this.trackingInterval);
@@ -101,18 +105,26 @@ export class PerformanceTracker extends EventEmitter {
   }
 
   public exportMetrics(): string {
-    const headers = ['timestamp', 'fps', 'memoryUsage', 'queryTime', 'wasmHeapSize', 'cpuUsage', 'networkLatency'];
-    const rows = this.metrics.map(metric => [
+    const headers = [
+      "timestamp",
+      "fps",
+      "memoryUsage",
+      "queryTime",
+      "wasmHeapSize",
+      "cpuUsage",
+      "networkLatency",
+    ];
+    const rows = this.metrics.map((metric) => [
       metric.timestamp,
       metric.fps,
       metric.memoryUsage,
-      metric.queryTime || '',
+      metric.queryTime || "",
       metric.wasmHeapSize,
       metric.cpuUsage,
-      metric.networkLatency || ''
+      metric.networkLatency || "",
     ]);
-    
-    return [headers, ...rows].map(row => row.join(',')).join('\n');
+
+    return [headers, ...rows].map((row) => row.join(",")).join("\n");
   }
 
   public markQueryStart(queryId: string): void {
@@ -121,20 +133,30 @@ export class PerformanceTracker extends EventEmitter {
 
   public markQueryEnd(queryId: string): number {
     performance.mark(`query-end-${queryId}`);
-    performance.measure(`query-${queryId}`, `query-start-${queryId}`, `query-end-${queryId}`);
-    
-    const measure = performance.getEntriesByName(`query-${queryId}`, 'measure')[0];
+    performance.measure(
+      `query-${queryId}`,
+      `query-start-${queryId}`,
+      `query-end-${queryId}`,
+    );
+
+    const measure = performance.getEntriesByName(
+      `query-${queryId}`,
+      "measure",
+    )[0];
     const queryTime = measure.duration;
-    
+
     // Check query time threshold
     if (queryTime > this.thresholds.maxQueryTimeMs) {
       this.emitAlert({
-        type: 'query',
-        severity: queryTime > this.thresholds.maxQueryTimeMs * 2 ? 'critical' : 'warning',
+        type: "query",
+        severity:
+          queryTime > this.thresholds.maxQueryTimeMs * 2
+            ? "critical"
+            : "warning",
         message: `Query execution time exceeded threshold: ${queryTime.toFixed(2)}ms`,
         value: queryTime,
         threshold: this.thresholds.maxQueryTimeMs,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -152,11 +174,11 @@ export class PerformanceTracker extends EventEmitter {
       fps: this.getCurrentFPS(),
       memoryUsage: memory,
       wasmHeapSize: wasmHeap,
-      cpuUsage: cpu
+      cpuUsage: cpu,
     };
 
     this.metrics.push(metrics);
-    
+
     // Keep only last 300 entries (5 minutes at 1 second intervals)
     if (this.metrics.length > 300) {
       this.metrics = this.metrics.slice(-300);
@@ -164,28 +186,28 @@ export class PerformanceTracker extends EventEmitter {
 
     // Check thresholds
     this.checkThresholds(metrics);
-    
-    this.emit('metrics', metrics);
+
+    this.emit("metrics", metrics);
   }
 
   private trackFPS(): void {
     const track = () => {
       if (!this.isTracking) return;
-      
+
       const now = performance.now();
       this.fpsFrameCount++;
-      
+
       // Calculate FPS every second
       if (now - this.fpsStartTime >= 1000) {
         const fps = (this.fpsFrameCount * 1000) / (now - this.fpsStartTime);
         this.fpsFrameCount = 0;
         this.fpsStartTime = now;
       }
-      
+
       this.lastFrameTime = now;
       requestAnimationFrame(track);
     };
-    
+
     requestAnimationFrame(track);
   }
 
@@ -196,7 +218,7 @@ export class PerformanceTracker extends EventEmitter {
   }
 
   private getMemoryUsage(): number {
-    if ('memory' in performance) {
+    if ("memory" in performance) {
       return (performance as any).memory.usedJSHeapSize / (1024 * 1024); // MB
     }
     return 0;
@@ -212,7 +234,7 @@ export class PerformanceTracker extends EventEmitter {
     // Browser doesn't provide direct CPU usage, return estimate based on frame timing
     const now = performance.now();
     const frameDelta = now - this.lastFrameTime;
-    
+
     // Rough estimation: if frame time > 16ms (60fps), consider high CPU
     const cpuEstimate = Math.min(100, (frameDelta / 16) * 20);
     return cpuEstimate;
@@ -222,41 +244,48 @@ export class PerformanceTracker extends EventEmitter {
     // Memory threshold
     if (metrics.memoryUsage > this.thresholds.maxMemoryMB) {
       this.emitAlert({
-        type: 'memory',
-        severity: metrics.memoryUsage > this.thresholds.maxMemoryMB * 1.5 ? 'critical' : 'warning',
+        type: "memory",
+        severity:
+          metrics.memoryUsage > this.thresholds.maxMemoryMB * 1.5
+            ? "critical"
+            : "warning",
         message: `Memory usage exceeded threshold: ${metrics.memoryUsage.toFixed(2)}MB`,
         value: metrics.memoryUsage,
         threshold: this.thresholds.maxMemoryMB,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
     // FPS threshold
     if (metrics.fps < this.thresholds.minFps && metrics.fps > 0) {
       this.emitAlert({
-        type: 'fps',
-        severity: metrics.fps < this.thresholds.minFps * 0.5 ? 'critical' : 'warning',
+        type: "fps",
+        severity:
+          metrics.fps < this.thresholds.minFps * 0.5 ? "critical" : "warning",
         message: `FPS dropped below threshold: ${metrics.fps.toFixed(2)}`,
         value: metrics.fps,
         threshold: this.thresholds.minFps,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
     // CPU threshold
     if (metrics.cpuUsage > this.thresholds.maxCpuPercent) {
       this.emitAlert({
-        type: 'cpu',
-        severity: metrics.cpuUsage > this.thresholds.maxCpuPercent * 1.2 ? 'critical' : 'warning',
+        type: "cpu",
+        severity:
+          metrics.cpuUsage > this.thresholds.maxCpuPercent * 1.2
+            ? "critical"
+            : "warning",
         message: `CPU usage exceeded threshold: ${metrics.cpuUsage.toFixed(2)}%`,
         value: metrics.cpuUsage,
         threshold: this.thresholds.maxCpuPercent,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
   }
 
   private emitAlert(alert: PerformanceAlert): void {
-    this.emit('alert', alert);
+    this.emit("alert", alert);
   }
 }

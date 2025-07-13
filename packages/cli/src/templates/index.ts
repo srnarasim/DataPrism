@@ -1,8 +1,11 @@
-import fs from 'fs-extra';
-import path from 'path';
-import { logger } from '../utils/logger.js';
+import fs from "fs-extra";
+import path from "path";
+import { logger } from "../utils/logger.js";
 
-export type ProjectTemplate = 'analytics-dashboard' | 'data-processor' | 'plugin-starter';
+export type ProjectTemplate =
+  | "analytics-dashboard"
+  | "data-processor"
+  | "plugin-starter";
 
 export interface CreateProjectOptions {
   name: string;
@@ -11,7 +14,9 @@ export interface CreateProjectOptions {
   typescript: boolean;
 }
 
-export async function createProject(options: CreateProjectOptions): Promise<void> {
+export async function createProject(
+  options: CreateProjectOptions,
+): Promise<void> {
   const { name, path: projectPath, template, typescript } = options;
 
   // Create project directory
@@ -19,7 +24,9 @@ export async function createProject(options: CreateProjectOptions): Promise<void
 
   // Create package.json
   const packageJson = createPackageJson(name, template, typescript);
-  await fs.writeJson(path.join(projectPath, 'package.json'), packageJson, { spaces: 2 });
+  await fs.writeJson(path.join(projectPath, "package.json"), packageJson, {
+    spaces: 2,
+  });
 
   // Create basic project structure
   await createProjectStructure(projectPath, template, typescript);
@@ -30,68 +37,74 @@ export async function createProject(options: CreateProjectOptions): Promise<void
   logger.debug(`Created project ${name} with template ${template}`);
 }
 
-function createPackageJson(name: string, template: ProjectTemplate, typescript: boolean) {
+function createPackageJson(
+  name: string,
+  template: ProjectTemplate,
+  typescript: boolean,
+) {
   const base = {
     name,
-    version: '0.1.0',
-    type: 'module',
+    version: "0.1.0",
+    type: "module",
     description: getTemplateDescription(template),
-    keywords: ['dataprism', 'analytics', 'webassembly'],
+    keywords: ["dataprism", "analytics", "webassembly"],
     scripts: {
-      dev: 'vite',
-      build: 'vite build',
-      preview: 'vite preview',
-      test: 'vitest',
-      lint: typescript ? 'eslint src --ext .ts,.tsx' : 'eslint src --ext .js,.jsx',
-      'type-check': typescript ? 'tsc --noEmit' : undefined
+      dev: "vite",
+      build: "vite build",
+      preview: "vite preview",
+      test: "vitest",
+      lint: typescript
+        ? "eslint src --ext .ts,.tsx"
+        : "eslint src --ext .js,.jsx",
+      "type-check": typescript ? "tsc --noEmit" : undefined,
     },
     dependencies: {
-      '@dataprism/core': '^1.0.0',
-      '@dataprism/orchestration': '^1.0.0'
+      "@dataprism/core": "^1.0.0",
+      "@dataprism/orchestration": "^1.0.0",
     },
     devDependencies: {
-      vite: '^5.0.0',
-      vitest: '^1.0.0',
-      '@vitest/ui': '^1.0.0',
-      eslint: '^8.50.0'
-    }
+      vite: "^5.0.0",
+      vitest: "^1.0.0",
+      "@vitest/ui": "^1.0.0",
+      eslint: "^8.50.0",
+    },
   };
 
   // Add template-specific dependencies
-  if (template === 'analytics-dashboard') {
+  if (template === "analytics-dashboard") {
     Object.assign(base.dependencies, {
-      'react': '^18.2.0',
-      'react-dom': '^18.2.0',
-      'd3': '^7.8.5',
-      'chart.js': '^4.4.0',
-      'react-chartjs-2': '^5.2.0'
+      react: "^18.2.0",
+      "react-dom": "^18.2.0",
+      d3: "^7.8.5",
+      "chart.js": "^4.4.0",
+      "react-chartjs-2": "^5.2.0",
     });
     Object.assign(base.devDependencies, {
-      '@vitejs/plugin-react': '^4.0.0',
-      '@types/react': '^18.2.0',
-      '@types/react-dom': '^18.2.0',
-      '@types/d3': '^7.4.0'
+      "@vitejs/plugin-react": "^4.0.0",
+      "@types/react": "^18.2.0",
+      "@types/react-dom": "^18.2.0",
+      "@types/d3": "^7.4.0",
     });
   }
 
-  if (template === 'plugin-starter') {
+  if (template === "plugin-starter") {
     Object.assign(base.dependencies, {
-      '@dataprism/plugin-framework': '^1.0.0'
+      "@dataprism/plugin-framework": "^1.0.0",
     });
   }
 
   // Add TypeScript dependencies
   if (typescript) {
     Object.assign(base.devDependencies, {
-      typescript: '^5.2.0',
-      '@typescript-eslint/eslint-plugin': '^6.0.0',
-      '@typescript-eslint/parser': '^6.0.0'
+      typescript: "^5.2.0",
+      "@typescript-eslint/eslint-plugin": "^6.0.0",
+      "@typescript-eslint/parser": "^6.0.0",
     });
   }
 
   // Remove undefined values
   base.scripts = Object.fromEntries(
-    Object.entries(base.scripts).filter(([_, value]) => value !== undefined)
+    Object.entries(base.scripts).filter(([_, value]) => value !== undefined),
   );
 
   return base;
@@ -99,34 +112,38 @@ function createPackageJson(name: string, template: ProjectTemplate, typescript: 
 
 function getTemplateDescription(template: ProjectTemplate): string {
   switch (template) {
-    case 'analytics-dashboard':
-      return 'DataPrism analytics dashboard application';
-    case 'data-processor':
-      return 'DataPrism data processing application';
-    case 'plugin-starter':
-      return 'DataPrism plugin development starter';
+    case "analytics-dashboard":
+      return "DataPrism analytics dashboard application";
+    case "data-processor":
+      return "DataPrism data processing application";
+    case "plugin-starter":
+      return "DataPrism plugin development starter";
     default:
-      return 'DataPrism application';
+      return "DataPrism application";
   }
 }
 
-async function createProjectStructure(projectPath: string, template: ProjectTemplate, typescript: boolean): Promise<void> {
-  const ext = typescript ? 'ts' : 'js';
-  const reactExt = typescript ? 'tsx' : 'jsx';
+async function createProjectStructure(
+  projectPath: string,
+  template: ProjectTemplate,
+  typescript: boolean,
+): Promise<void> {
+  const ext = typescript ? "ts" : "js";
+  const reactExt = typescript ? "tsx" : "jsx";
 
   // Create basic directories
-  await fs.ensureDir(path.join(projectPath, 'src'));
-  await fs.ensureDir(path.join(projectPath, 'public'));
+  await fs.ensureDir(path.join(projectPath, "src"));
+  await fs.ensureDir(path.join(projectPath, "public"));
 
   // Create template-specific files
   switch (template) {
-    case 'analytics-dashboard':
+    case "analytics-dashboard":
       await createAnalyticsDashboard(projectPath, typescript);
       break;
-    case 'data-processor':
+    case "data-processor":
       await createDataProcessor(projectPath, typescript);
       break;
-    case 'plugin-starter':
+    case "plugin-starter":
       await createPluginStarter(projectPath, typescript);
       break;
   }
@@ -145,13 +162,17 @@ async function createProjectStructure(projectPath: string, template: ProjectTemp
 </body>
 </html>`;
 
-  await fs.writeFile(path.join(projectPath, 'public', 'index.html'), indexHtml);
+  await fs.writeFile(path.join(projectPath, "public", "index.html"), indexHtml);
 }
 
-async function createAnalyticsDashboard(projectPath: string, typescript: boolean): Promise<void> {
-  const ext = typescript ? 'tsx' : 'jsx';
-  
-  const mainFile = typescript ? `
+async function createAnalyticsDashboard(
+  projectPath: string,
+  typescript: boolean,
+): Promise<void> {
+  const ext = typescript ? "tsx" : "jsx";
+
+  const mainFile = typescript
+    ? `
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
@@ -162,7 +183,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <App />
   </React.StrictMode>
 );
-` : `
+`
+    : `
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
@@ -180,16 +202,20 @@ import React, { useEffect, useState } from 'react';
 import { DataPrismEngine } from '@dataprism/core';
 import './App.css';
 
-${typescript ? `
+${
+  typescript
+    ? `
 interface QueryResult {
   data: any[];
   executionTime: number;
 }
-` : ''}
+`
+    : ""
+}
 
 function App() {
-  const [engine, setEngine] = useState${typescript ? '<DataPrismEngine | null>' : ''}(null);
-  const [results, setResults] = useState${typescript ? '<QueryResult | null>' : ''}(null);
+  const [engine, setEngine] = useState${typescript ? "<DataPrismEngine | null>" : ""}(null);
+  const [results, setResults] = useState${typescript ? "<QueryResult | null>" : ""}(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -247,8 +273,8 @@ function App() {
 export default App;
 `;
 
-  await fs.writeFile(path.join(projectPath, 'src', `main.${ext}`), mainFile);
-  await fs.writeFile(path.join(projectPath, 'src', `App.${ext}`), appFile);
+  await fs.writeFile(path.join(projectPath, "src", `main.${ext}`), mainFile);
+  await fs.writeFile(path.join(projectPath, "src", `App.${ext}`), appFile);
 
   // Create CSS files
   const indexCss = `
@@ -305,36 +331,43 @@ pre {
 }
 `;
 
-  await fs.writeFile(path.join(projectPath, 'src', 'index.css'), indexCss);
-  await fs.writeFile(path.join(projectPath, 'src', 'App.css'), appCss);
+  await fs.writeFile(path.join(projectPath, "src", "index.css"), indexCss);
+  await fs.writeFile(path.join(projectPath, "src", "App.css"), appCss);
 }
 
-async function createDataProcessor(projectPath: string, typescript: boolean): Promise<void> {
-  const ext = typescript ? 'ts' : 'js';
-  
+async function createDataProcessor(
+  projectPath: string,
+  typescript: boolean,
+): Promise<void> {
+  const ext = typescript ? "ts" : "js";
+
   const mainFile = `
 import { DataPrismEngine } from '@dataprism/core';
 
-${typescript ? `
+${
+  typescript
+    ? `
 interface ProcessorOptions {
   batchSize?: number;
   parallel?: boolean;
 }
-` : ''}
+`
+    : ""
+}
 
 class DataProcessor {
-  private engine${typescript ? ': DataPrismEngine' : ''};
+  private engine${typescript ? ": DataPrismEngine" : ""};
   
   constructor() {
     this.engine = new DataPrismEngine();
   }
 
-  async initialize()${typescript ? ': Promise<void>' : ''} {
+  async initialize()${typescript ? ": Promise<void>" : ""} {
     await this.engine.initialize();
     console.log('DataPrism engine initialized');
   }
 
-  async processCSV(data${typescript ? ': string' : ''}, options${typescript ? ': ProcessorOptions = {}' : ' = {}'}) {
+  async processCSV(data${typescript ? ": string" : ""}, options${typescript ? ": ProcessorOptions = {}" : " = {}"}) {
     const { batchSize = 1000, parallel = false } = options;
     
     try {
@@ -352,7 +385,7 @@ class DataProcessor {
     }
   }
 
-  async aggregateData(tableName${typescript ? ': string' : ''}, groupBy${typescript ? ': string[]' : ''}, metrics${typescript ? ': string[]' : ''}) {
+  async aggregateData(tableName${typescript ? ": string" : ""}, groupBy${typescript ? ": string[]" : ""}, metrics${typescript ? ": string[]" : ""}) {
     const groupByClause = groupBy.join(', ');
     const metricsClause = metrics.map(metric => \`SUM(\${metric}) as total_\${metric}\`).join(', ');
     
@@ -394,16 +427,21 @@ Alice,32,95\`;
 main().catch(console.error);
 `;
 
-  await fs.writeFile(path.join(projectPath, 'src', `main.${ext}`), mainFile);
+  await fs.writeFile(path.join(projectPath, "src", `main.${ext}`), mainFile);
 }
 
-async function createPluginStarter(projectPath: string, typescript: boolean): Promise<void> {
-  const ext = typescript ? 'ts' : 'js';
-  
+async function createPluginStarter(
+  projectPath: string,
+  typescript: boolean,
+): Promise<void> {
+  const ext = typescript ? "ts" : "js";
+
   const mainFile = `
 import { PluginBase, PluginMetadata } from '@dataprism/plugin-framework';
 
-${typescript ? `
+${
+  typescript
+    ? `
 interface MyPluginOptions {
   option1?: string;
   option2?: number;
@@ -414,10 +452,12 @@ interface MyPluginResult {
   data?: any;
   error?: string;
 }
-` : ''}
+`
+    : ""
+}
 
 export class MyPlugin extends PluginBase {
-  static metadata${typescript ? ': PluginMetadata' : ''} = {
+  static metadata${typescript ? ": PluginMetadata" : ""} = {
     name: 'my-plugin',
     version: '1.0.0',
     description: 'A sample DataPrism plugin',
@@ -425,17 +465,17 @@ export class MyPlugin extends PluginBase {
     type: 'data-processor'
   };
 
-  constructor(options${typescript ? ': MyPluginOptions = {}' : ' = {}'}) {
+  constructor(options${typescript ? ": MyPluginOptions = {}" : " = {}"}) {
     super(MyPlugin.metadata);
     this.options = options;
   }
 
-  async initialize()${typescript ? ': Promise<void>' : ''} {
+  async initialize()${typescript ? ": Promise<void>" : ""} {
     console.log('Initializing MyPlugin...');
     // Plugin initialization logic here
   }
 
-  async process(data${typescript ? ': any' : ''})${typescript ? ': Promise<MyPluginResult>' : ''} {
+  async process(data${typescript ? ": any" : ""})${typescript ? ": Promise<MyPluginResult>" : ""} {
     try {
       // Plugin processing logic here
       console.log('Processing data with MyPlugin:', data);
@@ -457,7 +497,7 @@ export class MyPlugin extends PluginBase {
     }
   }
 
-  async cleanup()${typescript ? ': Promise<void>' : ''} {
+  async cleanup()${typescript ? ": Promise<void>" : ""} {
     console.log('Cleaning up MyPlugin...');
     // Plugin cleanup logic here
   }
@@ -467,15 +507,15 @@ export class MyPlugin extends PluginBase {
 export default MyPlugin;
 `;
 
-  await fs.writeFile(path.join(projectPath, 'src', `main.${ext}`), mainFile);
+  await fs.writeFile(path.join(projectPath, "src", `main.${ext}`), mainFile);
 
   // Create plugin test file
   const testFile = `
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MyPlugin } from '../src/main${typescript ? '' : '.js'}';
+import { MyPlugin } from '../src/main${typescript ? "" : ".js"}';
 
 describe('MyPlugin', () => {
-  let plugin${typescript ? ': MyPlugin' : ''};
+  let plugin${typescript ? ": MyPlugin" : ""};
 
   beforeEach(() => {
     plugin = new MyPlugin();
@@ -508,13 +548,20 @@ describe('MyPlugin', () => {
 });
 `;
 
-  await fs.ensureDir(path.join(projectPath, 'tests'));
-  await fs.writeFile(path.join(projectPath, 'tests', `plugin.test.${ext}`), testFile);
+  await fs.ensureDir(path.join(projectPath, "tests"));
+  await fs.writeFile(
+    path.join(projectPath, "tests", `plugin.test.${ext}`),
+    testFile,
+  );
 }
 
-async function createConfigFiles(projectPath: string, typescript: boolean): Promise<void> {
+async function createConfigFiles(
+  projectPath: string,
+  typescript: boolean,
+): Promise<void> {
   // Create Vite config
-  const viteConfig = typescript ? `
+  const viteConfig = typescript
+    ? `
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -530,7 +577,8 @@ export default defineConfig({
     }
   }
 });
-` : `
+`
+    : `
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -548,48 +596,57 @@ export default defineConfig({
 });
 `;
 
-  await fs.writeFile(path.join(projectPath, `vite.config.${typescript ? 'ts' : 'js'}`), viteConfig);
+  await fs.writeFile(
+    path.join(projectPath, `vite.config.${typescript ? "ts" : "js"}`),
+    viteConfig,
+  );
 
   // Create TypeScript config if needed
   if (typescript) {
     const tsConfig = {
       compilerOptions: {
-        target: 'ES2020',
+        target: "ES2020",
         useDefineForClassFields: true,
-        lib: ['ES2020', 'DOM', 'DOM.Iterable'],
-        module: 'ESNext',
+        lib: ["ES2020", "DOM", "DOM.Iterable"],
+        module: "ESNext",
         skipLibCheck: true,
-        moduleResolution: 'bundler',
+        moduleResolution: "bundler",
         allowImportingTsExtensions: true,
         resolveJsonModule: true,
         isolatedModules: true,
         noEmit: true,
-        jsx: 'react-jsx',
+        jsx: "react-jsx",
         strict: true,
         noUnusedLocals: true,
         noUnusedParameters: true,
         noFallthroughCasesInSwitch: true,
         allowSyntheticDefaultImports: true,
-        esModuleInterop: true
+        esModuleInterop: true,
       },
-      include: ['src'],
-      references: [{ path: './tsconfig.node.json' }]
+      include: ["src"],
+      references: [{ path: "./tsconfig.node.json" }],
     };
 
-    await fs.writeJson(path.join(projectPath, 'tsconfig.json'), tsConfig, { spaces: 2 });
+    await fs.writeJson(path.join(projectPath, "tsconfig.json"), tsConfig, {
+      spaces: 2,
+    });
 
     const tsNodeConfig = {
       compilerOptions: {
         composite: true,
         skipLibCheck: true,
-        module: 'ESNext',
-        moduleResolution: 'bundler',
-        allowSyntheticDefaultImports: true
+        module: "ESNext",
+        moduleResolution: "bundler",
+        allowSyntheticDefaultImports: true,
       },
-      include: ['vite.config.ts']
+      include: ["vite.config.ts"],
     };
 
-    await fs.writeJson(path.join(projectPath, 'tsconfig.node.json'), tsNodeConfig, { spaces: 2 });
+    await fs.writeJson(
+      path.join(projectPath, "tsconfig.node.json"),
+      tsNodeConfig,
+      { spaces: 2 },
+    );
   }
 
   // Create README
@@ -617,5 +674,5 @@ npm run dev
 Visit [https://docs.dataprism.dev](https://docs.dataprism.dev) for complete documentation.
 `;
 
-  await fs.writeFile(path.join(projectPath, 'README.md'), readme);
+  await fs.writeFile(path.join(projectPath, "README.md"), readme);
 }

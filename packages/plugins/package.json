@@ -9,7 +9,7 @@
     "dev": "tsc --watch",
     "test": "vitest",
     "test:unit": "vitest run tests/unit",
-    "test:integration": "vitest run tests/integration", 
+    "test:integration": "vitest run tests/integration",
     "test:performance": "vitest run tests/performance",
     "lint": "eslint src/**/*.ts",
     "type-check": "tsc --noEmit",

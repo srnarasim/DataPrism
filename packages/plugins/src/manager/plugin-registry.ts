@@ -1,4 +1,4 @@
-import { PluginManifest } from '../interfaces/plugin.js';
+import { PluginManifest } from "../interfaces/plugin.js";
 
 export class PluginRegistry {
   private manifests: Map<string, PluginManifest>;
@@ -14,12 +14,14 @@ export class PluginRegistry {
 
   async register(manifest: PluginManifest): Promise<void> {
     const name = manifest.name;
-    
+
     // Check for conflicts
     if (this.manifests.has(name)) {
       const existing = this.manifests.get(name)!;
       if (existing.version !== manifest.version) {
-        throw new Error(`Plugin version conflict: ${name} ${existing.version} vs ${manifest.version}`);
+        throw new Error(
+          `Plugin version conflict: ${name} ${existing.version} vs ${manifest.version}`,
+        );
       }
       // Allow re-registration of same version
       return;
@@ -57,13 +59,15 @@ export class PluginRegistry {
     // Check if other plugins depend on this one
     const dependents = this.getDependents(pluginName);
     if (dependents.length > 0) {
-      throw new Error(`Cannot unregister ${pluginName}: required by ${dependents.join(', ')}`);
+      throw new Error(
+        `Cannot unregister ${pluginName}: required by ${dependents.join(", ")}`,
+      );
     }
 
     // Remove from indexes
     this.manifests.delete(pluginName);
     this.dependencies.delete(pluginName);
-    
+
     const category = manifest.category;
     if (this.categories.has(category)) {
       this.categories.get(category)!.delete(pluginName);
@@ -119,14 +123,14 @@ export class PluginRegistry {
       if (visited.has(name)) return;
 
       visiting.add(name);
-      
+
       const deps = this.dependencies.get(name) || new Set();
       for (const dep of deps) {
         if (this.manifests.has(dep)) {
           visit(dep);
         }
       }
-      
+
       visiting.delete(name);
       visited.add(name);
       order.push(name);
@@ -142,57 +146,72 @@ export class PluginRegistry {
 
   search(query: PluginSearchQuery): PluginSearchResult[] {
     const results: PluginSearchResult[] = [];
-    
+
     for (const manifest of this.manifests.values()) {
       let score = 0;
       let matches: PluginSearchMatch[] = [];
 
       // Name match
-      if (query.name && manifest.name.toLowerCase().includes(query.name.toLowerCase())) {
+      if (
+        query.name &&
+        manifest.name.toLowerCase().includes(query.name.toLowerCase())
+      ) {
         score += 10;
-        matches.push({ field: 'name', value: manifest.name });
+        matches.push({ field: "name", value: manifest.name });
       }
 
       // Category match
       if (query.category && manifest.category === query.category) {
         score += 8;
-        matches.push({ field: 'category', value: manifest.category });
+        matches.push({ field: "category", value: manifest.category });
       }
 
       // Keywords match
       if (query.keywords) {
         for (const keyword of query.keywords) {
-          if (manifest.keywords.some(k => k.toLowerCase().includes(keyword.toLowerCase()))) {
+          if (
+            manifest.keywords.some((k) =>
+              k.toLowerCase().includes(keyword.toLowerCase()),
+            )
+          ) {
             score += 5;
-            matches.push({ field: 'keywords', value: keyword });
+            matches.push({ field: "keywords", value: keyword });
           }
         }
       }
 
       // Description match
-      if (query.description && manifest.description.toLowerCase().includes(query.description.toLowerCase())) {
+      if (
+        query.description &&
+        manifest.description
+          .toLowerCase()
+          .includes(query.description.toLowerCase())
+      ) {
         score += 3;
-        matches.push({ field: 'description', value: manifest.description });
+        matches.push({ field: "description", value: manifest.description });
       }
 
       // Author match
-      if (query.author && manifest.author.toLowerCase().includes(query.author.toLowerCase())) {
+      if (
+        query.author &&
+        manifest.author.toLowerCase().includes(query.author.toLowerCase())
+      ) {
         score += 2;
-        matches.push({ field: 'author', value: manifest.author });
+        matches.push({ field: "author", value: manifest.author });
       }
 
       if (score > 0) {
         results.push({
           manifest,
           score,
-          matches
+          matches,
         });
       }
     }
 
     // Sort by score descending
     results.sort((a, b) => b.score - a.score);
-    
+
     // Apply limit if specified
     if (query.limit && query.limit > 0) {
       return results.slice(0, query.limit);
@@ -223,8 +242,9 @@ export class PluginRegistry {
       totalPlugins: this.manifests.size,
       categories: Object.fromEntries(categoryStats),
       authors: Object.fromEntries(authorStats),
-      averageDependencies: this.manifests.size > 0 ? totalDependencies / this.manifests.size : 0,
-      circularDependencies: this.detectCircularDependencies()
+      averageDependencies:
+        this.manifests.size > 0 ? totalDependencies / this.manifests.size : 0,
+      circularDependencies: this.detectCircularDependencies(),
     };
   }
 
@@ -233,32 +253,39 @@ export class PluginRegistry {
     const warnings: string[] = [];
 
     // Required fields
-    if (!manifest.name || manifest.name.trim() === '') {
-      errors.push('Plugin name is required');
+    if (!manifest.name || manifest.name.trim() === "") {
+      errors.push("Plugin name is required");
     }
 
     if (!manifest.version || !this.isValidVersion(manifest.version)) {
-      errors.push('Valid plugin version is required (semver format)');
+      errors.push("Valid plugin version is required (semver format)");
     }
 
-    if (!manifest.entryPoint || manifest.entryPoint.trim() === '') {
-      errors.push('Entry point is required');
+    if (!manifest.entryPoint || manifest.entryPoint.trim() === "") {
+      errors.push("Entry point is required");
     }
 
     if (!manifest.category) {
-      errors.push('Plugin category is required');
+      errors.push("Plugin category is required");
     }
 
     // Category validation
-    const validCategories = ['data-processing', 'visualization', 'integration', 'utility'];
+    const validCategories = [
+      "data-processing",
+      "visualization",
+      "integration",
+      "utility",
+    ];
     if (manifest.category && !validCategories.includes(manifest.category)) {
-      errors.push(`Invalid category: ${manifest.category}. Must be one of: ${validCategories.join(', ')}`);
+      errors.push(
+        `Invalid category: ${manifest.category}. Must be one of: ${validCategories.join(", ")}`,
+      );
     }
 
     // Dependencies validation
     for (const dep of manifest.dependencies || []) {
       if (!dep.name || !dep.version) {
-        errors.push('Dependency must have name and version');
+        errors.push("Dependency must have name and version");
       }
       if (!this.isValidVersion(dep.version)) {
         errors.push(`Invalid dependency version: ${dep.version}`);
@@ -268,9 +295,9 @@ export class PluginRegistry {
     // Permissions validation
     for (const perm of manifest.permissions || []) {
       if (!perm.resource || !perm.access) {
-        errors.push('Permission must have resource and access fields');
+        errors.push("Permission must have resource and access fields");
       }
-      const validAccess = ['read', 'write', 'execute'];
+      const validAccess = ["read", "write", "execute"];
       if (perm.access && !validAccess.includes(perm.access)) {
         errors.push(`Invalid permission access: ${perm.access}`);
       }
@@ -279,41 +306,51 @@ export class PluginRegistry {
     // Compatibility validation
     if (manifest.compatibility) {
       if (!manifest.compatibility.minCoreVersion) {
-        warnings.push('Minimum core version not specified');
+        warnings.push("Minimum core version not specified");
       }
-      if (!manifest.compatibility.browsers || manifest.compatibility.browsers.length === 0) {
-        warnings.push('Supported browsers not specified');
+      if (
+        !manifest.compatibility.browsers ||
+        manifest.compatibility.browsers.length === 0
+      ) {
+        warnings.push("Supported browsers not specified");
       }
     }
 
     // Best practices warnings
     if (!manifest.description || manifest.description.length < 10) {
-      warnings.push('Plugin description should be at least 10 characters');
+      warnings.push("Plugin description should be at least 10 characters");
     }
 
     if (!manifest.keywords || manifest.keywords.length === 0) {
-      warnings.push('Adding keywords improves plugin discoverability');
+      warnings.push("Adding keywords improves plugin discoverability");
     }
 
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
   private async validateDependencies(pluginName: string): Promise<void> {
     const manifest = this.manifests.get(pluginName)!;
-    
+
     for (const dep of manifest.dependencies) {
       if (!dep.optional && !this.manifests.has(dep.name)) {
-        throw new Error(`Missing dependency: ${pluginName} requires ${dep.name}`);
+        throw new Error(
+          `Missing dependency: ${pluginName} requires ${dep.name}`,
+        );
       }
-      
+
       // Check version compatibility
       const depManifest = this.manifests.get(dep.name);
-      if (depManifest && !this.isVersionCompatible(dep.version, depManifest.version)) {
-        throw new Error(`Version mismatch: ${pluginName} requires ${dep.name}@${dep.version}, found ${depManifest.version}`);
+      if (
+        depManifest &&
+        !this.isVersionCompatible(dep.version, depManifest.version)
+      ) {
+        throw new Error(
+          `Version mismatch: ${pluginName} requires ${dep.name}@${dep.version}, found ${depManifest.version}`,
+        );
       }
     }
   }
@@ -325,8 +362,8 @@ export class PluginRegistry {
 
   private isVersionCompatible(required: string, available: string): boolean {
     // Simple semver compatibility check
-    if (required === '*' || required === available) return true;
-    
+    if (required === "*" || required === available) return true;
+
     // For now, exact match required. In production, implement proper semver range checking
     return required === available;
   }
@@ -340,20 +377,20 @@ export class PluginRegistry {
       if (visiting.has(name)) {
         const cycleStart = path.indexOf(name);
         const cycle = path.slice(cycleStart).concat(name);
-        cycles.push(cycle.join(' -> '));
+        cycles.push(cycle.join(" -> "));
         return;
       }
       if (visited.has(name)) return;
 
       visiting.add(name);
       const deps = this.dependencies.get(name) || new Set();
-      
+
       for (const dep of deps) {
         if (this.manifests.has(dep)) {
           visit(dep, [...path, name]);
         }
       }
-      
+
       visiting.delete(name);
       visited.add(name);
     };
