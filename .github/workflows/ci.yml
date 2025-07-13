@@ -392,12 +392,49 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+          path: .
+
+      # Verify artifacts and prepare CDN assets
+      - name: Prepare CDN Assets
+        run: |
+          echo "🔍 Verifying downloaded artifacts..."
+          
+          # List all downloaded files for debugging
+          echo "📂 Downloaded artifacts structure:"
+          find . -type f -name "*.js" -o -name "*.json" | head -20
+          
+          # Check if CDN dist directory exists
+          if [ -d "cdn/dist" ]; then
+            echo "✅ CDN assets found in artifacts"
+            echo "📦 CDN assets:"
+            ls -la cdn/dist/
+          else
+            echo "❌ CDN assets not found in artifacts, building locally..."
+            npm run build:cdn
+            
+            if [ -d "cdn/dist" ]; then
+              echo "✅ CDN assets built successfully"
+              ls -la cdn/dist/
+            else
+              echo "❌ Failed to build CDN assets"
+              exit 1
+            fi
+          fi
 
       # Deploy to GitHub Pages (primary CDN)
       - name: Deploy to GitHub Pages
         id: deploy-github-pages
         run: |
           echo "🚀 Deploying to GitHub Pages CDN..."
+          
+          # Verify CDN assets are available before deployment
+          if [ ! -d "cdn/dist" ]; then
+            echo "❌ CDN assets directory not found"
+            exit 1
+          fi
+          
+          echo "📦 CDN assets:"
+          ls -la cdn/dist/
           
           # Generate plugin manifest
           node tools/deployment/cli-minimal.cjs generate-manifest \
