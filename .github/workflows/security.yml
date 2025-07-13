@@ -235,7 +235,7 @@ jobs:
   container-scan:
     name: Container Security Scan
     runs-on: ubuntu-latest
-    if: hashFiles('**/Dockerfile') != '' || hashFiles('**/docker-compose.yml') != ''
+    if: ${{ hashFiles('**/Dockerfile') != '' || hashFiles('**/docker-compose.yml') != '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
