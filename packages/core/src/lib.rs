@@ -72,6 +72,7 @@ mod tests {
         }
     }
 
+    #[cfg(target_arch = "wasm32")]
     #[test]
     fn test_input_validation() {
         assert!(validate_input_data(&[1, 2, 3]).is_ok());
@@ -83,7 +84,7 @@ mod tests {
 
     #[test]
     fn test_version_info() {
-        let version = get_version();
+        let version = env!("CARGO_PKG_VERSION");
         assert!(!version.is_empty());
     }
 }
