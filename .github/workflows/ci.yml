@@ -26,10 +26,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run security audit
         run: npm audit --audit-level moderate
@@ -56,7 +55,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
@@ -66,7 +64,7 @@ jobs:
           override: true
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Lint TypeScript
         run: npm run lint:ts
@@ -98,7 +96,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
 
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
@@ -107,7 +104,7 @@ jobs:
           override: true
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Install Rust dependencies
         run: |
@@ -145,7 +142,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
@@ -158,7 +154,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build all packages
         run: npm run build:all
@@ -195,10 +191,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -234,10 +229,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -293,10 +287,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Generate API documentation
         run: npm run generate:api
@@ -326,10 +319,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -401,11 +393,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4

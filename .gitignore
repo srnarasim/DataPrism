@@ -216,7 +216,7 @@ temp/
 # ============================================================================
 # Package manager files
 # ============================================================================
-package-lock.json
+# Note: package-lock.json is committed for CI consistency
 yarn.lock
 pnpm-lock.yaml
 .yarn/

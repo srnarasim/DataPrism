@@ -1,0 +1,14 @@
+{
+  "name": "@dataprism/release-tools",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Release automation tools for DataPrism Core",
+  "scripts": {
+    "version:bump": "node version-manager.js"
+  },
+  "dependencies": {
+    "semver": "^7.5.0",
+    "chalk": "^5.3.0"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@dataprism/build-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Build and validation scripts for DataPrism Core",
+  "scripts": {
+    "post-build:core": "node post-build-core.js",
+    "validate:packages": "node validate-packages.js",
+    "check:cdn-sizes": "node check-cdn-sizes.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "fs-extra": "^11.1.0"
+  }
+}
