@@ -39,8 +39,6 @@ on:
 env:
   NODE_VERSION: '18'
   RUST_VERSION: 'stable'
-  CDN_TARGET: ${{ inputs.cdn_target || 'github-pages' }}
-  DEPLOYMENT_ENVIRONMENT: ${{ inputs.environment || 'production' }}
 
 jobs:
   # Detect changes to determine if CDN deployment is needed
@@ -119,14 +117,14 @@ jobs:
       - name: Build CDN assets
         id: build-cdn
         run: |
-          echo "Building CDN assets for target: $CDN_TARGET"
+          echo "Building CDN assets for target: ${{ inputs.cdn_target || 'github-pages' }}"
           
           # Set CDN-specific environment variables
-          export CDN_TARGET=${{ env.CDN_TARGET }}
+          export CDN_TARGET=${{ inputs.cdn_target || 'github-pages' }}
           export CDN_COMPRESSION=both
           export CDN_VERSIONING=hash
           export CDN_WASM_OPTIMIZATION=true
-          export CDN_BASE_URL="${{ env.CDN_TARGET == 'github-pages' && format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) || '' }}"
+          export CDN_BASE_URL="${{ (inputs.cdn_target == 'github-pages' || (github.event_name != 'workflow_dispatch')) && format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) || '' }}"
           
           # Build CDN bundles
           npm run build:cdn
@@ -165,8 +163,8 @@ jobs:
           {
             "deploymentId": "${{ steps.deployment-id.outputs.id }}",
             "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "environment": "${{ env.DEPLOYMENT_ENVIRONMENT }}",
-            "target": "${{ env.CDN_TARGET }}",
+            "environment": "${{ inputs.environment || 'production' }}",
+            "target": "${{ inputs.cdn_target || 'github-pages' }}",
             "gitCommit": "${{ github.sha }}",
             "gitBranch": "${{ github.ref_name }}",
             "repository": "${{ github.repository }}",
@@ -197,10 +195,10 @@ jobs:
   # Deploy to GitHub Pages
   deploy-github-pages:
     needs: [detect-changes, build-cdn]
-    if: needs.build-cdn.result == 'success' && env.CDN_TARGET == 'github-pages'
+    if: needs.build-cdn.result == 'success' && (inputs.cdn_target == 'github-pages' || (github.event_name != 'workflow_dispatch' && 'github-pages' == 'github-pages'))
     runs-on: ubuntu-latest
     environment:
-      name: ${{ env.DEPLOYMENT_ENVIRONMENT }}
+      name: ${{ inputs.environment || 'production' }}
       url: ${{ steps.deploy.outputs.page_url }}
     permissions:
       contents: read
@@ -239,7 +237,7 @@ jobs:
   # Deploy to other CDN providers (future implementation)
   deploy-other-cdn:
     needs: [detect-changes, build-cdn]
-    if: needs.build-cdn.result == 'success' && env.CDN_TARGET != 'github-pages'
+    if: needs.build-cdn.result == 'success' && inputs.cdn_target != 'github-pages' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -262,7 +260,7 @@ jobs:
 
       - name: Deploy to CDN
         run: |
-          echo "🚧 Deploying to $CDN_TARGET"
+          echo "🚧 Deploying to ${{ inputs.cdn_target }}"
           echo "This deployment target is not yet implemented."
           echo "Supported targets: github-pages"
           exit 1
@@ -292,7 +290,7 @@ jobs:
 
       - name: Validate deployment
         run: |
-          DEPLOYMENT_URL="${{ env.CDN_TARGET == 'github-pages' && format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) || 'https://example.com' }}"
+          DEPLOYMENT_URL="${{ (inputs.cdn_target == 'github-pages' || (github.event_name != 'workflow_dispatch')) && format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) || 'https://example.com' }}"
           
           echo "🔍 Validating deployment at: $DEPLOYMENT_URL"
           
@@ -323,7 +321,7 @@ jobs:
 
       - name: Performance validation
         run: |
-          DEPLOYMENT_URL="${{ env.CDN_TARGET == 'github-pages' && format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) || 'https://example.com' }}"
+          DEPLOYMENT_URL="${{ (inputs.cdn_target == 'github-pages' || (github.event_name != 'workflow_dispatch')) && format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) || 'https://example.com' }}"
           
           echo "📊 Running performance tests..."
           
@@ -353,8 +351,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🎯 Target | ${{ env.CDN_TARGET }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🌍 Environment | ${{ env.DEPLOYMENT_ENVIRONMENT }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🎯 Target | ${{ inputs.cdn_target || 'github-pages' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌍 Environment | ${{ inputs.environment || 'production' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 🏷️ Deployment ID | ${{ needs.build-cdn.outputs.deployment-id || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 📦 Bundle Size | $(numfmt --to=iec ${{ needs.build-cdn.outputs.cdn-size || 0 }}) |" >> $GITHUB_STEP_SUMMARY
           echo "| 📁 Asset Count | ${{ needs.build-cdn.outputs.asset-count || 0 }} |" >> $GITHUB_STEP_SUMMARY
@@ -365,7 +363,7 @@ jobs:
           
           if [[ "${{ needs.build-cdn.result }}" == "success" && ("${{ needs.deploy-github-pages.result }}" == "success" || "${{ needs.deploy-other-cdn.result }}" == "success") ]]; then
             echo "🎉 **Deployment completed successfully!**" >> $GITHUB_STEP_SUMMARY
-            if [[ "${{ env.CDN_TARGET }}" == "github-pages" ]]; then
+            if [[ "${{ inputs.cdn_target || 'github-pages' }}" == "github-pages" ]]; then
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "🌐 **CDN URL:** https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}" >> $GITHUB_STEP_SUMMARY
             fi
@@ -378,7 +376,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const deploymentUrl = '${{ env.CDN_TARGET }}' === 'github-pages' 
+            const deploymentUrl = '${{ inputs.cdn_target || 'github-pages' }}' === 'github-pages' 
               ? `https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}`
               : 'Deployment URL will be available after merge';
             
@@ -387,7 +385,7 @@ jobs:
             Your changes have been built and are ready for CDN deployment.
             
             **Build Summary:**
-            - 🎯 Target: \`${{ env.CDN_TARGET }}\`
+            - 🎯 Target: \`${{ inputs.cdn_target || 'github-pages' }}\`
             - 📦 Bundle Size: \`$(numfmt --to=iec ${{ needs.build-cdn.outputs.cdn-size || 0 }})\`
             - 📁 Assets: \`${{ needs.build-cdn.outputs.asset-count || 0 }}\` files
             - 🏷️ Deployment ID: \`${{ needs.build-cdn.outputs.deployment-id }}\`
