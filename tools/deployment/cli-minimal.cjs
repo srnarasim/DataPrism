@@ -145,7 +145,23 @@ function deployToGitHubPages(options = {}) {
   const assetsDir = options.assetsDir || 'cdn/dist';
   
   if (!fs.existsSync(assetsDir)) {
-    error(`Assets directory not found: ${assetsDir}`);
+    error(`Assets directory not found: ${assetsDir}. Make sure to run 'npm run build:cdn' first.`);
+  }
+  
+  // Check if assets directory has content
+  const files = fs.readdirSync(assetsDir);
+  if (files.length === 0) {
+    error(`Assets directory is empty: ${assetsDir}. Make sure CDN build completed successfully.`);
+  }
+  
+  log(`Found ${files.length} files in ${assetsDir}: ${files.slice(0, 5).join(', ')}${files.length > 5 ? '...' : ''}`);
+  
+  // Check for essential files
+  const essentialFiles = ['dataprism.min.js', 'manifest.json'];
+  const missingFiles = essentialFiles.filter(file => !fs.existsSync(path.join(assetsDir, file)));
+  
+  if (missingFiles.length > 0) {
+    error(`Missing essential CDN files: ${missingFiles.join(', ')}. CDN build may have failed.`);
   }
 
   try {
