@@ -154,17 +154,44 @@ _\*Safari has limited threading support but full functionality_
 - Rust (latest stable)
 - wasm-pack
 
-### Setup
+### Quick Setup for Demo Analytics
+
+To get the demo analytics app running locally without mocking:
 
 ```bash
 # Clone the repository
 git clone https://github.com/dataprism/core.git
 cd DataPrism
 
-# Install dependencies
+# Install root dependencies
 npm install
 
-# Build all packages
+# Build the core packages first
+npm run build:packages
+
+# Build and start the demo application
+npm run build:demo
+npm run dev
+
+# Alternative: Start development server directly
+cd apps/demo-analytics
+npm install
+npm run dev
+```
+
+### Full Development Setup
+
+For complete development including all packages:
+
+```bash
+# Clone the repository
+git clone https://github.com/dataprism/core.git
+cd DataPrism
+
+# Install dependencies for all packages
+npm install
+
+# Build all packages (includes WASM compilation)
 npm run build
 
 # Run tests
@@ -173,6 +200,65 @@ npm test
 # Start demo application
 npm run dev
 ```
+
+### Package Dependencies
+
+The demo analytics app requires these core packages to be built first:
+
+1. **@dataprism/core** - Rust WASM module (requires `wasm-pack`)
+2. **@dataprism/orchestration** - TypeScript orchestration layer
+3. **@dataprism/plugins** - Plugin framework
+
+Build order:
+```bash
+# 1. Core WASM package
+npm run build:core
+
+# 2. Orchestration layer  
+npm run build:orchestration
+
+# 3. Plugin framework
+npm run build:plugins
+
+# 4. Demo app
+npm run build:demo
+```
+
+### Troubleshooting
+
+#### Demo App Not Working
+If the demo app loads but shows errors or doesn't function:
+
+1. **Build the packages first**: The demo app requires the core packages to be built
+   ```bash
+   npm run build:packages
+   ```
+
+2. **Check package linking**: Ensure the demo app can find the local packages
+   ```bash
+   cd apps/demo-analytics
+   npm run type-check
+   ```
+
+3. **Use mock mode**: If packages aren't building, you can run in mock mode
+   ```bash
+   # Edit apps/demo-analytics/src/App.tsx
+   # Change: import { DataPrismProvider } from "@contexts/DataPrismContext";
+   # To: import { DataPrismProvider } from "@contexts/MockDataPrismContext";
+   ```
+
+#### WebAssembly Issues
+If you see WASM-related errors:
+
+1. **Install wasm-pack**: `curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh`
+2. **Check Rust installation**: `rustc --version` (should be 1.70+)
+3. **Clear cache and rebuild**: `npm run clean && npm run build:core`
+
+#### Build Failures
+Common solutions:
+- **Clear node_modules**: `rm -rf node_modules && npm install`
+- **Update dependencies**: `npm update`
+- **Check Node version**: `node --version` (should be 18+)
 
 ### Project Structure
 

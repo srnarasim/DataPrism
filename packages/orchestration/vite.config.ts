@@ -10,7 +10,11 @@ export default defineConfig({
       formats: ["es", "cjs"],
     },
     rollupOptions: {
-      external: ["@duckdb/duckdb-wasm", "apache-arrow"],
+      external: [
+        "@duckdb/duckdb-wasm", 
+        "apache-arrow",
+        "@dataprism/core", // External reference to core package
+      ],
       output: {
         globals: {
           "@duckdb/duckdb-wasm": "DuckDB",

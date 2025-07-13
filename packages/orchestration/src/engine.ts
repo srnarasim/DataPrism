@@ -70,12 +70,24 @@ export class DataPrismEngine {
   }
 
   private async initializeWasm(): Promise<void> {
-    try {
-      // Dynamic import of WASM module - this will be available after build
-      const wasmPath = "../../../packages/core/pkg/dataprism_core.js";
-      const wasmModule = await import(wasmPath);
+    // Skip WASM initialization during build process
+    if (typeof window === "undefined") {
+      throw new Error("WASM not available in Node environment");
+    }
 
-      await wasmModule.default(); // Initialize WASM
+    try {
+      // Dynamic import the WASM module - construct path dynamically to avoid TS resolution
+      const corePackageName = "@dataprism/core";
+      const wasmModule = await import(/* @vite-ignore */ corePackageName);
+
+      // Try to initialize with public WASM file first, then fallback
+      try {
+        await wasmModule.default("/wasm/dataprism_core_bg.wasm");
+      } catch (error) {
+        // Fallback to default initialization
+        await wasmModule.default();
+      }
+
       wasmModule.init_panic_hook();
 
       this.wasmModule = wasmModule;

@@ -5,12 +5,10 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { DataPrismEngine } from "@dataprism/core";
-import { DataPrismOrchestrator } from "@dataprism/orchestration";
+import { DataPrismEngine } from "@dataprism/orchestration";
 
 interface DataPrismContextValue {
   engine: DataPrismEngine | null;
-  orchestrator: DataPrismOrchestrator | null;
   isInitialized: boolean;
   isInitializing: boolean;
   initializationError: Error | null;
@@ -23,7 +21,6 @@ interface DataPrismContextValue {
 
   // Performance monitoring
   getPerformanceMetrics: () => Promise<any>;
-  clearCache: () => Promise<void>;
 
   // Utilities
   retry: () => Promise<void>;
@@ -45,8 +42,6 @@ interface DataPrismProviderProps {
 
 export function DataPrismProvider({ children }: DataPrismProviderProps) {
   const [engine, setEngine] = useState<DataPrismEngine | null>(null);
-  const [orchestrator, setOrchestrator] =
-    useState<DataPrismOrchestrator | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [initializationError, setInitializationError] = useState<Error | null>(
@@ -62,28 +57,17 @@ export function DataPrismProvider({ children }: DataPrismProviderProps) {
     try {
       console.log("🚀 Initializing DataPrism Core...");
 
-      // Initialize the core engine
+      // Initialize the engine
       const engineInstance = new DataPrismEngine({
-        memoryLimit: "512MB",
-        enableOptimizations: true,
-        debug: import.meta.env.DEV,
+        maxMemoryMB: 512,
+        enableWasmOptimizations: true,
+        logLevel: import.meta.env.DEV ? "debug" : "info",
       });
 
       await engineInstance.initialize();
-      console.log("✅ DataPrism Core engine initialized");
-
-      // Initialize the orchestrator
-      const orchestratorInstance = new DataPrismOrchestrator(engineInstance, {
-        enableCaching: true,
-        cacheSize: 100,
-        enableMetrics: true,
-      });
-
-      await orchestratorInstance.initialize();
-      console.log("✅ DataPrism Orchestrator initialized");
+      console.log("✅ DataPrism engine initialized");
 
       setEngine(engineInstance);
-      setOrchestrator(orchestratorInstance);
       setIsInitialized(true);
 
       // Load sample datasets
@@ -147,29 +131,20 @@ export function DataPrismProvider({ children }: DataPrismProviderProps) {
   const getTableInfo = useCallback(
     async (tableName: string) => {
       if (!engine) throw new Error("DataPrism engine not initialized");
-      const result = await engine.query(`DESCRIBE ${tableName}`);
-      return result.data;
+      return await engine.getTableInfo(tableName);
     },
     [engine],
   );
 
   const listTables = useCallback(async () => {
     if (!engine) throw new Error("DataPrism engine not initialized");
-    const result = await engine.query("SHOW TABLES");
-    return result.data.map((row: any) => row.name);
+    return await engine.listTables();
   }, [engine]);
 
   const getPerformanceMetrics = useCallback(async () => {
-    if (!orchestrator)
-      throw new Error("DataPrism orchestrator not initialized");
-    return await orchestrator.getMetrics();
-  }, [orchestrator]);
-
-  const clearCache = useCallback(async () => {
-    if (!orchestrator)
-      throw new Error("DataPrism orchestrator not initialized");
-    return await orchestrator.clearCache();
-  }, [orchestrator]);
+    if (!engine) throw new Error("DataPrism engine not initialized");
+    return engine.getMetrics();
+  }, [engine]);
 
   const retry = useCallback(async () => {
     setIsInitialized(false);
@@ -179,7 +154,6 @@ export function DataPrismProvider({ children }: DataPrismProviderProps) {
 
   const value: DataPrismContextValue = {
     engine,
-    orchestrator,
     isInitialized,
     isInitializing,
     initializationError,
@@ -188,7 +162,6 @@ export function DataPrismProvider({ children }: DataPrismProviderProps) {
     getTableInfo,
     listTables,
     getPerformanceMetrics,
-    clearCache,
     retry,
   };
 

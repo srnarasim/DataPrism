@@ -13,6 +13,10 @@ export default defineConfig({
       "@contexts": resolve(__dirname, "./src/contexts"),
       "@utils": resolve(__dirname, "./src/utils"),
       "@hooks": resolve(__dirname, "./src/hooks"),
+      // Local development aliases for DataPrism packages
+      "@dataprism/core": resolve(__dirname, "../../packages/core/pkg"),
+      "@dataprism/orchestration": resolve(__dirname, "../../packages/orchestration/src"),
+      "@dataprism/plugins": resolve(__dirname, "../../packages/plugins/src"),
     },
   },
 
@@ -23,7 +27,11 @@ export default defineConfig({
       "Cross-Origin-Opener-Policy": "same-origin",
     },
     fs: {
-      allow: [".."], // Allow access to workspace packages
+      allow: [
+        "..", // Allow access to workspace packages
+        "../../packages", // Explicit access to packages directory
+        "../../packages/core/pkg", // Explicit access to WASM files
+      ],
     },
   },
 
@@ -42,6 +50,9 @@ export default defineConfig({
       "@tanstack/react-table",
     ],
   },
+
+  // WebAssembly support
+  assetsInclude: ['**/*.wasm'],
 
   build: {
     target: "es2020",
