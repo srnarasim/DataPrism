@@ -17,9 +17,6 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@dataprism/core": "workspace:*",
-    "@dataprism/orchestration": "workspace:*",
-    "@dataprism/plugin-framework": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.15.0",

@@ -8,11 +8,6 @@
     "type": "git",
     "url": "https://github.com/dataprism/core.git"
   },
-  "workspaces": [
-    "packages/*",
-    "tools/*",
-    "apps/*"
-  ],
   "scripts": {
     "clean": "npm run clean:dist && npm run clean:cache",
     "clean:dist": "rm -rf dist cdn packages/*/dist apps/*/dist tools/*/dist",
@@ -20,7 +15,7 @@
     
     "build": "npm run build:all",
     "build:all": "npm run build:tools && npm run build:packages && npm run build:apps",
-    "build:tools": "npm run -w tools/build build",
+    "build:tools": "cd tools/build && npm run build",
     "build:packages": "npm run build:core && npm run build:orchestration && npm run build:plugins",
     "build:core": "cd packages/core && wasm-pack build --target web --out-dir pkg && npm run post-build:core",
     "build:orchestration": "cd packages/orchestration && vite build",
@@ -69,8 +64,7 @@
     "publish:packages": "node tools/release/publish-packages.js",
     "publish:dry-run": "npm run publish:packages -- --dry-run",
     
-    "install:all": "npm install && npm run install:workspaces",
-    "install:workspaces": "npm install --workspaces"
+    "install:all": "npm install"
   },
   "bundlesize": [
     {

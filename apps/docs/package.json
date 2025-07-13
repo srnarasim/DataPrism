@@ -15,9 +15,6 @@
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@dataprism/core": "workspace:*",
-    "@dataprism/orchestration": "workspace:*",
-    "@dataprism/plugin-framework": "workspace:*",
     "vue": "^3.3.4"
   },
   "devDependencies": {
