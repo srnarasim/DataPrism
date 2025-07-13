@@ -2,27 +2,51 @@ import { defineConfig } from "vite";
 import { resolve } from "path";
 import { createHash } from "crypto";
 import { wasmPlugin } from "./wasm-plugin.js";
+import { CDNBuildConfig, DEFAULT_CDN_CONFIG, SIZE_LIMITS } from "./types.js";
+import { manifestPlugin } from "./manifest-plugin.js";
 
 export default defineConfig(({ mode, command }) => {
   const isProduction = mode === "production";
   const isCDN = mode === "cdn";
+  
+  // Parse CDN configuration from environment or use defaults
+  const cdnTarget = (process.env.CDN_TARGET as CDNBuildConfig['target']) || 'github-pages';
+  const cdnConfig: CDNBuildConfig = {
+    ...DEFAULT_CDN_CONFIG,
+    target: cdnTarget,
+    optimization: {
+      ...DEFAULT_CDN_CONFIG.optimization,
+      compression: (process.env.CDN_COMPRESSION as any) || 'both',
+      wasmOptimization: process.env.CDN_WASM_OPTIMIZATION !== 'false',
+    },
+    assets: {
+      ...DEFAULT_CDN_CONFIG.assets,
+      versioning: (process.env.CDN_VERSIONING as any) || 'hash',
+      baseUrl: process.env.CDN_BASE_URL,
+    },
+  };
 
   return {
     plugins: [
       wasmPlugin({
-        inline: isCDN, // Inline WASM for CDN builds
-        generateIntegrity: true,
+        inline: isCDN && cdnConfig.optimization.wasmOptimization,
+        generateIntegrity: cdnConfig.assets.integrity,
         outDir: "assets",
+        compression: cdnConfig.optimization.compression,
       }),
+      ...(isCDN ? [manifestPlugin({ config: cdnConfig })] : []),
     ],
     build: {
       target: "es2020",
       lib: isCDN
         ? {
             entry: resolve(__dirname, "../../packages/orchestration/src/index.ts"),
-            formats: ["umd"],
+            formats: ["umd", "es"],
             name: "DataPrism",
-            fileName: () => "dataprism.min.js",
+            fileName: (format) => {
+              const ext = format === "es" ? "min.js" : "umd.js";
+              return `dataprism.${ext}`;
+            },
           }
         : {
             entry: {
@@ -42,6 +66,12 @@ export default defineConfig(({ mode, command }) => {
               return `${entryName}.${format === "es" ? "js" : "cjs"}`;
             },
           },
+      outDir: isCDN ? `cdn/dist/${cdnConfig.target === 'github-pages' ? '' : cdnConfig.target + '/'}` : "dist",
+      emptyOutDir: true,
+      sourcemap: isProduction || isCDN,
+      minify: (isProduction || isCDN) && cdnConfig.optimization.minification ? "esbuild" : false,
+      chunkSizeWarningLimit: SIZE_LIMITS['core.min.js'] / 1024, // Convert to KB
+      reportCompressedSize: true,
       rollupOptions: {
         external: isCDN
           ? ["@duckdb/duckdb-wasm", "apache-arrow"]
@@ -73,13 +103,14 @@ export default defineConfig(({ mode, command }) => {
             return `assets/[name]-[hash][extname]`;
           },
         },
+        ...((isCDN && cdnConfig.optimization.treeshaking) && {
+          treeshake: {
+            moduleSideEffects: false,
+            propertyReadSideEffects: false,
+            unknownGlobalSideEffects: false,
+          },
+        }),
       },
-      outDir: isCDN ? "cdn/dist" : "dist",
-      emptyOutDir: true,
-      sourcemap: true,
-      minify: isProduction ? "esbuild" : false,
-      chunkSizeWarningLimit: 2000, // 2MB limit
-      reportCompressedSize: true,
     },
     define: {
       __VERSION__: JSON.stringify(process.env.npm_package_version || "1.0.0"),

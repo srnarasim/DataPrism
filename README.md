@@ -23,17 +23,62 @@ DataPrism Core brings the power of traditional data warehouses directly to your 
 ### Installation
 
 ```bash
-# NPM
+# NPM (recommended for projects)
 npm install @dataprism/core
 
-# CDN (no installation required)
-<script type="module">
-  import { DataPrismEngine } from 'https://cdn.dataprism.dev/v1.0.0/core.min.js'
-</script>
+# Yarn
+yarn add @dataprism/core
 
 # CLI (project scaffolding)
 npx @dataprism/cli init my-analytics-app
 ```
+
+### CDN Usage (No Installation Required)
+
+DataPrism is available via CDN for immediate use in any web application:
+
+#### ESM (Recommended)
+```html
+<script type="module">
+  import { DataPrismEngine } from 'https://dataprism.github.io/core/dataprism.min.js';
+  
+  const engine = new DataPrismEngine();
+  await engine.initialize();
+  
+  // Your analytics code here
+</script>
+```
+
+#### UMD (Legacy Browser Support)
+```html
+<script src="https://dataprism.github.io/core/dataprism.umd.js"></script>
+<script>
+  const engine = new DataPrism.DataPrismEngine();
+  engine.initialize().then(() => {
+    // Your analytics code here
+  });
+</script>
+```
+
+#### With Subresource Integrity (Recommended)
+```html
+<script type="module" 
+        src="https://dataprism.github.io/core/dataprism.min.js"
+        integrity="sha384-HASH_WILL_BE_PROVIDED"
+        crossorigin="anonymous">
+</script>
+```
+
+#### Available CDN Assets
+
+| Asset | Description | Size | Use Case |
+|-------|-------------|------|----------|
+| `dataprism.min.js` | Complete DataPrism bundle (ESM) | ~800KB | Modern applications |
+| `dataprism.umd.js` | UMD bundle for legacy browsers | ~850KB | Legacy support |
+| `orchestration.min.js` | High-level APIs only | ~200KB | When using core separately |
+| `plugin-framework.min.js` | Plugin system only | ~150KB | Plugin development |
+| `assets/*.wasm` | WebAssembly binaries | ~1.2MB | Automatically loaded |
+| `plugins/manifest.json` | Available plugins registry | ~10KB | Plugin discovery |
 
 ### Basic Usage
 
