@@ -168,7 +168,7 @@ export class PluginManifestGenerator {
         console.log(`  ✅ Discovered plugin: ${plugin.name} (${plugin.id})`);
       }
     } catch (error) {
-      console.warn(`⚠️  Failed to process plugin directory ${pluginPath}:`, error.message);
+      console.warn(`⚠️  Failed to process plugin directory ${pluginPath}:`, error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -183,7 +183,7 @@ export class PluginManifestGenerator {
         console.log(`  ✅ Discovered plugin file: ${plugin.name} (${plugin.id})`);
       }
     } catch (error) {
-      console.warn(`⚠️  Failed to process plugin file ${filePath}:`, error.message);
+      console.warn(`⚠️  Failed to process plugin file ${filePath}:`, error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -308,7 +308,7 @@ export class PluginManifestGenerator {
         await this.validatePlugin(plugin);
         validatedPlugins.push(plugin);
       } catch (error) {
-        console.warn(`⚠️  Plugin validation failed for ${plugin.id}: ${error.message}`);
+        console.warn(`⚠️  Plugin validation failed for ${plugin.id}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -343,7 +343,7 @@ export class PluginManifestGenerator {
         }
       }
     } catch (error) {
-      throw new Error(`Failed to read plugin file: ${error.message}`);
+      throw new Error(`Failed to read plugin file: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -487,14 +487,14 @@ export class PluginManifestGenerator {
           let value = match[1].trim();
           
           if (key === 'dependencies') {
-            value = value.split(/[,\s]+/).filter(Boolean);
+            metadata[key] = value.split(/[,\s]+/).filter(Boolean);
           } else if (key === 'loadOrder') {
-            value = parseInt(value);
+            metadata[key] = parseInt(value);
           } else if (key === 'lazy') {
-            value = value === 'true';
+            metadata[key] = value === 'true';
+          } else {
+            metadata[key] = value;
           }
-          
-          metadata[key] = value;
         }
       });
     }
@@ -537,7 +537,7 @@ export class PluginManifestGenerator {
 
       return [...new Set(exports)]; // Remove duplicates
     } catch (error) {
-      console.warn(`⚠️  Failed to extract exports from ${filePath}:`, error.message);
+      console.warn(`⚠️  Failed to extract exports from ${filePath}:`, error instanceof Error ? error.message : String(error));
       return ['default'];
     }
   }

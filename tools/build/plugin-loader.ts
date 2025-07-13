@@ -105,7 +105,7 @@ export class CDNPluginLoader {
       
     } catch (error) {
       console.error('❌ Failed to initialize plugin loader:', error);
-      throw new Error(`Plugin loader initialization failed: ${error.message}`);
+      throw new Error(`Plugin loader initialization failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -164,7 +164,7 @@ export class CDNPluginLoader {
 
     } catch (error) {
       loadedPlugin.status = 'error';
-      loadedPlugin.error = error.message;
+      loadedPlugin.error = error instanceof Error ? error.message : String(error);
       
       console.error(`❌ Failed to load plugin ${pluginId}:`, error);
       
@@ -301,7 +301,7 @@ export class CDNPluginLoader {
     // Validate manifest structure
     this.validateManifest(manifest);
     
-    return manifest;
+    return manifest as PluginManifest;
   }
 
   private validateManifest(manifest: any): void {
@@ -330,7 +330,7 @@ export class CDNPluginLoader {
     const compat = this.manifest.compatibility;
     
     // Check WebAssembly support
-    if (compat.webAssembly && typeof WebAssembly === 'undefined') {
+    if (compat.webAssembly && typeof (globalThis as any).WebAssembly === 'undefined') {
       throw new Error('Plugins require WebAssembly support, but it is not available');
     }
 
@@ -366,7 +366,7 @@ export class CDNPluginLoader {
       try {
         await this.loadPlugin(plugin.id);
       } catch (error) {
-        console.warn(`⚠️  Failed to preload critical plugin ${plugin.id}:`, error.message);
+        console.warn(`⚠️  Failed to preload critical plugin ${plugin.id}:`, error instanceof Error ? error.message : String(error));
       }
     }
   }
@@ -461,7 +461,7 @@ export class CDNPluginLoader {
       console.log(`🔒 Integrity verified for ${url}`);
     } catch (error) {
       if (this.options.fallback) {
-        console.warn(`⚠️  Integrity check failed for ${url}, proceeding anyway:`, error.message);
+        console.warn(`⚠️  Integrity check failed for ${url}, proceeding anyway:`, error instanceof Error ? error.message : String(error));
       } else {
         throw error;
       }
@@ -475,7 +475,7 @@ export class CDNPluginLoader {
       try {
         return await operation();
       } catch (error) {
-        lastError = error;
+        lastError = error instanceof Error ? error : new Error(String(error));
         
         if (attempt < maxRetries) {
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
@@ -489,9 +489,9 @@ export class CDNPluginLoader {
   }
 
   private dispatchPluginEvent(eventType: string, detail: any): void {
-    if (typeof window !== 'undefined' && window.dispatchEvent) {
+    if (typeof globalThis !== 'undefined' && 'window' in globalThis && (globalThis as any).window?.dispatchEvent) {
       const event = new CustomEvent(`dataprism:${eventType}`, { detail });
-      window.dispatchEvent(event);
+      (globalThis as any).window.dispatchEvent(event);
     }
   }
 }
@@ -505,14 +505,14 @@ export function createPluginLoader(options: PluginLoadOptions = {}): CDNPluginLo
 }
 
 export async function loadPlugin(pluginId: string, loaderOptions?: PluginLoadOptions): Promise<LoadedPlugin> {
-  if (!pluginLoader.manifest) {
+  if (!(pluginLoader as any).manifest) {
     await pluginLoader.initialize();
   }
   return pluginLoader.loadPlugin(pluginId, loaderOptions);
 }
 
 export async function loadPluginsByCategory(categoryId: string): Promise<LoadedPlugin[]> {
-  if (!pluginLoader.manifest) {
+  if (!(pluginLoader as any).manifest) {
     await pluginLoader.initialize();
   }
   return pluginLoader.loadPluginsByCategory(categoryId);

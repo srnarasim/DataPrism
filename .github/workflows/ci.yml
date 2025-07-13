@@ -712,6 +712,7 @@ jobs:
     if: failure() && github.ref == 'refs/heads/main'
     steps:
       - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
         continue-on-error: true
         uses: 8398a7/action-slack@v3
         with:
@@ -727,3 +728,35 @@ jobs:
             Please check the failed jobs and fix the issues.
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+      - name: Create GitHub issue on critical failure
+        if: env.SLACK_WEBHOOK_URL == ''
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `CI Pipeline Failure on ${context.ref}`;
+            const body = `## CI Pipeline Failed
+            
+            **Repository**: ${context.repo.owner}/${context.repo.repo}
+            **Commit**: ${context.sha}
+            **Author**: ${context.actor}
+            **Workflow**: ${context.workflow}
+            **Run**: ${context.runId}
+            
+            ### Failed Jobs
+            Check the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for details.
+            
+            ### Action Required
+            Please investigate and fix the failing tests or builds.
+            
+            ---
+            *This issue was created automatically by the CI pipeline.*`;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['ci-failure', 'bug', 'priority-high']
+            });

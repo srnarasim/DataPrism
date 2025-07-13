@@ -348,6 +348,9 @@ jobs:
           target: wasm32-unknown-unknown
           override: true
 
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
       - name: Install security tools
         run: |
           cargo install cargo-audit cargo-deny
@@ -569,7 +572,9 @@ jobs:
     needs: [dependency-check, secret-scan, sast-scan, codeql, wasm-security]
     if: failure() && (github.ref == 'refs/heads/main' || github.event_name == 'schedule')
     steps:
-      - name: Send security alert
+      - name: Send security alert (Slack)
+        if: env.SLACK_WEBHOOK_URL != ''
+        continue-on-error: true
         uses: 8398a7/action-slack@v3
         with:
           status: failure
@@ -591,4 +596,48 @@ jobs:
             
             Please investigate immediately: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SECURITY_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || secrets.SECURITY_SLACK_WEBHOOK_URL }}
+
+      - name: Create Security Issue
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🚨 SECURITY ALERT: Critical security issues detected`;
+            const body = `## Security Scan Failure
+            
+            **Repository**: ${context.repo.owner}/${context.repo.repo}
+            **Branch**: ${context.ref}
+            **Commit**: ${context.sha}
+            **Workflow**: Security Scanning
+            **Run**: [${context.runId}](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            
+            ### Failed Security Checks
+            - Dependencies: ${{ needs.dependency-check.result }}
+            - Secrets: ${{ needs.secret-scan.result }}
+            - Static Analysis: ${{ needs.sast-scan.result }}
+            - CodeQL: ${{ needs.codeql.result }}
+            - WASM Security: ${{ needs.wasm-security.result }}
+            
+            ### Immediate Actions Required
+            1. Review failed security scans in the workflow logs
+            2. Address any critical or high-severity vulnerabilities
+            3. Ensure no secrets are exposed in the codebase
+            4. Update dependencies with known vulnerabilities
+            
+            ### Next Steps
+            - [ ] Review detailed scan results in workflow artifacts
+            - [ ] Fix critical/high severity issues
+            - [ ] Update security documentation if needed
+            - [ ] Rerun security scans after fixes
+            
+            ---
+            ⚠️ **This is an automated security alert. Please investigate immediately.**`;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'critical', 'needs-triage']
+            });
