@@ -60,7 +60,8 @@
     "version:bump": "node tools/release/version-manager.js",
     "publish:packages": "node tools/release/publish-packages.js",
     "publish:dry-run": "npm run publish:packages -- --dry-run",
-    "install:all": "npm install"
+    "install:all": "npm install",
+    "generate:api": "typedoc --out docs/api packages/orchestration/src/index.ts packages/llm/src/index.ts packages/cli/src/index.ts packages/plugins/src/index.ts --theme default --readme none --excludeExternals"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
@@ -70,6 +71,7 @@
     "eslint": "^8.50.0",
     "license-checker": "^25.0.1",
     "prettier": "^3.0.0",
+    "typedoc": "^0.25.0",
     "typescript": "^5.2.0",
     "vite": "^7.0.4",
     "vitest": "^3.2.4"
