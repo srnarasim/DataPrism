@@ -281,6 +281,7 @@ export default defineConfig({
 
   lastUpdated: true,
   cleanUrls: true,
+  ignoreDeadLinks: true,
 
   sitemap: {
     hostname: "https://docs.dataprism.dev",

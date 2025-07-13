@@ -33,8 +33,7 @@
     "eslint": "^8.50.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "shiki": "^0.14.4",
-    "@shikijs/transformers": "^0.9.0"
+    "shiki": "^0.14.4"
   },
   "engines": {
     "node": ">=18.0.0"
