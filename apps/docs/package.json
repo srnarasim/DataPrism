@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "vitepress": "^1.0.0-rc.20",
-    "vue-tsc": "^1.8.15",
+    "vue-tsc": "^3.0.1",
     "@types/node": "^20.0.0",
     "typedoc": "^0.25.0",
     "typedoc-plugin-markdown": "^3.16.0",
