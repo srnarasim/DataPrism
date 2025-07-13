@@ -2,8 +2,21 @@
   "name": "@dataprism/orchestration",
   "version": "0.1.0",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "description": "Orchestration layer for DataPrism Core with DuckDB integration",
+  "keywords": ["dataprism", "orchestration", "duckdb", "analytics", "wasm"],
+  "author": "DataPrism Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dataprism/core.git",
+    "directory": "packages/orchestration"
+  },
+  "bugs": {
+    "url": "https://github.com/dataprism/core/issues"
+  },
+  "homepage": "https://dataprism.dev",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

@@ -10,10 +10,16 @@
     "visualization",
     "data-processing"
   ],
+  "author": "DataPrism Team",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/dataprism/core.git"
   },
+  "bugs": {
+    "url": "https://github.com/dataprism/core/issues"
+  },
+  "homepage": "https://dataprism.dev",
   "scripts": {
     "clean": "npm run clean:dist && npm run clean:cache",
     "clean:dist": "rm -rf dist cdn packages/*/dist apps/*/dist tools/*/dist",

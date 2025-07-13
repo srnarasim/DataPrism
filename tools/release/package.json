@@ -4,6 +4,18 @@
   "private": true,
   "type": "module",
   "description": "Release automation tools for DataPrism Core",
+  "keywords": ["dataprism", "release", "tools", "versioning"],
+  "author": "DataPrism Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dataprism/core.git",
+    "directory": "tools/release"
+  },
+  "bugs": {
+    "url": "https://github.com/dataprism/core/issues"
+  },
+  "homepage": "https://dataprism.dev",
   "scripts": {
     "version:bump": "node version-manager.js"
   },

@@ -2,8 +2,21 @@
   "name": "@dataprism/plugins",
   "version": "0.1.0",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "description": "Plugin framework for DataPrism Core",
+  "keywords": ["dataprism", "plugins", "framework", "analytics", "extensibility"],
+  "author": "DataPrism Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dataprism/core.git",
+    "directory": "packages/plugins"
+  },
+  "bugs": {
+    "url": "https://github.com/dataprism/core/issues"
+  },
+  "homepage": "https://dataprism.dev",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

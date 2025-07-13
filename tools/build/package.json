@@ -3,8 +3,21 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Build tools and configuration for DataPrism Core",
+  "keywords": ["dataprism", "build", "tools", "vite", "wasm"],
+  "author": "DataPrism Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dataprism/core.git",
+    "directory": "tools/build"
+  },
+  "bugs": {
+    "url": "https://github.com/dataprism/core/issues"
+  },
+  "homepage": "https://dataprism.dev",
   "main": "./dist/index.js",
   "exports": {
+    ".": "./dist/index.js",
     "./vite": "./vite.config.js",
     "./wasm-plugin": "./wasm-plugin.js"
   },

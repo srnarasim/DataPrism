@@ -4,6 +4,18 @@
   "private": true,
   "type": "module",
   "description": "Build and validation scripts for DataPrism Core",
+  "keywords": ["dataprism", "scripts", "build", "validation"],
+  "author": "DataPrism Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dataprism/core.git",
+    "directory": "tools/scripts"
+  },
+  "bugs": {
+    "url": "https://github.com/dataprism/core/issues"
+  },
+  "homepage": "https://dataprism.dev",
   "scripts": {
     "post-build:core": "node post-build-core.js",
     "validate:packages": "node validate-packages.js",
