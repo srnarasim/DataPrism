@@ -44,12 +44,13 @@ export default defineConfig(({ mode, command }) => {
           },
       rollupOptions: {
         external: isCDN
-          ? []
+          ? ["@duckdb/duckdb-wasm", "apache-arrow"]
           : [
               "@dataprism/core",
               "@dataprism/plugin-framework",
               "@dataprism/orchestration",
-              "duckdb-wasm",
+              "@duckdb/duckdb-wasm",
+              "apache-arrow",
             ],
         output: {
           exports: isCDN ? "named" : "auto",
@@ -58,6 +59,8 @@ export default defineConfig(({ mode, command }) => {
                 "@dataprism/core": "DataPrismCore",
                 "@dataprism/plugin-framework": "DataPrismPluginFramework",
                 "@dataprism/orchestration": "DataPrismOrchestration",
+                "@duckdb/duckdb-wasm": "DuckDB",
+                "apache-arrow": "Arrow",
               }
             : undefined,
           assetFileNames: (assetInfo) => {
