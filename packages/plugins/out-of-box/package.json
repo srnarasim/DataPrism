@@ -1,0 +1,71 @@
+{
+  "name": "@dataprism/plugins-out-of-box",
+  "version": "1.0.0",
+  "description": "Production-ready plugin collection for DataPrism Core",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "build:visualization": "vite build --mode visualization",
+    "build:integration": "vite build --mode integration",
+    "build:processing": "vite build --mode processing",
+    "build:utility": "vite build --mode utility",
+    "build:browser": "vite build --mode browser && npm run copy-workers",
+    "copy-workers": "mkdir -p workers && cp public/workers/*.js workers/",
+    "dev": "vite dev",
+    "serve": "node server.js",
+    "demo": "npm run build:browser && npm run serve",
+    "test": "vitest",
+    "test:integration": "vitest --config vitest.integration.config.ts",
+    "test:performance": "vitest --config vitest.performance.config.ts",
+    "test:browser": "playwright test",
+    "test:visual": "playwright test --config playwright.visual.config.ts",
+    "lint": "eslint src --ext .ts,.tsx",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write src",
+    "size-check": "bundlesize",
+    "analyze-bundle": "vite-bundle-analyzer dist",
+    "validate-manifests": "node scripts/validate-manifests.js",
+    "profile": "node --inspect scripts/profile.js"
+  },
+  "dependencies": {
+    "d3": "^7.8.5",
+    "density-clustering": "^1.3.0",
+    "ml-distance": "^4.0.1",
+    "ml-kmeans": "^6.0.0",
+    "ml-matrix": "^6.12.1",
+    "papaparse": "^5.4.1",
+    "plotly.js-dist": "^2.26.0"
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.0",
+    "@types/papaparse": "^5.3.8",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "bundlesize": "^0.18.1",
+    "eslint": "^8.45.0",
+    "playwright": "^1.37.0",
+    "prettier": "^3.0.0",
+    "terser": "^5.43.1",
+    "typescript": "^5.1.0",
+    "vite": "^4.4.0",
+    "vite-bundle-analyzer": "^0.7.0",
+    "vitest": "^0.34.0"
+  },
+  "bundlesize": [
+    {
+      "path": "dist/*.js",
+      "maxSize": "150kb"
+    }
+  ],
+  "keywords": [
+    "dataprism",
+    "analytics",
+    "plugins",
+    "visualization",
+    "data-processing"
+  ],
+  "author": "DataPrism Team",
+  "license": "MIT"
+}

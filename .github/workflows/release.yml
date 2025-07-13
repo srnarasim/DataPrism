@@ -1,0 +1,578 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+      prerelease_id:
+        description: 'Prerelease identifier (for prerelease only)'
+        required: false
+        default: 'alpha'
+
+env:
+  NODE_VERSION: '18'
+  RUST_VERSION: 'stable'
+
+jobs:
+  # Validate release readiness
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+      current_version: ${{ steps.version.outputs.current_version }}
+      new_version: ${{ steps.version.outputs.new_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get current version
+        id: version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            NEW_VERSION=$(npm version --no-git-tag-version ${{ github.event.inputs.version_type }} ${{ github.event.inputs.prerelease_id && format('--preid={0}', github.event.inputs.prerelease_id) || '' }})
+            echo "new_version=${NEW_VERSION#v}" >> $GITHUB_OUTPUT
+          else
+            TAG_VERSION=${GITHUB_REF#refs/tags/v}
+            echo "new_version=$TAG_VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check release conditions
+        id: check
+        run: |
+          # Check if all tests pass
+          if ! npm run validate; then
+            echo "❌ Validation failed - cannot release"
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          # Check if changelog is updated
+          if ! grep -q "${{ steps.version.outputs.new_version }}" CHANGELOG.md; then
+            echo "❌ CHANGELOG.md not updated for version ${{ steps.version.outputs.new_version }}"
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          echo "✅ All release conditions met"
+          echo "should_release=true" >> $GITHUB_OUTPUT
+
+      - name: Security scan
+        run: |
+          npm audit --audit-level moderate
+          npm run audit:licenses
+
+  # Build all packages for release
+  build:
+    name: Build Release Packages
+    runs-on: ubuntu-latest
+    needs: validate
+    if: needs.validate.outputs.should_release == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all packages
+        run: npm run build:release
+
+      - name: Generate integrity checksums
+        run: |
+          find packages/*/dist packages/*/pkg cdn/dist -type f \( -name "*.js" -o -name "*.wasm" -o -name "*.d.ts" \) -exec sha256sum {} \; > release-checksums.txt
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-build
+          path: |
+            packages/*/dist/
+            packages/*/pkg/
+            cdn/dist/
+            release-checksums.txt
+          retention-days: 30
+
+  # Comprehensive testing for release
+  test-release:
+    name: Release Testing
+    runs-on: ${{ matrix.os }}
+    needs: [validate, build]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['18', '20']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-build
+
+      - name: Run comprehensive tests
+        run: |
+          npm run test
+          npm run test:integration
+          npm run test:performance
+
+      - name: Test package installation
+        run: |
+          # Test that packages can be installed and imported
+          cd /tmp
+          npm init -y
+          npm install ${{ github.workspace }}/packages/core/pkg
+          npm install ${{ github.workspace }}/packages/orchestration/dist
+          
+          # Test basic functionality
+          node -e "
+            const { DataPrismEngine } = require('@dataprism/core');
+            console.log('✅ Core package loads successfully');
+          "
+
+  # Browser compatibility testing
+  browser-compatibility:
+    name: Browser Compatibility
+    runs-on: ubuntu-latest
+    needs: [validate, build]
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-build
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run browser tests
+        run: npx playwright test --project=${{ matrix.browser }}
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-results-${{ matrix.browser }}
+          path: |
+            test-results/
+            playwright-report/
+
+  # Create GitHub release
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate, test-release, browser-compatibility]
+    outputs:
+      release_id: ${{ steps.create_release.outputs.id }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-build
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          # Extract changelog for this version
+          VERSION="${{ needs.validate.outputs.new_version }}"
+          awk "/^## \[${VERSION}\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md > release-notes.md
+          
+          # Add build information
+          echo "" >> release-notes.md
+          echo "## Build Information" >> release-notes.md
+          echo "- Built from commit: ${{ github.sha }}" >> release-notes.md
+          echo "- Build date: $(date -Iseconds)" >> release-notes.md
+          echo "- Node.js version: ${{ env.NODE_VERSION }}" >> release-notes.md
+          echo "- Rust version: ${{ env.RUST_VERSION }}" >> release-notes.md
+
+      - name: Create GitHub release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.validate.outputs.new_version }}
+          release_name: DataPrism Core v${{ needs.validate.outputs.new_version }}
+          body_path: release-notes.md
+          draft: false
+          prerelease: ${{ contains(needs.validate.outputs.new_version, 'alpha') || contains(needs.validate.outputs.new_version, 'beta') || contains(needs.validate.outputs.new_version, 'rc') }}
+
+      - name: Upload CDN bundle
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./cdn/dist/core.min.js
+          asset_name: dataprism-core-v${{ needs.validate.outputs.new_version }}.min.js
+          asset_content_type: application/javascript
+
+      - name: Upload WASM binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./packages/core/pkg/dataprism_core_bg.wasm
+          asset_name: dataprism-core-v${{ needs.validate.outputs.new_version }}.wasm
+          asset_content_type: application/wasm
+
+      - name: Upload checksums
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release-checksums.txt
+          asset_name: checksums.txt
+          asset_content_type: text/plain
+
+  # Publish to NPM
+  publish-npm:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    needs: [validate, create-release]
+    if: ${{ !contains(needs.validate.outputs.new_version, 'alpha') }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-build
+
+      - name: Update package versions
+        run: |
+          VERSION="${{ needs.validate.outputs.new_version }}"
+          npm run version:bump -- --new-version $VERSION
+
+      - name: Publish packages
+        run: npm run publish:packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify published packages
+        run: |
+          sleep 30  # Wait for NPM propagation
+          VERSION="${{ needs.validate.outputs.new_version }}"
+          
+          # Verify each package is available
+          npm view @dataprism/core@$VERSION
+          npm view @dataprism/orchestration@$VERSION
+          npm view @dataprism/plugin-framework@$VERSION
+          npm view @dataprism/cli@$VERSION
+
+  # Deploy CDN
+  deploy-cdn:
+    name: Deploy CDN
+    runs-on: ubuntu-latest
+    needs: [validate, create-release]
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to CDN
+        run: |
+          VERSION="${{ needs.validate.outputs.new_version }}"
+          
+          # Upload versioned files
+          aws s3 sync cdn/dist/ s3://${{ secrets.CDN_BUCKET }}/v${VERSION}/ --delete
+          
+          # Update latest (only for non-prerelease)
+          if [[ ! "$VERSION" =~ (alpha|beta|rc) ]]; then
+            aws s3 sync cdn/dist/ s3://${{ secrets.CDN_BUCKET }}/latest/ --delete
+          fi
+          
+          # Invalidate CloudFront cache
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+
+      - name: Update CDN manifest
+        run: |
+          VERSION="${{ needs.validate.outputs.new_version }}"
+          MANIFEST='{
+            "version": "'$VERSION'",
+            "timestamp": "'$(date -Iseconds)'",
+            "commit": "${{ github.sha }}",
+            "release_url": "https://github.com/${{ github.repository }}/releases/tag/v'$VERSION'",
+            "files": {
+              "core": "v'$VERSION'/core.min.js",
+              "orchestration": "v'$VERSION'/orchestration.min.js",
+              "plugin-framework": "v'$VERSION'/plugin-framework.min.js"
+            }
+          }'
+          
+          echo "$MANIFEST" | jq '.' > manifest.json
+          aws s3 cp manifest.json s3://${{ secrets.CDN_BUCKET }}/manifest.json
+
+  # Deploy documentation
+  deploy-docs:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: [validate, create-release]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate API documentation
+        run: npm run generate:api
+
+      - name: Build documentation
+        run: npm run build:docs
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apps/docs/.vitepress/dist
+          cname: docs.dataprism.dev
+
+  # Deploy demo application
+  deploy-demo:
+    name: Deploy Demo
+    runs-on: ubuntu-latest
+    needs: [validate, create-release]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-build
+
+      - name: Build demo application
+        run: npm run build:demo
+        env:
+          VITE_DATAPRISM_VERSION: ${{ needs.validate.outputs.new_version }}
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./apps/demo-analytics
+          vercel-args: '--prod'
+
+  # Post-release tasks
+  post-release:
+    name: Post-release Tasks
+    runs-on: ubuntu-latest
+    needs: [validate, create-release, publish-npm, deploy-cdn, deploy-docs, deploy-demo]
+    if: always() && needs.create-release.result == 'success'
+    steps:
+      - name: Send success notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#dataprism-releases'
+          text: |
+            🎉 DataPrism Core v${{ needs.validate.outputs.new_version }} Released!
+            
+            📦 NPM: https://www.npmjs.com/package/@dataprism/core
+            🌐 CDN: https://cdn.dataprism.dev/v${{ needs.validate.outputs.new_version }}/
+            📚 Docs: https://docs.dataprism.dev
+            🚀 Demo: https://demo.dataprism.dev
+            📋 Release: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.validate.outputs.new_version }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Create follow-up issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ needs.validate.outputs.new_version }}';
+            
+            // Create issue for next version planning
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Plan next release after v${version}`,
+              body: `## Next Release Planning
+              
+              This issue tracks planning for the next release after v${version}.
+              
+              ### Tasks:
+              - [ ] Review user feedback from v${version}
+              - [ ] Plan new features for next release
+              - [ ] Update roadmap
+              - [ ] Performance improvements
+              
+              ### Timeline:
+              Target date: TBD
+              
+              Created automatically after release v${version}`,
+              labels: ['release-planning', 'enhancement']
+            });
+
+      - name: Update repository topics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.replaceAllTopics({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              names: [
+                'webassembly',
+                'analytics',
+                'duckdb',
+                'typescript',
+                'rust',
+                'data-processing',
+                'browser-based',
+                'sql',
+                'performance',
+                'v${{ needs.validate.outputs.new_version }}'
+              ]
+            });
+
+  # Rollback on failure
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [create-release, publish-npm, deploy-cdn]
+    if: failure()
+    steps:
+      - name: Delete release on failure
+        if: needs.create-release.outputs.release_id != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.deleteRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: '${{ needs.create-release.outputs.release_id }}'
+            });
+
+      - name: Send failure notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#dataprism-releases'
+          text: |
+            🚨 Release v${{ needs.validate.outputs.new_version }} FAILED
+            
+            The release process encountered errors and has been rolled back.
+            Please check the workflow logs and fix the issues before retrying.
+            
+            Repository: ${{ github.repository }}
+            Workflow: ${{ github.workflow }}
+            Run: ${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

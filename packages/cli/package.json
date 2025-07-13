@@ -1,0 +1,90 @@
+{
+  "name": "@dataprism/cli",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Command-line interface for DataPrism Core project scaffolding and plugin development",
+  "keywords": ["cli", "dataprism", "analytics", "plugin-development", "scaffolding"],
+  "author": "DataPrism Team",
+  "license": "MIT",
+  "homepage": "https://dataprism.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dataprism/core.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/dataprism/core/issues"
+  },
+  "bin": {
+    "dataprism": "./bin/dataprism.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./commands": {
+      "import": "./dist/commands/index.js",
+      "types": "./dist/commands/index.d.ts"
+    },
+    "./templates": {
+      "import": "./dist/templates/index.js",
+      "types": "./dist/templates/index.d.ts"
+    }
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "templates/",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc && npm run copy:templates",
+    "build:watch": "tsc --watch",
+    "copy:templates": "cp -r src/templates dist/",
+    "clean": "rm -rf dist",
+    "dev": "npm run build:watch",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "inquirer": "^9.2.12",
+    "chalk": "^5.3.0",
+    "ora": "^7.0.1",
+    "fs-extra": "^11.1.1",
+    "semver": "^7.5.4",
+    "validate-npm-package-name": "^5.0.0",
+    "cross-spawn": "^7.0.3",
+    "node-fetch": "^3.3.2",
+    "tar": "^6.2.0",
+    "rimraf": "^5.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.7",
+    "@types/semver": "^7.5.6",
+    "@types/validate-npm-package-name": "^4.0.2",
+    "@types/cross-spawn": "^6.0.6",
+    "@types/tar": "^6.1.11",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.2.0",
+    "vitest": "^1.0.0",
+    "@vitest/coverage-v8": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "preferGlobal": true
+}

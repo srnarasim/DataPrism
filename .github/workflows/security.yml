@@ -1,0 +1,514 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scans daily at 3 AM UTC
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  # Dependency vulnerability scanning
+  dependency-check:
+    name: Dependency Vulnerability Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level moderate --json > npm-audit.json || true
+          
+          # Check if there are high or critical vulnerabilities
+          HIGH_VULNS=$(jq '.metadata.vulnerabilities.high // 0' npm-audit.json)
+          CRITICAL_VULNS=$(jq '.metadata.vulnerabilities.critical // 0' npm-audit.json)
+          
+          echo "High vulnerabilities: $HIGH_VULNS"
+          echo "Critical vulnerabilities: $CRITICAL_VULNS"
+          
+          if [ "$CRITICAL_VULNS" -gt 0 ]; then
+            echo "❌ Critical vulnerabilities found"
+            exit 1
+          fi
+          
+          if [ "$HIGH_VULNS" -gt 5 ]; then
+            echo "⚠️ Too many high vulnerabilities found"
+            exit 1
+          fi
+
+      - name: Check for known malicious packages
+        run: |
+          # Use osv-scanner to check for known vulnerabilities
+          curl -L https://github.com/google/osv-scanner/releases/latest/download/osv-scanner_linux_amd64 -o osv-scanner
+          chmod +x osv-scanner
+          ./osv-scanner --lockfile=package-lock.json --format=json > osv-results.json || true
+          
+          # Check results
+          if [ -s osv-results.json ] && [ "$(jq '.results | length' osv-results.json)" -gt 0 ]; then
+            echo "⚠️ OSV vulnerabilities found:"
+            jq -r '.results[].packages[].package.name' osv-results.json | sort -u
+          fi
+
+      - name: License compatibility check
+        run: |
+          npm run audit:licenses
+          
+          # Check for incompatible licenses
+          npx license-checker --json > licenses.json
+          
+          # List of prohibited licenses (adjust as needed)
+          PROHIBITED_LICENSES=("GPL-2.0" "GPL-3.0" "AGPL-3.0" "LGPL-2.1" "LGPL-3.0")
+          
+          for license in "${PROHIBITED_LICENSES[@]}"; do
+            if jq -r '.[] | select(.licenses | contains("'$license'")) | .name' licenses.json | grep -q .; then
+              echo "❌ Prohibited license found: $license"
+              jq -r '.[] | select(.licenses | contains("'$license'")) | "\(.name): \(.licenses)"' licenses.json
+              exit 1
+            fi
+          done
+
+      - name: Upload vulnerability report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulnerability-reports
+          path: |
+            npm-audit.json
+            osv-results.json
+            licenses.json
+
+  # Secret scanning
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog OSS Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: GitLeaks Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Custom secret patterns
+        run: |
+          # Check for common secret patterns not caught by other tools
+          echo "Checking for custom secret patterns..."
+          
+          # DataPrism-specific secrets
+          if grep -r "dataprism.*key\|dataprism.*token\|dataprism.*secret" --include="*.ts" --include="*.js" --include="*.json" .; then
+            echo "❌ Potential DataPrism secrets found"
+            exit 1
+          fi
+          
+          # Database connection strings
+          if grep -r "postgresql://\|mysql://\|mongodb://" --include="*.ts" --include="*.js" --include="*.json" .; then
+            echo "❌ Database connection strings found"
+            exit 1
+          fi
+          
+          # API keys and tokens
+          if grep -rE "(api[_-]?key|access[_-]?token|secret[_-]?key)\s*[:=]\s*['\"][^'\"]{20,}" --include="*.ts" --include="*.js" .; then
+            echo "❌ Potential API keys or tokens found"
+            exit 1
+          fi
+
+  # Static Application Security Testing (SAST)
+  sast-scan:
+    name: Static Security Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint Security Scan
+        run: |
+          # Run ESLint with security rules
+          npx eslint . \
+            --ext .ts,.tsx,.js,.jsx \
+            --config .eslintrc-security.json \
+            --format @microsoft/eslint-formatter-sarif \
+            --output-file eslint-security.sarif || true
+
+      - name: Semgrep Security Scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/typescript
+            p/javascript
+          generateSarif: "1"
+
+      - name: Bandit Security Scan (Python scripts)
+        if: hashFiles('**/*.py') != ''
+        run: |
+          pip install bandit[toml]
+          bandit -r . -f sarif -o bandit-security.sarif || true
+
+      - name: Upload SARIF results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: |
+            eslint-security.sarif
+            semgrep.sarif
+            bandit-security.sarif
+
+  # CodeQL Analysis
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'typescript' ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for analysis
+        run: npm run build:packages
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+  # Container security (for any Docker files)
+  container-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    if: hashFiles('**/Dockerfile') != '' || hashFiles('**/docker-compose.yml') != ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # WebAssembly security analysis
+  wasm-security:
+    name: WebAssembly Security Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Install security tools
+        run: |
+          cargo install cargo-audit cargo-deny
+          curl -L https://github.com/rustsec/rustsec/releases/latest/download/cargo-audit-linux-x86_64.tar.gz | tar xz -C ~/.cargo/bin
+
+      - name: Rust security audit
+        run: |
+          cd packages/core
+          cargo audit --json > ../../rust-audit.json || true
+
+      - name: Check Rust dependencies
+        run: |
+          cd packages/core
+          cargo deny check --format json > ../../rust-deny.json || true
+
+      - name: Build WASM for analysis
+        run: |
+          cd packages/core
+          wasm-pack build --target web --out-dir pkg
+
+      - name: WASM binary analysis
+        run: |
+          # Check WASM file size (security consideration)
+          WASM_SIZE=$(stat -c%s packages/core/pkg/*.wasm)
+          WASM_SIZE_MB=$((WASM_SIZE / 1024 / 1024))
+          
+          echo "WASM binary size: ${WASM_SIZE_MB}MB"
+          
+          if [ $WASM_SIZE_MB -gt 10 ]; then
+            echo "❌ WASM binary is too large (${WASM_SIZE_MB}MB > 10MB)"
+            exit 1
+          fi
+          
+          # Verify WASM magic number
+          if ! xxd -l 4 packages/core/pkg/*.wasm | grep -q "0061 736d"; then
+            echo "❌ Invalid WASM magic number"
+            exit 1
+          fi
+
+      - name: Upload Rust security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-security-reports
+          path: |
+            rust-audit.json
+            rust-deny.json
+
+  # Supply chain security
+  supply-chain:
+    name: Supply Chain Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Verify package integrity
+        run: |
+          # Check package-lock.json integrity
+          npm ci --dry-run
+          
+          # Verify no unexpected files in node_modules
+          npm ci
+          find node_modules -name "*.exe" -o -name "*.bat" -o -name "*.sh" | head -10
+
+      - name: SLSA provenance verification
+        uses: slsa-framework/slsa-verifier/actions/installer@v2.4.1
+
+      - name: Check for typosquatting
+        run: |
+          # Check for potential typosquatting in dependencies
+          npm list --depth=0 --json > package-list.json
+          
+          # Define suspicious patterns (this is a basic example)
+          SUSPICIOUS_PATTERNS=("dataprismmm" "dataprismm" "datapris" "dataprims")
+          
+          for pattern in "${SUSPICIOUS_PATTERNS[@]}"; do
+            if jq -r '.dependencies | keys[]' package-list.json | grep -i "$pattern"; then
+              echo "⚠️ Suspicious package name found: $pattern"
+            fi
+          done
+
+      - name: Check download integrity
+        run: |
+          # Verify package checksums where available
+          npm list --depth=0 --json | jq -r '.dependencies | to_entries[] | "\(.key)@\(.value.version)"' > dependency-list.txt
+          
+          # Log dependency sources for audit trail
+          echo "Dependency sources:"
+          while read -r dep; do
+            echo "Checking: $dep"
+            npm view "$dep" dist.integrity 2>/dev/null || echo "No integrity hash available"
+          done < dependency-list.txt
+
+  # Security policy compliance
+  compliance:
+    name: Security Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check security policy files
+        run: |
+          # Verify required security files exist
+          REQUIRED_FILES=("SECURITY.md" ".github/SECURITY.md")
+          
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing required security file: $file"
+              exit 1
+            fi
+          done
+
+      - name: Validate security headers
+        run: |
+          # Check that security headers are configured
+          if [ -f "apps/demo-analytics/vite.config.ts" ]; then
+            if ! grep -q "Cross-Origin-Embedder-Policy\|Cross-Origin-Opener-Policy" apps/demo-analytics/vite.config.ts; then
+              echo "⚠️ Security headers not configured in demo app"
+            fi
+          fi
+
+      - name: Check for security best practices
+        run: |
+          # Verify CSP configuration
+          if find . -name "*.html" -exec grep -L "Content-Security-Policy" {} \; | grep -q .; then
+            echo "⚠️ HTML files without CSP found"
+          fi
+          
+          # Check for secure cookie settings
+          if grep -r "document.cookie" --include="*.ts" --include="*.js" .; then
+            echo "⚠️ Direct cookie manipulation found - verify secure settings"
+          fi
+
+  # Generate security report
+  security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    needs: [dependency-check, secret-scan, sast-scan, codeql, wasm-security, supply-chain, compliance]
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate consolidated security report
+        run: |
+          cat << 'EOF' > security-report.md
+          # Security Scan Report
+          
+          **Date**: $(date -Iseconds)
+          **Repository**: ${{ github.repository }}
+          **Commit**: ${{ github.sha }}
+          **Branch**: ${{ github.ref_name }}
+          
+          ## Scan Results Summary
+          
+          | Component | Status | Notes |
+          |-----------|--------|-------|
+          | Dependencies | ${{ needs.dependency-check.result }} | NPM audit and OSV scan |
+          | Secrets | ${{ needs.secret-scan.result }} | TruffleHog and GitLeaks |
+          | Static Analysis | ${{ needs.sast-scan.result }} | ESLint security and Semgrep |
+          | CodeQL | ${{ needs.codeql.result }} | GitHub CodeQL analysis |
+          | WASM Security | ${{ needs.wasm-security.result }} | Rust audit and WASM analysis |
+          | Supply Chain | ${{ needs.supply-chain.result }} | Package integrity verification |
+          | Compliance | ${{ needs.compliance.result }} | Security policy compliance |
+          
+          ## Recommendations
+          
+          - Review any failed scans above
+          - Update dependencies with known vulnerabilities
+          - Implement additional security headers if needed
+          - Ensure all secrets are properly managed
+          
+          ## Next Steps
+          
+          1. Address any critical or high-severity findings
+          2. Update security documentation as needed
+          3. Schedule regular security reviews
+          
+          ---
+          *Generated automatically by DataPrism Security Workflow*
+          EOF
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: security-report.md
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            if (fs.existsSync('security-report.md')) {
+              const report = fs.readFileSync('security-report.md', 'utf8');
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🔒 Security Scan Results\n\n${report}\n\n<details><summary>View detailed results</summary>\n\nDetailed scan results are available in the workflow artifacts.\n\n</details>`
+              });
+            }
+
+  # Alert on critical security issues
+  security-alert:
+    name: Security Alert
+    runs-on: ubuntu-latest
+    needs: [dependency-check, secret-scan, sast-scan, codeql, wasm-security]
+    if: failure() && (github.ref == 'refs/heads/main' || github.event_name == 'schedule')
+    steps:
+      - name: Send security alert
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#dataprism-security'
+          text: |
+            🚨 SECURITY ALERT: Critical security issues detected
+            
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Workflow: ${{ github.workflow }}
+            
+            Failed security checks:
+            - Dependencies: ${{ needs.dependency-check.result }}
+            - Secrets: ${{ needs.secret-scan.result }}
+            - Static Analysis: ${{ needs.sast-scan.result }}
+            - CodeQL: ${{ needs.codeql.result }}
+            - WASM Security: ${{ needs.wasm-security.result }}
+            
+            Please investigate immediately: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SECURITY_SLACK_WEBHOOK_URL }}

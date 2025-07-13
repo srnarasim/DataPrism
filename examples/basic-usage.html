@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataPrism Core - Basic Usage Example</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            background-color: #f8f9fa;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.loading { background-color: #fff3cd; color: #856404; }
+        .status.success { background-color: #d4edda; color: #155724; }
+        .status.error { background-color: #f8d7da; color: #721c24; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .metric-card {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        .metric-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 DataPrism Core - Basic Usage Example</h1>
+        
+        <div class="section">
+            <h2>Engine Status</h2>
+            <div id="status" class="status loading">Initializing...</div>
+            <button onclick="initializeEngine()" id="initBtn">Initialize Engine</button>
+        </div>
+
+        <div class="section">
+            <h2>Sample Data</h2>
+            <p>This example uses sample sales data to demonstrate DataPrism Core capabilities:</p>
+            <pre id="sampleData">Loading sample data...</pre>
+            <button onclick="loadSampleData()" id="loadBtn" disabled>Load Sample Data</button>
+        </div>
+
+        <div class="section">
+            <h2>Analytics Queries</h2>
+            <p>Execute various analytical queries on the loaded data:</p>
+            <button onclick="runBasicQuery()" id="basicBtn" disabled>Basic Query</button>
+            <button onclick="runAggregationQuery()" id="aggBtn" disabled>Aggregation Query</button>
+            <button onclick="runTimeSeriesQuery()" id="timeBtn" disabled>Time Series Query</button>
+        </div>
+
+        <div class="section">
+            <h2>Query Results</h2>
+            <div id="results"></div>
+        </div>
+
+        <div class="section">
+            <h2>Performance Metrics</h2>
+            <div class="metrics" id="metrics"></div>
+            <button onclick="updateMetrics()" id="metricsBtn" disabled>Update Metrics</button>
+        </div>
+
+        <div class="section">
+            <h2>Engine Information</h2>
+            <div id="engineInfo"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Note: This is a demonstration of how DataPrism Core would be used
+        // The actual import would be: import { DataPrismEngine } from '@dataprism/orchestration';
+        
+        // Mock DataPrism Engine for demonstration
+        class MockDataPrismEngine {
+            constructor(config) {
+                this.config = config;
+                this.initialized = false;
+                this.startTime = Date.now();
+                this.queryCount = 0;
+                this.totalExecutionTime = 0;
+            }
+
+            async initialize() {
+                await this.delay(2000); // Simulate initialization
+                this.initialized = true;
+            }
+
+            async loadData(data, tableName) {
+                await this.delay(500); // Simulate data loading
+                this.data = data;
+                this.tableName = tableName;
+            }
+
+            async query(sql) {
+                if (!this.initialized) throw new Error('Engine not initialized');
+                
+                const start = performance.now();
+                await this.delay(100 + Math.random() * 400); // Simulate query execution
+                const end = performance.now();
+                
+                const executionTime = end - start;
+                this.queryCount++;
+                this.totalExecutionTime += executionTime;
+
+                // Mock query results based on SQL
+                let mockData = [];
+                if (sql.includes('GROUP BY product')) {
+                    mockData = [
+                        { product: 'Laptop', transaction_count: 15, total_revenue: 45000, avg_transaction: 3000 },
+                        { product: 'Mouse', transaction_count: 25, total_revenue: 1250, avg_transaction: 50 },
+                        { product: 'Keyboard', transaction_count: 20, total_revenue: 2000, avg_transaction: 100 }
+                    ];
+                } else if (sql.includes('date')) {
+                    mockData = [
+                        { date: '2024-01-15', daily_revenue: 5500, transaction_count: 8 },
+                        { date: '2024-01-16', daily_revenue: 6200, transaction_count: 12 },
+                        { date: '2024-01-17', daily_revenue: 4800, transaction_count: 6 }
+                    ];
+                } else {
+                    mockData = this.data || [
+                        { id: 1, product: 'Laptop', amount: 3000, date: '2024-01-15' },
+                        { id: 2, product: 'Mouse', amount: 50, date: '2024-01-15' },
+                        { id: 3, product: 'Keyboard', amount: 100, date: '2024-01-16' }
+                    ];
+                }
+
+                return {
+                    data: mockData,
+                    metadata: {
+                        rowCount: mockData.length,
+                        executionTime: executionTime,
+                        memoryUsage: Math.floor(Math.random() * 1000000) + 500000
+                    }
+                };
+            }
+
+            getMetrics() {
+                return {
+                    queryCount: this.queryCount,
+                    totalExecutionTime: this.totalExecutionTime,
+                    averageResponseTime: this.queryCount > 0 ? this.totalExecutionTime / this.queryCount : 0,
+                    memoryPeakUsage: Math.floor(Math.random() * 10000000) + 5000000
+                };
+            }
+
+            getStatus() {
+                return {
+                    initialized: this.initialized,
+                    wasmModuleLoaded: true,
+                    duckdbConnected: this.initialized,
+                    memoryUsage: Math.floor(Math.random() * 5000000) + 2000000,
+                    uptime: Date.now() - this.startTime
+                };
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            async close() {
+                this.initialized = false;
+            }
+        }
+
+        // Global engine instance
+        let engine = null;
+
+        // Sample data
+        const sampleData = [
+            { id: 1, product: 'Laptop', amount: 3000, date: '2024-01-15', region: 'North' },
+            { id: 2, product: 'Mouse', amount: 50, date: '2024-01-15', region: 'South' },
+            { id: 3, product: 'Keyboard', amount: 100, date: '2024-01-16', region: 'East' },
+            { id: 4, product: 'Monitor', amount: 800, date: '2024-01-16', region: 'West' },
+            { id: 5, product: 'Laptop', amount: 2800, date: '2024-01-17', region: 'North' },
+            { id: 6, product: 'Mouse', amount: 45, date: '2024-01-17', region: 'South' },
+            { id: 7, product: 'Keyboard', amount: 120, date: '2024-01-18', region: 'East' },
+            { id: 8, product: 'Monitor', amount: 750, date: '2024-01-18', region: 'West' }
+        ];
+
+        // Initialize the engine
+        window.initializeEngine = async function() {
+            updateStatus('Initializing DataPrism Core engine...', 'loading');
+            document.getElementById('initBtn').disabled = true;
+            
+            try {
+                engine = new MockDataPrismEngine({
+                    enableWasmOptimizations: true,
+                    maxMemoryMB: 4096,
+                    queryTimeoutMs: 30000
+                });
+                
+                await engine.initialize();
+                
+                updateStatus('✅ Engine initialized successfully!', 'success');
+                document.getElementById('loadBtn').disabled = false;
+                
+                // Show sample data
+                document.getElementById('sampleData').textContent = JSON.stringify(sampleData, null, 2);
+                
+                updateEngineInfo();
+                
+            } catch (error) {
+                updateStatus(`❌ Initialization failed: ${error.message}`, 'error');
+                document.getElementById('initBtn').disabled = false;
+            }
+        };
+
+        // Load sample data
+        window.loadSampleData = async function() {
+            updateStatus('Loading sample data...', 'loading');
+            document.getElementById('loadBtn').disabled = true;
+            
+            try {
+                await engine.loadData(sampleData, 'sales');
+                updateStatus('✅ Sample data loaded successfully!', 'success');
+                
+                // Enable query buttons
+                document.getElementById('basicBtn').disabled = false;
+                document.getElementById('aggBtn').disabled = false;
+                document.getElementById('timeBtn').disabled = false;
+                document.getElementById('metricsBtn').disabled = false;
+                
+            } catch (error) {
+                updateStatus(`❌ Data loading failed: ${error.message}`, 'error');
+                document.getElementById('loadBtn').disabled = false;
+            }
+        };
+
+        // Run basic query
+        window.runBasicQuery = async function() {
+            await executeQuery('SELECT * FROM sales LIMIT 5', 'Basic Query - First 5 Records');
+        };
+
+        // Run aggregation query
+        window.runAggregationQuery = async function() {
+            await executeQuery(`
+                SELECT 
+                    product,
+                    COUNT(*) as transaction_count,
+                    SUM(amount) as total_revenue,
+                    AVG(amount) as avg_transaction
+                FROM sales 
+                GROUP BY product 
+                ORDER BY total_revenue DESC
+            `, 'Aggregation Query - Revenue by Product');
+        };
+
+        // Run time series query
+        window.runTimeSeriesQuery = async function() {
+            await executeQuery(`
+                SELECT 
+                    date,
+                    SUM(amount) as daily_revenue,
+                    COUNT(*) as transaction_count
+                FROM sales 
+                GROUP BY date 
+                ORDER BY date
+            `, 'Time Series Query - Daily Revenue');
+        };
+
+        // Execute query and display results
+        async function executeQuery(sql, title) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<h3>${title}</h3><p>Executing query...</p>`;
+            
+            try {
+                const result = await engine.query(sql);
+                
+                let html = `<h3>${title}</h3>`;
+                html += `<p><strong>Execution Time:</strong> ${result.metadata.executionTime.toFixed(2)}ms</p>`;
+                html += `<p><strong>Rows Returned:</strong> ${result.metadata.rowCount}</p>`;
+                html += `<p><strong>Memory Usage:</strong> ${(result.metadata.memoryUsage / 1024 / 1024).toFixed(2)}MB</p>`;
+                
+                if (result.data.length > 0) {
+                    html += '<table>';
+                    
+                    // Header
+                    html += '<tr>';
+                    Object.keys(result.data[0]).forEach(key => {
+                        html += `<th>${key}</th>`;
+                    });
+                    html += '</tr>';
+                    
+                    // Data rows
+                    result.data.forEach(row => {
+                        html += '<tr>';
+                        Object.values(row).forEach(value => {
+                            html += `<td>${value}</td>`;
+                        });
+                        html += '</tr>';
+                    });
+                    
+                    html += '</table>';
+                } else {
+                    html += '<p>No results returned.</p>';
+                }
+                
+                resultsDiv.innerHTML = html;
+                updateMetrics();
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<h3>${title}</h3><p class="status error">❌ Query failed: ${error.message}</p>`;
+            }
+        }
+
+        // Update performance metrics
+        window.updateMetrics = function() {
+            if (!engine) return;
+            
+            const metrics = engine.getMetrics();
+            const metricsDiv = document.getElementById('metrics');
+            
+            metricsDiv.innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-value">${metrics.queryCount}</div>
+                    <div class="metric-label">Total Queries</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${metrics.averageResponseTime.toFixed(1)}ms</div>
+                    <div class="metric-label">Avg Response Time</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${(metrics.memoryPeakUsage / 1024 / 1024).toFixed(1)}MB</div>
+                    <div class="metric-label">Peak Memory Usage</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${metrics.totalExecutionTime.toFixed(1)}ms</div>
+                    <div class="metric-label">Total Execution Time</div>
+                </div>
+            `;
+        };
+
+        // Update engine information
+        function updateEngineInfo() {
+            if (!engine) return;
+            
+            const status = engine.getStatus();
+            const infoDiv = document.getElementById('engineInfo');
+            
+            infoDiv.innerHTML = `
+                <h3>Engine Status</h3>
+                <ul>
+                    <li><strong>Initialized:</strong> ${status.initialized ? '✅ Yes' : '❌ No'}</li>
+                    <li><strong>WASM Module:</strong> ${status.wasmModuleLoaded ? '✅ Loaded' : '❌ Not Loaded'}</li>
+                    <li><strong>DuckDB:</strong> ${status.duckdbConnected ? '✅ Connected' : '❌ Disconnected'}</li>
+                    <li><strong>Current Memory:</strong> ${(status.memoryUsage / 1024 / 1024).toFixed(2)}MB</li>
+                    <li><strong>Uptime:</strong> ${(status.uptime / 1000).toFixed(1)}s</li>
+                </ul>
+            `;
+        }
+
+        // Update status display
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('Ready to initialize DataPrism Core', 'loading');
+            document.getElementById('sampleData').textContent = JSON.stringify(sampleData, null, 2);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "@dataprism/build-tools",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Build tools and configuration for DataPrism Core",
+  "main": "./dist/index.js",
+  "exports": {
+    "./vite": "./vite.config.js",
+    "./wasm-plugin": "./wasm-plugin.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "vite": "^5.0.0",
+    "@rollup/plugin-wasm": "^6.2.2",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "rollup-plugin-visualizer": "^5.9.2",
+    "esbuild": "^0.19.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.0",
+    "@types/node": "^20.0.0"
+  }
+}
