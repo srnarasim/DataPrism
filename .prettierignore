@@ -1,0 +1,58 @@
+# Build outputs
+**/dist/
+**/target/
+**/pkg/
+**/build/
+**/coverage/
+
+# Dependencies
+**/node_modules/
+**/vendor/
+
+# WebAssembly generated files
+**/*.wasm
+**/*.wasm.d.ts
+**/dataprism_core_bg.wasm.d.ts
+**/dataprism_core.d.ts
+**/dataprism_core.js
+
+# Rust build artifacts
+**/.fingerprint/
+**/debug/
+**/release/
+**/incremental/
+**/.rustc_info.json
+
+# Lock files and configs that shouldn't be formatted
+**/package-lock.json
+**/Cargo.lock
+**/.cargo/
+
+# Generated documentation
+**/docs/api/
+
+# Temporary files
+**/.tmp/
+**/tmp/
+**/*.tmp
+**/*.temp
+
+# IDE files
+**/.vscode/
+**/.idea/
+**/*.swp
+**/*.swo
+
+# OS files
+**/.DS_Store
+**/Thumbs.db
+
+# Git
+**/.git/
+
+# Claude files
+**/.claude/
+
+# Environment files
+**/.env*
+!**/.env.example

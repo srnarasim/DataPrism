@@ -39,7 +39,7 @@ pub fn get_build_info() -> JsValue {
         "description": "DataPrism Core WASM Engine",
         "build_timestamp": js_sys::Date::now()
     });
-    
+
     serde_wasm_bindgen::to_value(&info).unwrap_or(JsValue::NULL)
 }
 
@@ -62,7 +62,7 @@ mod tests {
     async fn test_query_engine_basic() {
         let mut engine = QueryEngine::new();
         let test_data = b"test data";
-        
+
         match engine.process_data(test_data).await {
             Ok(result) => {
                 assert!(result.row_count > 0);
@@ -77,7 +77,7 @@ mod tests {
     fn test_input_validation() {
         assert!(validate_input_data(&[1, 2, 3]).is_ok());
         assert!(validate_input_data(&[]).is_err());
-        
+
         let large_data = vec![0u8; 200_000_000];
         assert!(validate_input_data(&large_data).is_err());
     }

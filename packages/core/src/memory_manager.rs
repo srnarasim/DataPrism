@@ -1,5 +1,5 @@
-use wasm_bindgen::prelude::*;
 use std::collections::HashMap;
+use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub struct MemoryManager {
@@ -29,16 +29,15 @@ impl MemoryManager {
 
     #[wasm_bindgen]
     pub fn get_buffer_ptr(&self, id: u32) -> *const u8 {
-        self.buffers.get(&id)
+        self.buffers
+            .get(&id)
             .map(|b| b.as_ptr())
             .unwrap_or(std::ptr::null())
     }
 
     #[wasm_bindgen]
     pub fn get_buffer_len(&self, id: u32) -> usize {
-        self.buffers.get(&id)
-            .map(|b| b.len())
-            .unwrap_or(0)
+        self.buffers.get(&id).map(|b| b.len()).unwrap_or(0)
     }
 
     #[wasm_bindgen]

@@ -1,5 +1,5 @@
-use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
+use wasm_bindgen::prelude::*;
 
 #[derive(Serialize, Deserialize)]
 #[wasm_bindgen]
@@ -42,11 +42,12 @@ pub fn validate_input_data(data: &[u8]) -> Result<bool, JsValue> {
     if data.is_empty() {
         return Err(JsValue::from_str("Input data cannot be empty"));
     }
-    
-    if data.len() > 100_000_000 { // 100MB limit
+
+    if data.len() > 100_000_000 {
+        // 100MB limit
         return Err(JsValue::from_str("Input data exceeds maximum size limit"));
     }
-    
+
     Ok(true)
 }
 
@@ -68,7 +69,7 @@ pub fn get_browser_info() -> JsValue {
         "memory": get_memory_info(),
         "performance": get_performance_info()
     });
-    
+
     serde_wasm_bindgen::to_value(&info).unwrap()
 }
 
@@ -83,7 +84,7 @@ fn get_memory_info() -> serde_json::Value {
             });
         }
     }
-    
+
     serde_json::json!({
         "available": false
     })
@@ -98,7 +99,7 @@ fn get_performance_info() -> serde_json::Value {
             });
         }
     }
-    
+
     serde_json::json!({
         "timing_available": false
     })
@@ -114,7 +115,7 @@ pub fn benchmark_start() -> f64 {
 pub fn benchmark_end(start_time: f64, operation_name: &str) -> f64 {
     let end = js_sys::Date::now();
     let duration = end - start_time;
-    
+
     log_performance_metric(operation_name, duration, 0);
     duration
 }
