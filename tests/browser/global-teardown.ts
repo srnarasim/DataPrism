@@ -1,1 +1,86 @@
-import { FullConfig } from '@playwright/test';\n\n/**\n * Global teardown for Playwright tests\n * Performs cleanup after all tests complete\n */\n\nasync function globalTeardown(config: FullConfig) {\n  console.log('🧹 Running global test cleanup...');\n  \n  const fs = await import('fs/promises');\n  const path = await import('path');\n  \n  try {\n    // Generate test summary report\n    const testResultsDir = path.join(process.cwd(), 'test-results');\n    const summaryPath = path.join(testResultsDir, 'test-summary.json');\n    \n    const summary = {\n      timestamp: new Date().toISOString(),\n      testRun: {\n        configFile: config.configFile,\n        projects: config.projects.map(p => ({\n          name: p.name,\n          testDir: p.testDir,\n          outputDir: p.outputDir\n        })),\n        globalSetup: config.globalSetup,\n        globalTeardown: config.globalTeardown\n      },\n      environment: {\n        nodeVersion: process.version,\n        platform: process.platform,\n        architecture: process.arch,\n        ci: !!process.env.CI\n      }\n    };\n    \n    await fs.writeFile(summaryPath, JSON.stringify(summary, null, 2));\n    console.log('✅ Test summary report generated');\n    \n    // Clean up temporary test data (but preserve results)\n    const tempDataPattern = /^temp-.*$/;\n    try {\n      const files = await fs.readdir(testResultsDir);\n      const tempFiles = files.filter(file => tempDataPattern.test(file));\n      \n      for (const file of tempFiles) {\n        const filePath = path.join(testResultsDir, file);\n        await fs.unlink(filePath);\n      }\n      \n      if (tempFiles.length > 0) {\n        console.log(`✅ Cleaned up ${tempFiles.length} temporary files`);\n      }\n    } catch (error) {\n      console.log('ℹ️  No temporary files to clean up');\n    }\n    \n    // Log final statistics if available\n    try {\n      const resultsJsonPath = path.join(testResultsDir, 'browser-test-results.json');\n      const resultsData = await fs.readFile(resultsJsonPath, 'utf-8');\n      const results = JSON.parse(resultsData);\n      \n      if (results && results.stats) {\n        console.log('📊 Test Results Summary:');\n        console.log(`   Total tests: ${results.stats.total || 0}`);\n        console.log(`   Passed: ${results.stats.passed || 0}`);\n        console.log(`   Failed: ${results.stats.failed || 0}`);\n        console.log(`   Skipped: ${results.stats.skipped || 0}`);\n        console.log(`   Duration: ${results.stats.duration ? Math.round(results.stats.duration / 1000) : 0}s`);\n      }\n    } catch (error) {\n      console.log('ℹ️  Test results summary not available');\n    }\n    \n  } catch (error) {\n    console.error('⚠️  Error during global teardown:', error);\n    // Don't fail the entire test run due to teardown issues\n  }\n  \n  console.log('✅ Global teardown completed');\n}\n\nexport default globalTeardown;"}
+import { FullConfig } from '@playwright/test';
+
+/**
+ * Global teardown for Playwright tests
+ * Performs cleanup after all tests complete
+ */
+
+async function globalTeardown(config: FullConfig) {
+  console.log('🧹 Running global test cleanup...');
+  
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  
+  try {
+    // Generate test summary report
+    const testResultsDir = path.join(process.cwd(), 'test-results');
+    const summaryPath = path.join(testResultsDir, 'test-summary.json');
+    
+    const summary = {
+      timestamp: new Date().toISOString(),
+      testRun: {
+        configFile: config.configFile,
+        projects: config.projects.map(p => ({
+          name: p.name,
+          testDir: p.testDir,
+          outputDir: p.outputDir
+        })),
+        globalSetup: config.globalSetup,
+        globalTeardown: config.globalTeardown
+      },
+      environment: {
+        nodeVersion: process.version,
+        platform: process.platform,
+        architecture: process.arch,
+        ci: !!process.env.CI
+      }
+    };
+    
+    await fs.writeFile(summaryPath, JSON.stringify(summary, null, 2));
+    console.log('✅ Test summary report generated');
+    
+    // Clean up temporary test data (but preserve results)
+    const tempDataPattern = /^temp-.*$/;
+    try {
+      const files = await fs.readdir(testResultsDir);
+      const tempFiles = files.filter(file => tempDataPattern.test(file));
+      
+      for (const file of tempFiles) {
+        const filePath = path.join(testResultsDir, file);
+        await fs.unlink(filePath);
+      }
+      
+      if (tempFiles.length > 0) {
+        console.log(`✅ Cleaned up ${tempFiles.length} temporary files`);
+      }
+    } catch (error) {
+      console.log('ℹ️  No temporary files to clean up');
+    }
+    
+    // Log final statistics if available
+    try {
+      const resultsJsonPath = path.join(testResultsDir, 'browser-test-results.json');
+      const resultsData = await fs.readFile(resultsJsonPath, 'utf-8');
+      const results = JSON.parse(resultsData);
+      
+      if (results && results.stats) {
+        console.log('📊 Test Results Summary:');
+        console.log(`   Total tests: ${results.stats.total || 0}`);
+        console.log(`   Passed: ${results.stats.passed || 0}`);
+        console.log(`   Failed: ${results.stats.failed || 0}`);
+        console.log(`   Skipped: ${results.stats.skipped || 0}`);
+        console.log(`   Duration: ${results.stats.duration ? Math.round(results.stats.duration / 1000) : 0}s`);
+      }
+    } catch (error) {
+      console.log('ℹ️  Test results summary not available');
+    }
+    
+  } catch (error) {
+    console.error('⚠️  Error during global teardown:', error);
+    // Don't fail the entire test run due to teardown issues
+  }
+  
+  console.log('✅ Global teardown completed');
+}
+
+export default globalTeardown;

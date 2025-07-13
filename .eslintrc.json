@@ -1,0 +1,76 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "rules": {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "no-console": "off",
+    "prefer-const": "off",
+    "no-useless-escape": "off",
+    "no-case-declarations": "off",
+    "no-undef": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.{test,spec}.{ts,tsx,js,jsx}"],
+      "env": {
+        "jest": true
+      },
+      "rules": {
+        "no-console": "off",
+        "@typescript-eslint/no-unused-vars": "off"
+      }
+    },
+    {
+      "files": [
+        "*.config.{js,ts}",
+        "*.config.*.{js,ts}",
+        "vite.config.{js,ts}",
+        "vitest.config.{js,ts}",
+        "playwright.config.{js,ts}",
+        "tailwind.config.{js,ts}",
+        "packages/cli/**/*.ts"
+      ],
+      "rules": {
+        "no-console": "off",
+        "@typescript-eslint/no-unused-vars": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "dist/",
+    "build/",
+    "node_modules/",
+    "pkg/",
+    "target/",
+    "coverage/",
+    ".vitepress/dist/",
+    ".vitepress/cache/",
+    "*.min.js",
+    "*.bundle.js",
+    "**/*.d.ts",
+    "public/",
+    "**/*.wasm",
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml"
+  ]
+}

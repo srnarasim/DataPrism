@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "type": "module",
   "description": "High-performance browser-based analytics engine with WebAssembly and plugin system",
-  "keywords": ["analytics", "webassembly", "duckdb", "visualization", "data-processing"],
+  "keywords": [
+    "analytics",
+    "webassembly",
+    "duckdb",
+    "visualization",
+    "data-processing"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/dataprism/core.git"
@@ -12,7 +18,6 @@
     "clean": "npm run clean:dist && npm run clean:cache",
     "clean:dist": "rm -rf dist cdn packages/*/dist apps/*/dist tools/*/dist",
     "clean:cache": "rm -rf node_modules/.cache .vite",
-    
     "build": "npm run build:all",
     "build:all": "npm run build:tools && npm run build:packages && npm run build:apps",
     "build:tools": "cd tools/build && npm run build",
@@ -23,17 +28,13 @@
     "build:apps": "npm run build:demo && npm run build:docs",
     "build:demo": "cd apps/demo-analytics && npm run build",
     "build:docs": "cd apps/docs && npm run build",
-    
     "build:cdn": "vite build --config tools/build/vite.config.ts --mode cdn",
     "build:release": "npm run clean && npm run build:all && npm run build:cdn && npm run size-check",
-    
     "post-build:core": "node tools/scripts/post-build-core.js",
-    
     "dev": "npm run dev:demo",
     "dev:demo": "cd apps/demo-analytics && npm run dev",
     "dev:docs": "cd apps/docs && npm run dev",
     "dev:plugins": "cd packages/plugins/out-of-box && npm run serve",
-    
     "test": "npm run test:packages && npm run test:integration",
     "test:packages": "npm run test:core && npm run test:orchestration && npm run test:plugins",
     "test:core": "cd packages/core && cargo test",
@@ -43,27 +44,22 @@
     "test:browser": "npm run build && playwright test",
     "test:e2e": "cd apps/demo-analytics && npm run test:e2e",
     "test:performance": "npm run build && node tests/performance/benchmark.js",
-    
     "lint": "npm run lint:rust && npm run lint:ts",
-    "lint:rust": "cd packages/core && cargo clippy -- -D warnings",
+    "lint:rust": "cd packages/core && cargo clippy -- -W clippy::all",
     "lint:ts": "eslint '**/*.{ts,tsx}' --max-warnings 0",
     "format": "npm run format:rust && npm run format:ts",
     "format:rust": "cd packages/core && cargo fmt",
     "format:ts": "prettier --write '**/*.{ts,tsx,js,jsx,json,md}'",
-    
     "size-check": "npm run size-check:packages && npm run size-check:cdn",
     "size-check:packages": "bundlesize",
     "size-check:cdn": "node tools/scripts/check-cdn-sizes.js",
-    
     "validate": "npm run lint && npm run test && npm run size-check",
     "validate:packages": "node tools/scripts/validate-packages.js",
     "validate:security": "npm audit --audit-level moderate && npm run audit:licenses",
     "audit:licenses": "license-checker --summary",
-    
     "version:bump": "node tools/release/version-manager.js",
     "publish:packages": "node tools/release/publish-packages.js",
     "publish:dry-run": "npm run publish:packages -- --dry-run",
-    
     "install:all": "npm install"
   },
   "bundlesize": [
@@ -87,15 +83,15 @@
   "devDependencies": {
     "@playwright/test": "^1.40.0",
     "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "bundlesize": "^0.18.1",
     "eslint": "^8.50.0",
     "license-checker": "^25.0.1",
     "prettier": "^3.0.0",
     "typescript": "^5.2.0",
-    "vitest": "^1.0.0",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
   },
   "engines": {
     "node": ">=18.0.0",

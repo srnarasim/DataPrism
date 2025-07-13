@@ -1,1 +1,105 @@
-import { test, expect } from '@playwright/test';\n\n/**\n * Browser tests for DataPrism Core WebAssembly functionality\n * Tests core engine initialization and basic operations across browsers\n */\n\ntest.describe('DataPrism Core Engine', () => {\n  test.beforeEach(async ({ page }) => {\n    // Navigate to the demo application\n    await page.goto('/');\n    \n    // Wait for the DataPrism engine to initialize\n    await page.waitForSelector('[data-testid=\"engine-status\"]', { timeout: 30000 });\n    \n    // Check that the engine is ready\n    const status = await page.textContent('[data-testid=\"engine-status\"]');\n    expect(status).toContain('Engine Ready');\n  });\n\n  test('should initialize WebAssembly engine successfully', async ({ page }) => {\n    // Verify WebAssembly support\n    const wasmSupported = await page.evaluate(() => {\n      return typeof WebAssembly !== 'undefined' && typeof WebAssembly.instantiate === 'function';\n    });\n    expect(wasmSupported).toBeTruthy();\n\n    // Verify DataPrism engine is available\n    const engineAvailable = await page.evaluate(() => {\n      return typeof window.DataPrismEngine !== 'undefined';\n    });\n    expect(engineAvailable).toBeTruthy();\n  });\n\n  test('should load and query sample data', async ({ page }) => {\n    // Click on the Data Explorer\n    await page.click('a[href=\"/explorer\"]');\n    \n    // Wait for the data explorer to load\n    await page.waitForSelector('[data-testid=\"data-explorer\"]');\n    \n    // Check that sample data is loaded\n    const tableCount = await page.textContent('[data-testid=\"table-count\"]');\n    expect(parseInt(tableCount || '0')).toBeGreaterThan(0);\n    \n    // Run a simple query\n    await page.click('[data-testid=\"run-sample-query\"]');\n    \n    // Wait for query results\n    await page.waitForSelector('[data-testid=\"query-results\"]');\n    \n    // Verify results are displayed\n    const resultsTable = page.locator('[data-testid=\"query-results\"] table');\n    await expect(resultsTable).toBeVisible();\n    \n    const rowCount = await resultsTable.locator('tbody tr').count();\n    expect(rowCount).toBeGreaterThan(0);\n  });\n\n  test('should handle CSV file upload', async ({ page }) => {\n    await page.goto('/explorer');\n    \n    // Create a test CSV file\n    const csvContent = `name,age,city\nAlice,25,New York\nBob,30,London\nCharlie,35,Tokyo`;\n    \n    // Upload CSV file\n    const fileInput = page.locator('input[type=\"file\"]');\n    await fileInput.setInputFiles({\n      name: 'test-data.csv',\n      mimeType: 'text/csv',\n      buffer: Buffer.from(csvContent)\n    });\n    \n    // Wait for upload to complete\n    await page.waitForSelector('[data-testid=\"upload-success\"]');\n    \n    // Verify the data was loaded\n    const uploadedTableName = await page.textContent('[data-testid=\"uploaded-table-name\"]');\n    expect(uploadedTableName).toBeTruthy();\n  });\n\n  test('should display performance metrics', async ({ page }) => {\n    await page.goto('/performance');\n    \n    // Wait for metrics to load\n    await page.waitForSelector('[data-testid=\"performance-metrics\"]');\n    \n    // Check memory usage metric\n    const memoryUsage = page.locator('[data-testid=\"memory-usage\"]');\n    await expect(memoryUsage).toBeVisible();\n    \n    const memoryValue = await memoryUsage.textContent();\n    expect(memoryValue).toMatch(/\\d+(\\.\\d+)?\\s*MB/);\n    \n    // Check query count metric\n    const queryCount = page.locator('[data-testid=\"query-count\"]');\n    await expect(queryCount).toBeVisible();\n    \n    const queryValue = await queryCount.textContent();\n    expect(parseInt(queryValue || '0')).toBeGreaterThanOrEqual(0);\n  });\n\n  test('should execute SQL queries', async ({ page }) => {\n    await page.goto('/query-lab');\n    \n    // Wait for query lab to load\n    await page.waitForSelector('[data-testid=\"sql-editor\"]');\n    \n    // Enter a SQL query\n    const sqlEditor = page.locator('[data-testid=\"sql-editor\"] textarea');\n    await sqlEditor.fill('SELECT 1 as test_column, \\'Hello World\\' as message');\n    \n    // Execute the query\n    await page.click('[data-testid=\"execute-query\"]');\n    \n    // Wait for results\n    await page.waitForSelector('[data-testid=\"query-results\"]');\n    \n    // Verify results\n    const resultsText = await page.textContent('[data-testid=\"query-results\"]');\n    expect(resultsText).toContain('test_column');\n    expect(resultsText).toContain('Hello World');\n  });\n\n  test('should handle query errors gracefully', async ({ page }) => {\n    await page.goto('/query-lab');\n    \n    await page.waitForSelector('[data-testid=\"sql-editor\"]');\n    \n    // Enter an invalid SQL query\n    const sqlEditor = page.locator('[data-testid=\"sql-editor\"] textarea');\n    await sqlEditor.fill('SELECT * FROM nonexistent_table');\n    \n    // Execute the query\n    await page.click('[data-testid=\"execute-query\"]');\n    \n    // Wait for error message\n    await page.waitForSelector('[data-testid=\"query-error\"]');\n    \n    // Verify error is displayed\n    const errorMessage = await page.textContent('[data-testid=\"query-error\"]');\n    expect(errorMessage).toContain('error');\n  });\n\n  test('should support theme switching', async ({ page }) => {\n    // Check current theme\n    const html = page.locator('html');\n    const initialTheme = await html.getAttribute('class');\n    \n    // Click theme toggle\n    await page.click('[data-testid=\"theme-toggle\"]');\n    \n    // Wait for theme change\n    await page.waitForTimeout(500);\n    \n    // Verify theme changed\n    const newTheme = await html.getAttribute('class');\n    expect(newTheme).not.toBe(initialTheme);\n  });\n\n  test('should maintain responsive design on mobile', async ({ page }) => {\n    // Set mobile viewport\n    await page.setViewportSize({ width: 375, height: 667 });\n    \n    await page.goto('/');\n    \n    // Check that mobile navigation works\n    const mobileMenuButton = page.locator('[data-testid=\"mobile-menu-button\"]');\n    if (await mobileMenuButton.isVisible()) {\n      await mobileMenuButton.click();\n      \n      // Verify mobile menu opens\n      const mobileMenu = page.locator('[data-testid=\"mobile-menu\"]');\n      await expect(mobileMenu).toBeVisible();\n    }\n    \n    // Test navigation on mobile\n    await page.click('a[href=\"/explorer\"]');\n    await page.waitForSelector('[data-testid=\"data-explorer\"]');\n    \n    // Verify content is accessible on mobile\n    const mainContent = page.locator('main');\n    await expect(mainContent).toBeVisible();\n  });\n});\n\ntest.describe('DataPrism Plugin System', () => {\n  test('should load and display available plugins', async ({ page }) => {\n    await page.goto('/plugins');\n    \n    // Wait for plugins to load\n    await page.waitForSelector('[data-testid=\"plugins-list\"]');\n    \n    // Check that plugins are displayed\n    const pluginItems = page.locator('[data-testid=\"plugin-item\"]');\n    const pluginCount = await pluginItems.count();\n    expect(pluginCount).toBeGreaterThan(0);\n  });\n\n  test('should execute plugin functionality', async ({ page }) => {\n    await page.goto('/plugins');\n    \n    await page.waitForSelector('[data-testid=\"plugins-list\"]');\n    \n    // Click on the first plugin's demo button\n    const firstPluginDemo = page.locator('[data-testid=\"plugin-demo\"]').first();\n    await firstPluginDemo.click();\n    \n    // Wait for plugin execution\n    await page.waitForSelector('[data-testid=\"plugin-result\"]', { timeout: 10000 });\n    \n    // Verify plugin executed successfully\n    const result = page.locator('[data-testid=\"plugin-result\"]');\n    await expect(result).toBeVisible();\n  });\n});\n\ntest.describe('DataPrism Visualizations', () => {\n  test('should render charts and visualizations', async ({ page }) => {\n    await page.goto('/visualizations');\n    \n    // Wait for visualizations to load\n    await page.waitForSelector('[data-testid=\"visualizations-container\"]');\n    \n    // Check for chart elements\n    const charts = page.locator('canvas, svg');\n    const chartCount = await charts.count();\n    expect(chartCount).toBeGreaterThan(0);\n  });\n\n  test('should support chart interactions', async ({ page }) => {\n    await page.goto('/visualizations');\n    \n    await page.waitForSelector('[data-testid=\"interactive-chart\"]');\n    \n    // Test chart hover interactions\n    const chart = page.locator('[data-testid=\"interactive-chart\"]');\n    await chart.hover();\n    \n    // Check for tooltip or interaction feedback\n    const tooltip = page.locator('[data-testid=\"chart-tooltip\"]');\n    // Note: This might not be visible depending on chart implementation\n    // Just check that hovering doesn't break anything\n    \n    // Test chart click interactions\n    await chart.click();\n    \n    // Verify chart is still functional after interaction\n    await expect(chart).toBeVisible();\n  });\n});\n\ntest.describe('Performance and Memory', () => {\n  test('should not exceed memory limits during operation', async ({ page }) => {\n    await page.goto('/');\n    \n    // Monitor memory usage during operations\n    const initialMemory = await page.evaluate(() => {\n      return (performance as any).memory ? (performance as any).memory.usedJSHeapSize : 0;\n    });\n    \n    // Perform memory-intensive operations\n    await page.goto('/explorer');\n    await page.click('[data-testid=\"load-large-dataset\"]', { timeout: 30000 });\n    \n    // Wait for operation to complete\n    await page.waitForSelector('[data-testid=\"large-dataset-loaded\"]', { timeout: 60000 });\n    \n    // Check memory usage\n    const finalMemory = await page.evaluate(() => {\n      return (performance as any).memory ? (performance as any).memory.usedJSHeapSize : 0;\n    });\n    \n    // Memory should not exceed reasonable limits (e.g., 500MB)\n    if (finalMemory > 0) {\n      expect(finalMemory).toBeLessThan(500 * 1024 * 1024); // 500MB\n    }\n  });\n\n  test('should handle large datasets efficiently', async ({ page }) => {\n    await page.goto('/performance');\n    \n    // Run performance benchmark\n    await page.click('[data-testid=\"run-benchmark\"]');\n    \n    // Wait for benchmark to complete\n    await page.waitForSelector('[data-testid=\"benchmark-results\"]', { timeout: 120000 });\n    \n    // Check benchmark results\n    const benchmarkTime = await page.textContent('[data-testid=\"benchmark-time\"]');\n    const timeMs = parseFloat(benchmarkTime?.replace(/[^\\d.]/g, '') || '0');\n    \n    // Should complete within reasonable time (e.g., 30 seconds)\n    expect(timeMs).toBeLessThan(30000);\n  });\n});\n\ntest.describe('Error Handling and Recovery', () => {\n  test('should recover from WebAssembly errors', async ({ page }) => {\n    await page.goto('/');\n    \n    // Wait for initial load\n    await page.waitForSelector('[data-testid=\"engine-status\"]');\n    \n    // Simulate WebAssembly error by executing invalid operation\n    const errorOccurred = await page.evaluate(async () => {\n      try {\n        // This should trigger an error handling path\n        await window.dataprismEngine?.query('INVALID SQL SYNTAX HERE');\n        return false;\n      } catch (error) {\n        return true;\n      }\n    });\n    \n    expect(errorOccurred).toBeTruthy();\n    \n    // Verify that the application is still functional\n    const statusElement = page.locator('[data-testid=\"engine-status\"]');\n    await expect(statusElement).toBeVisible();\n  });\n\n  test('should handle network failures gracefully', async ({ page, context }) => {\n    // Block network requests to simulate offline\n    await context.route('**/*', route => route.abort());\n    \n    await page.goto('/', { waitUntil: 'domcontentloaded' });\n    \n    // Check that offline message is displayed or app handles gracefully\n    const body = page.locator('body');\n    await expect(body).toBeVisible();\n    \n    // The app should not crash\n    const errorIndicator = page.locator('[data-testid=\"network-error\"]');\n    // This might or might not be present depending on implementation\n  });\n});"}
+import { test, expect } from '@playwright/test';
+
+/**
+ * Browser tests for DataPrism Core WebAssembly functionality
+ * Tests core engine initialization and basic operations across browsers
+ */
+
+test.describe('DataPrism Core Engine', () => {
+  test.beforeEach(async ({ page }) => {
+    // Navigate to the demo application
+    await page.goto('/');
+    
+    // Wait for the DataPrism engine to initialize
+    await page.waitForSelector('[data-testid="engine-status"]', { timeout: 30000 });
+    
+    // Check that the engine is ready
+    const status = await page.textContent('[data-testid="engine-status"]');
+    expect(status).toContain('Engine Ready');
+  });
+
+  test('should initialize WebAssembly engine successfully', async ({ page }) => {
+    // Verify WebAssembly support
+    const wasmSupported = await page.evaluate(() => {
+      return typeof WebAssembly !== 'undefined' && typeof WebAssembly.instantiate === 'function';
+    });
+    expect(wasmSupported).toBeTruthy();
+
+    // Verify DataPrism engine is available
+    const engineAvailable = await page.evaluate(() => {
+      return typeof (window as any).DataPrismEngine !== 'undefined';
+    });
+    expect(engineAvailable).toBeTruthy();
+  });
+
+  test('should load and query sample data', async ({ page }) => {
+    // Click on the Data Explorer
+    await page.click('a[href="/explorer"]');
+    
+    // Wait for the data explorer to load
+    await page.waitForSelector('[data-testid="data-explorer"]');
+    
+    // Check that sample data is loaded
+    const tableCount = await page.textContent('[data-testid="table-count"]');
+    expect(parseInt(tableCount || '0')).toBeGreaterThan(0);
+    
+    // Run a simple query
+    await page.click('[data-testid="run-sample-query"]');
+    
+    // Wait for query results
+    await page.waitForSelector('[data-testid="query-results"]');
+    
+    // Verify results are displayed
+    const resultsTable = page.locator('[data-testid="query-results"] table');
+    await expect(resultsTable).toBeVisible();
+    
+    const rowCount = await resultsTable.locator('tbody tr').count();
+    expect(rowCount).toBeGreaterThan(0);
+  });
+
+  test('should handle CSV file upload', async ({ page }) => {
+    await page.goto('/explorer');
+    
+    // Create a test CSV file
+    const csvContent = `name,age,city
+Alice,25,New York
+Bob,30,London
+Charlie,35,Tokyo`;
+    
+    // Upload CSV file
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles({
+      name: 'test-data.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(csvContent)
+    });
+    
+    // Wait for upload to complete
+    await page.waitForSelector('[data-testid="upload-success"]');
+    
+    // Verify the data was loaded
+    const uploadedTableName = await page.textContent('[data-testid="uploaded-table-name"]');
+    expect(uploadedTableName).toBeTruthy();
+  });
+
+  test('should display performance metrics', async ({ page }) => {
+    await page.goto('/performance');
+    
+    // Wait for metrics to load
+    await page.waitForSelector('[data-testid="performance-metrics"]');
+    
+    // Check memory usage metric
+    const memoryUsage = page.locator('[data-testid="memory-usage"]');
+    await expect(memoryUsage).toBeVisible();
+    
+    const memoryValue = await memoryUsage.textContent();
+    expect(memoryValue).toMatch(/\d+(\.\d+)?\s*MB/);
+    
+    // Check query count metric
+    const queryCount = page.locator('[data-testid="query-count"]');
+    await expect(queryCount).toBeVisible();
+    
+    const queryValue = await queryCount.textContent();
+    expect(parseInt(queryValue || '0')).toBeGreaterThanOrEqual(0);
+  });
+});

@@ -1,1 +1,107 @@
-import { chromium, FullConfig } from '@playwright/test';\n\n/**\n * Global setup for Playwright tests\n * Performs one-time setup before all tests run\n */\n\nasync function globalSetup(config: FullConfig) {\n  console.log('🔧 Setting up global test environment...');\n  \n  // Launch a browser to check WebAssembly support\n  const browser = await chromium.launch();\n  const context = await browser.newContext();\n  const page = await context.newPage();\n  \n  try {\n    // Check WebAssembly support\n    const wasmSupported = await page.evaluate(() => {\n      return typeof WebAssembly !== 'undefined' && \n             typeof WebAssembly.instantiate === 'function' &&\n             typeof WebAssembly.Module === 'function';\n    });\n    \n    if (!wasmSupported) {\n      console.error('❌ WebAssembly not supported in test browser');\n      throw new Error('WebAssembly support required for DataPrism Core tests');\n    }\n    \n    console.log('✅ WebAssembly support confirmed');\n    \n    // Check for SharedArrayBuffer support (required for threading)\n    const sharedArrayBufferSupported = await page.evaluate(() => {\n      return typeof SharedArrayBuffer !== 'undefined';\n    });\n    \n    if (sharedArrayBufferSupported) {\n      console.log('✅ SharedArrayBuffer support confirmed');\n    } else {\n      console.log('⚠️  SharedArrayBuffer not supported - threading features will be limited');\n    }\n    \n    // Test basic WASM instantiation\n    const wasmInstantiationWorks = await page.evaluate(async () => {\n      try {\n        // Simple WASM module that exports a function returning 42\n        const wasmCode = new Uint8Array([\n          0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,\n          0x01, 0x07, 0x01, 0x60, 0x02, 0x7f, 0x7f, 0x01,\n          0x7f, 0x03, 0x02, 0x01, 0x00, 0x07, 0x07, 0x01,\n          0x03, 0x61, 0x64, 0x64, 0x00, 0x00, 0x0a, 0x09,\n          0x01, 0x07, 0x00, 0x20, 0x00, 0x20, 0x01, 0x6a,\n          0x0b\n        ]);\n        \n        const module = await WebAssembly.instantiate(wasmCode);\n        const result = (module.instance.exports.add as Function)(20, 22);\n        return result === 42;\n      } catch (error) {\n        console.error('WASM instantiation test failed:', error);\n        return false;\n      }\n    });\n    \n    if (!wasmInstantiationWorks) {\n      console.error('❌ WebAssembly instantiation test failed');\n      throw new Error('WebAssembly instantiation not working properly');\n    }\n    \n    console.log('✅ WebAssembly instantiation test passed');\n    \n    // Test fetch API (required for loading WASM files)\n    const fetchSupported = await page.evaluate(() => {\n      return typeof fetch !== 'undefined';\n    });\n    \n    if (!fetchSupported) {\n      console.error('❌ Fetch API not supported');\n      throw new Error('Fetch API required for loading WASM modules');\n    }\n    \n    console.log('✅ Fetch API support confirmed');\n    \n  } finally {\n    await page.close();\n    await context.close();\n    await browser.close();\n  }\n  \n  // Set up test data directory\n  const fs = await import('fs/promises');\n  const path = await import('path');\n  \n  const testDataDir = path.join(process.cwd(), 'test-results');\n  await fs.mkdir(testDataDir, { recursive: true });\n  \n  console.log('✅ Test data directory created');\n  \n  // Create test artifacts directory\n  const artifactsDir = path.join(testDataDir, 'artifacts');\n  await fs.mkdir(artifactsDir, { recursive: true });\n  \n  console.log('✅ Test artifacts directory created');\n  \n  console.log('🎉 Global setup completed successfully');\n}\n\nexport default globalSetup;"}
+import { chromium, FullConfig } from '@playwright/test';
+
+/**
+ * Global setup for Playwright tests
+ * Performs one-time setup before all tests run
+ */
+
+async function globalSetup(config: FullConfig) {
+  console.log('🔧 Setting up global test environment...');
+  
+  // Launch a browser to check WebAssembly support
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  
+  try {
+    // Check WebAssembly support
+    const wasmSupported = await page.evaluate(() => {
+      return typeof WebAssembly !== 'undefined' && 
+             typeof WebAssembly.instantiate === 'function' &&
+             typeof WebAssembly.Module === 'function';
+    });
+    
+    if (!wasmSupported) {
+      console.error('❌ WebAssembly not supported in test browser');
+      throw new Error('WebAssembly support required for DataPrism Core tests');
+    }
+    
+    console.log('✅ WebAssembly support confirmed');
+    
+    // Check for SharedArrayBuffer support (required for threading)
+    const sharedArrayBufferSupported = await page.evaluate(() => {
+      return typeof SharedArrayBuffer !== 'undefined';
+    });
+    
+    if (sharedArrayBufferSupported) {
+      console.log('✅ SharedArrayBuffer support confirmed');
+    } else {
+      console.log('⚠️  SharedArrayBuffer not supported - threading features will be limited');
+    }
+    
+    // Test basic WASM instantiation
+    const wasmInstantiationWorks = await page.evaluate(async () => {
+      try {
+        // Simple WASM module that exports a function returning 42
+        const wasmCode = new Uint8Array([
+          0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+          0x01, 0x07, 0x01, 0x60, 0x02, 0x7f, 0x7f, 0x01,
+          0x7f, 0x03, 0x02, 0x01, 0x00, 0x07, 0x07, 0x01,
+          0x03, 0x61, 0x64, 0x64, 0x00, 0x00, 0x0a, 0x09,
+          0x01, 0x07, 0x00, 0x20, 0x00, 0x20, 0x01, 0x6a,
+          0x0b
+        ]);
+        
+        const module = await WebAssembly.instantiate(wasmCode);
+        const result = (module.instance.exports.add as Function)(20, 22);
+        return result === 42;
+      } catch (error) {
+        console.error('WASM instantiation test failed:', error);
+        return false;
+      }
+    });
+    
+    if (!wasmInstantiationWorks) {
+      console.error('❌ WebAssembly instantiation test failed');
+      throw new Error('WebAssembly instantiation not working properly');
+    }
+    
+    console.log('✅ WebAssembly instantiation test passed');
+    
+    // Test fetch API (required for loading WASM files)
+    const fetchSupported = await page.evaluate(() => {
+      return typeof fetch !== 'undefined';
+    });
+    
+    if (!fetchSupported) {
+      console.error('❌ Fetch API not supported');
+      throw new Error('Fetch API required for loading WASM modules');
+    }
+    
+    console.log('✅ Fetch API support confirmed');
+    
+  } finally {
+    await page.close();
+    await context.close();
+    await browser.close();
+  }
+  
+  // Set up test data directory
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  
+  const testDataDir = path.join(process.cwd(), 'test-results');
+  await fs.mkdir(testDataDir, { recursive: true });
+  
+  console.log('✅ Test data directory created');
+  
+  // Create test artifacts directory
+  const artifactsDir = path.join(testDataDir, 'artifacts');
+  await fs.mkdir(artifactsDir, { recursive: true });
+  
+  console.log('✅ Test artifacts directory created');
+  
+  console.log('🎉 Global setup completed successfully');
+}
+
+export default globalSetup;
