@@ -17,7 +17,7 @@
     "@rollup/plugin-wasm": "^6.2.2",
     "@rollup/plugin-typescript": "^11.1.5",
     "rollup-plugin-visualizer": "^5.9.2",
-    "esbuild": "^0.19.0"
+    "esbuild": "^0.25.6"
   },
   "devDependencies": {
     "typescript": "^5.2.0",

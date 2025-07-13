@@ -33,7 +33,7 @@
     "react-dropzone": "^14.2.3",
     "papaparse": "^5.4.1",
     "date-fns": "^2.30.0",
-    "lucide-react": "^0.263.1",
+    "lucide-react": "^0.525.0",
     "clsx": "^2.0.0",
     "tailwind-merge": "^1.14.0"
   },
