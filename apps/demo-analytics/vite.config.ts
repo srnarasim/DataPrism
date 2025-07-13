@@ -47,7 +47,17 @@ export default defineConfig({
     target: "es2020",
     sourcemap: true,
     rollupOptions: {
+      external: [
+        "@dataprism/core",
+        "@dataprism/orchestration",
+        "@dataprism/plugin-framework",
+      ],
       output: {
+        globals: {
+          "@dataprism/core": "DataPrismCore",
+          "@dataprism/orchestration": "DataPrismOrchestration",
+          "@dataprism/plugin-framework": "DataPrismPluginFramework",
+        },
         manualChunks: {
           vendor: ["react", "react-dom", "react-router-dom"],
           charts: ["d3", "chart.js", "react-chartjs-2", "recharts"],

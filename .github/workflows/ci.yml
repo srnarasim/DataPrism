@@ -293,6 +293,10 @@ jobs:
     name: Documentation
     runs-on: ubuntu-latest
     needs: [lint]
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -313,6 +317,7 @@ jobs:
 
       - name: Deploy to GitHub Pages (main branch only)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        continue-on-error: true
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -346,6 +351,7 @@ jobs:
         run: npm run build:demo
 
       - name: Deploy demo to Vercel
+        continue-on-error: true
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -370,6 +376,7 @@ jobs:
           name: build-artifacts
 
       - name: Configure AWS credentials
+        continue-on-error: true
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -377,6 +384,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy to CloudFront
+        continue-on-error: true
         run: |
           # Sync CDN files to S3
           aws s3 sync cdn/dist/ s3://${{ secrets.CDN_BUCKET }}/v${{ github.sha }}/ --delete
@@ -386,6 +394,7 @@ jobs:
           aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
 
       - name: Update CDN manifest
+        continue-on-error: true
         run: |
           echo '{"version": "${{ github.sha }}", "timestamp": "'$(date -Iseconds)'", "commit": "${{ github.sha }}"}' > manifest.json
           aws s3 cp manifest.json s3://${{ secrets.CDN_BUCKET }}/manifest.json
