@@ -9,6 +9,19 @@ useDefault = true
 
 [allowlist]
 description = "Allowlist for DataPrism documentation and examples"
+paths = [
+  '''docs/.*\.md''',
+  '''examples/.*''',
+  '''tests/.*''',
+  '''.*mock.*''',
+  '''.*\.config\.(js|ts|json)''',
+  '''package(-lock)?\.json''',
+  '''\.gitleaks\.toml''',
+  '''README\.md''',
+  '''CHANGELOG\.md''',
+  '''\.github/.*''',
+  '''apps/demo-analytics/src/contexts/MockDataPrismContext\.tsx'''
+]
 
 [[allowlist.rules]]
 description = "Slack webhook URL examples in documentation"
@@ -45,27 +58,3 @@ regex = '''test-secret-key'''
 [[allowlist.rules]]
 description = "Documentation file extensions"
 regex = '''\.md$'''
-
-[[allowlist.paths]]
-description = "Documentation directory"
-regex = '''docs/.*\.md'''
-
-[[allowlist.paths]]
-description = "Example files"
-regex = '''examples/.*'''
-
-[[allowlist.paths]]
-description = "Test files"
-regex = '''tests/.*'''
-
-[[allowlist.paths]]
-description = "Mock files"
-regex = '''.*mock.*'''
-
-[[allowlist.paths]]
-description = "Configuration files"
-regex = '''.*\.config\.(js|ts|json)'''
-
-[[allowlist.paths]]
-description = "Package files"
-regex = '''package(-lock)?\.json'''

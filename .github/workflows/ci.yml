@@ -264,15 +264,13 @@ jobs:
           target: wasm32-unknown-unknown
           override: true
 
-      - name: Install wasm-pack
-        run: |
-          if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            choco install wasm-pack
-          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-          fi
+      - name: Install wasm-pack (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Install wasm-pack (Windows)
+        if: runner.os == 'Windows'
+        run: choco install wasm-pack
 
       - name: Restore dependencies cache
         uses: actions/cache@v4
