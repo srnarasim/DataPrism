@@ -42,15 +42,17 @@ const createTestHTML = () => `
         // Mock DataPrism for testing
         window.DataPrism = {
             initialized: false,
+            isReady: false,
             
             async initialize() {
                 return new Promise((resolve) => {
                     setTimeout(() => {
                         this.initialized = true;
+                        this.isReady = true;
                         document.getElementById('status').textContent = 'DataPrism initialized successfully';
                         document.getElementById('status').className = 'status success';
                         resolve();
-                    }, 1000);
+                    }, 500); // Reduced from 1000ms to 500ms for faster tests
                 });
             },
             
@@ -71,9 +73,7 @@ const createTestHTML = () => `
                 return '1.0.0-test';
             },
             
-            isReady() {
-                return this.initialized;
-            }
+            version: '1.0.0-test'
         };
         
         // Auto-initialize for tests
