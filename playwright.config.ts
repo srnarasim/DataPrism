@@ -137,10 +137,10 @@ export default defineConfig({
   timeout: 30 * 1000, // 30 seconds
 
   // Global setup
-  globalSetup: require.resolve("./tests/browser/global-setup.ts"),
+  globalSetup: "./tests/browser/global-setup.ts",
 
   // Global teardown
-  globalTeardown: require.resolve("./tests/browser/global-teardown.ts"),
+  globalTeardown: "./tests/browser/global-teardown.ts",
 
   // Test fixtures
   expect: {

@@ -1,0 +1,69 @@
+# GitLeaks Configuration for DataPrism
+# This configuration excludes false positives and example patterns from security scanning
+
+[allowlist]
+  description = "Allowlist for DataPrism documentation and examples"
+  
+  [[allowlist.rules]]
+    description = "Slack webhook URL examples in documentation"
+    regex = '''hooks\.slack\.com/services/T00000000/B00000000/\[TOKEN_HERE\]'''
+    
+  [[allowlist.rules]]
+    description = "Example webhook URLs in documentation"
+    regex = '''https://hooks\.slack\.com/services/T00000000/B00000000/\[TOKEN_HERE\]'''
+    
+  [[allowlist.rules]]
+    description = "Generic placeholder tokens in documentation"
+    regex = '''\[TOKEN_HERE\]'''
+    
+  [[allowlist.rules]]
+    description = "Documentation example patterns"
+    regex = '''YOUR_WEBHOOK_URL'''
+    
+  [[allowlist.rules]]
+    description = "Generic API key placeholders"
+    regex = '''YOUR_API_KEY'''
+    
+  [[allowlist.rules]]
+    description = "Generic secret placeholders"
+    regex = '''YOUR_SECRET'''
+    
+  [[allowlist.rules]]
+    description = "Example commit SHAs"
+    regex = '''a1b2c3d'''
+    
+  [[allowlist.rules]]
+    description = "Test data and mock values"
+    regex = '''test-secret-key'''
+    
+  [[allowlist.rules]]
+    description = "Documentation file extensions"
+    regex = '''\.md$'''
+    
+  [[allowlist.paths]]
+    description = "Documentation directory"
+    regex = '''docs/.*\.md'''
+    
+  [[allowlist.paths]]
+    description = "Example files"
+    regex = '''examples/.*'''
+    
+  [[allowlist.paths]]
+    description = "Test files"
+    regex = '''tests/.*'''
+    
+  [[allowlist.paths]]
+    description = "Mock files"
+    regex = '''.*mock.*'''
+
+[rules]
+  # Custom rules for DataPrism project
+  [[rules]]
+    id = "dataprism-api-key"
+    description = "DataPrism API key"
+    regex = '''(?i)dataprism[_-]?api[_-]?key\s*[:=]\s*['""]?[a-zA-Z0-9]{32,}['""]?'''
+    
+  [[rules]]
+    id = "dataprism-secret"
+    description = "DataPrism secret"
+    regex = '''(?i)dataprism[_-]?secret\s*[:=]\s*['""]?[a-zA-Z0-9]{32,}['""]?'''

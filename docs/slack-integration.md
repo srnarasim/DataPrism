@@ -40,7 +40,7 @@ In your **dataprism-group.slack.com** workspace, create the following channels:
 3. Click **"Add New Webhook to Workspace"**
 4. Select the channel **#dataprism-builds**
 5. Click **"Allow"**
-6. Copy the webhook URL (it will look like: `https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX`)
+6. Copy the webhook URL (it will look like: `https://hooks.slack.com/services/T00000000/B00000000/[TOKEN_HERE]`)
 
 ### 4. Configure GitHub Secret
 
