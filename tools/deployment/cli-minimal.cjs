@@ -165,6 +165,16 @@ function deployToGitHubPages(options = {}) {
   }
 
   try {
+    // Create a temporary directory to store assets before branch switching
+    const tempDir = path.resolve('temp-cdn-assets');
+    if (fs.existsSync(tempDir)) {
+      execSync(`rm -rf ${tempDir}`, { stdio: 'inherit' });
+    }
+    
+    // Copy assets to temporary location
+    execSync(`cp -r ${assetsDir} ${tempDir}`, { stdio: 'inherit' });
+    log(`✅ Assets copied to temporary location: ${tempDir}`);
+
     // Configure git
     if (process.env.GIT_USERNAME) {
       execSync(`git config user.name "${process.env.GIT_USERNAME}"`, { stdio: 'inherit' });
@@ -185,11 +195,15 @@ function deployToGitHubPages(options = {}) {
       log(`Created new ${branch} branch`);
     }
 
-    // Clear existing content (except .git)
-    execSync('find . -maxdepth 1 -not -name .git -not -name . -exec rm -rf {} \\;', { stdio: 'inherit' });
+    // Clear existing content (except .git and temp directory)
+    execSync('find . -maxdepth 1 -not -name .git -not -name . -not -name temp-cdn-assets -exec rm -rf {} \\;', { stdio: 'inherit' });
 
-    // Copy CDN assets
-    execSync(`cp -r ${assetsDir}/* .`, { stdio: 'inherit' });
+    // Copy CDN assets from temporary location
+    execSync(`cp -r ${tempDir}/* .`, { stdio: 'inherit' });
+    log(`✅ Assets copied to gh-pages branch`);
+    
+    // Clean up temporary directory
+    execSync(`rm -rf ${tempDir}`, { stdio: 'inherit' });
 
     // Add all files
     execSync('git add .', { stdio: 'inherit' });
