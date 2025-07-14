@@ -269,6 +269,68 @@ npm run build:plugins
 npm run build:demo
 ```
 
+### CI/CD Robustness Testing
+
+For testing the enhanced CI/CD robustness features locally:
+
+#### Environment Validation
+
+Validate your development environment before running CI/CD operations:
+
+```bash
+# Complete environment validation
+npm run validate:environment
+
+# Quick validation (essential checks only)
+tsx tools/validation/environment-cli.ts --quick
+
+# Validate lock files synchronization only
+npm run validate:lockfiles
+tsx tools/validation/environment-cli.ts --lockfiles-only
+
+# Get help on validation options
+tsx tools/validation/environment-cli.ts --help
+```
+
+#### Local CI Testing
+
+Test CI-style workflows locally with retry mechanisms:
+
+```bash
+# Run integration tests with retry logic
+npm run test:integration
+
+# Run browser tests with stability enhancements
+npm run test:browser
+
+# Test all orchestration components
+npm run test:orchestration
+
+# Full validation workflow (simulates CI environment)
+npm run validate && npm run test:integration && npm run test:browser
+```
+
+#### External Service Mocking
+
+The test suite includes comprehensive external service mocking for stable testing:
+
+- **LLM Provider Mocking**: Simulates API responses for OpenAI, Anthropic, etc.
+- **CDN Request Mocking**: Provides stable responses for asset loading
+- **Network Request Mocking**: Handles unreliable network conditions
+- **WASM Module Mocking**: Provides fallback implementations
+- **Browser API Mocking**: localStorage, performance APIs, etc.
+
+#### Test Retry Configuration
+
+Tests automatically retry on failure with exponential backoff:
+
+- **Browser Tests**: 3 retries with 2-8 second delays
+- **Network Tests**: 5 retries with 1-16 second delays  
+- **WASM Tests**: 2 retries with 1-4 second delays
+- **Integration Tests**: 3 retries with 2-8 second delays
+
+View retry logs during test execution for debugging flaky tests.
+
 ### Troubleshooting
 
 #### Demo App Not Working
@@ -292,6 +354,31 @@ If the demo app loads but shows errors or doesn't function:
    # To: import { DataPrismProvider } from "@contexts/MockDataPrismContext";
    ```
 
+#### CI/CD Environment Issues
+
+If you encounter CI/CD robustness testing failures:
+
+1. **Validate environment first**:
+   ```bash
+   npm run validate:environment
+   ```
+
+2. **Check tool versions**:
+   ```bash
+   tsx tools/validation/environment-cli.ts --quick
+   ```
+
+3. **Synchronize lock files**:
+   ```bash
+   npm install  # Updates package-lock.json
+   cargo update # Updates Cargo.lock (if applicable)
+   ```
+
+4. **Clear test caches**:
+   ```bash
+   npm run clean && npm install
+   ```
+
 #### WebAssembly Issues
 If you see WASM-related errors:
 
@@ -304,6 +391,7 @@ Common solutions:
 - **Clear node_modules**: `rm -rf node_modules && npm install`
 - **Update dependencies**: `npm update`
 - **Check Node version**: `node --version` (should be 18+)
+- **Validate environment**: `npm run validate:environment`
 
 ### Project Structure
 
@@ -341,12 +429,21 @@ npm run build:release      # Production build with validation
 # Testing
 npm test                   # Run all tests
 npm run test:browser       # Browser compatibility tests
+npm run test:integration   # Integration tests with retry logic
 npm run test:performance   # Performance benchmarks
 
 # Quality
 npm run lint               # Lint all code
 npm run format             # Format all code
 npm run validate           # Run all validations
+
+# Environment Validation
+npm run validate:environment  # Complete environment validation
+npm run validate:lockfiles   # Validate package lock files only
+
+# CI/CD Testing (Local)
+npm run test:ci            # Run CI-style tests locally
+npm run validate:ci        # Full CI validation workflow
 
 # CLI
 npx @dataprism/cli init my-app    # Create new project
