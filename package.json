@@ -82,7 +82,7 @@
     "@playwright/test": "^1.40.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/parser": "^8.36.0",
     "commander": "^11.1.0",
     "eslint": "^8.50.0",
     "license-checker": "^25.0.1",
