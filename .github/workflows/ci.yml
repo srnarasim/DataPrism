@@ -383,7 +383,7 @@ jobs:
     needs: [build, browser-tests]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
-      contents: read
+      contents: write
       pages: write
       id-token: write
     environment:
@@ -457,16 +457,34 @@ jobs:
             --output cdn/dist/plugins/manifest.json \
             --base-url "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
           
-          # Deploy using our CDN deployment system
-          node tools/deployment/cli-minimal.cjs deploy \
+          # Try custom deployment first, fallback to GitHub Pages action
+          echo "🔄 Attempting custom GitHub Pages deployment..."
+          if node tools/deployment/cli-minimal.cjs deploy \
             --target github-pages \
             --repository ${{ github.repository }} \
             --environment production \
-            --no-validate
+            --no-validate; then
+            echo "✅ Custom deployment successful"
+          else
+            echo "⚠️ Custom deployment failed, using GitHub Pages action..."
+            # Use GitHub Pages action as fallback
+            echo "Preparing for GitHub Pages action deployment..."
+            cp -r cdn/dist/* .
+            touch .nojekyll
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_USERNAME: "github-actions[bot]"
           GIT_EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+      # Fallback: Use GitHub Pages action if custom deployment fails
+      - name: Deploy to GitHub Pages (Fallback)
+        if: failure()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./cdn/dist
+          force_orphan: true
 
       # Validate GitHub Pages deployment
       - name: Validate GitHub Pages Deployment
