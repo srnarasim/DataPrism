@@ -199,6 +199,30 @@ _\*Safari has limited threading support but full functionality_
 - Rust (latest stable)
 - wasm-pack
 
+### TypeScript Execution (tsx)
+
+The project uses `tsx` for running TypeScript files directly without compilation. Since `tsx` is installed as a dev dependency, use `npx` to run it:
+
+```bash
+# Run TypeScript files directly
+npx tsx path/to/file.ts
+
+# With watch mode (reruns on file changes)
+npx tsx --watch path/to/file.ts
+
+# With command line arguments
+npx tsx tools/validation/environment-cli.ts --quick
+
+# Alternative: Install globally (optional)
+npm install -g tsx
+# Then use: tsx path/to/file.ts
+```
+
+**Common tsx commands in DataPrism:**
+- `npx tsx tools/validation/environment-cli.ts` - Environment validation
+- `npx tsx tests/integration/wasm-js-integration.test.ts` - Run individual tests
+- `npx tsx tools/build/custom-build.ts` - Custom build scripts
+
 ### Quick Setup for Demo Analytics
 
 To get the demo analytics app running locally without mocking:
@@ -282,15 +306,17 @@ Validate your development environment before running CI/CD operations:
 npm run validate:environment
 
 # Quick validation (essential checks only)
-tsx tools/validation/environment-cli.ts --quick
+npx tsx tools/validation/environment-cli.ts --quick
 
 # Validate lock files synchronization only
 npm run validate:lockfiles
-tsx tools/validation/environment-cli.ts --lockfiles-only
+npx tsx tools/validation/environment-cli.ts --lockfiles-only
 
 # Get help on validation options
-tsx tools/validation/environment-cli.ts --help
+npx tsx tools/validation/environment-cli.ts --help
 ```
+
+**Note:** Use `npx tsx` to run TypeScript files directly. The `tsx` package is installed as a dev dependency and should be run via `npx` unless installed globally.
 
 #### Local CI Testing
 
@@ -365,7 +391,7 @@ If you encounter CI/CD robustness testing failures:
 
 2. **Check tool versions**:
    ```bash
-   tsx tools/validation/environment-cli.ts --quick
+   npx tsx tools/validation/environment-cli.ts --quick
    ```
 
 3. **Synchronize lock files**:
