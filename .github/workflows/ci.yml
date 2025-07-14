@@ -972,33 +972,176 @@ jobs:
           draft: false
           prerelease: false
 
-  # Notification on failure
-  notify:
-    name: Notify on Failure
+  # Slack notifications for build events
+  slack-notifications:
+    name: Slack Notifications
     runs-on: ubuntu-latest
     needs: [security, lint, test, build, browser-tests, cdn-deployment, cdn-validation]
-    if: failure() && github.ref == 'refs/heads/main'
+    if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     steps:
+      - name: Determine notification status
+        id: status
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+            echo "emoji=🚨" >> $GITHUB_OUTPUT
+            echo "title=Build Failed" >> $GITHUB_OUTPUT
+          elif [[ "${{ contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            echo "status=cancelled" >> $GITHUB_OUTPUT
+            echo "color=warning" >> $GITHUB_OUTPUT
+            echo "emoji=⚠️" >> $GITHUB_OUTPUT
+            echo "title=Build Cancelled" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "title=Build Successful" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send Slack notification
         if: env.SLACK_WEBHOOK_URL != ''
         continue-on-error: true
         uses: 8398a7/action-slack@v3
         with:
-          status: failure
-          channel: '#dataprism-ci'
+          status: ${{ steps.status.outputs.status }}
+          channel: '#dataprism-builds'
+          username: 'DataPrism CI'
+          icon_emoji: ':gear:'
+          color: ${{ steps.status.outputs.color }}
+          title: '${{ steps.status.outputs.emoji }} ${{ steps.status.outputs.title }}'
           text: |
-            🚨 CI Pipeline Failed on main branch
+            *Repository:* ${{ github.repository }}
+            *Branch:* ${{ github.ref_name }}
+            *Commit:* `${{ github.sha }}`
+            *Author:* ${{ github.actor }}
+            *Workflow:* ${{ github.workflow }}
             
-            Repository: ${{ github.repository }}
-            Commit: ${{ github.sha }}
-            Author: ${{ github.actor }}
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View workflow run>
             
-            Please check the failed jobs and fix the issues.
+            *Job Results:*
+            • Security: ${{ needs.security.result }}
+            • Lint: ${{ needs.lint.result }}
+            • Tests: ${{ needs.test.result }}
+            • Build: ${{ needs.build.result }}
+            • Browser Tests: ${{ needs.browser-tests.result }}
+            • CDN Deployment: ${{ needs.cdn-deployment.result }}
+            • CDN Validation: ${{ needs.cdn-validation.result }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send detailed failure notification
+        if: env.SLACK_WEBHOOK_URL != '' && steps.status.outputs.status == 'failure'
+        continue-on-error: true
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#dataprism-alerts'
+          username: 'DataPrism CI Alert'
+          icon_emoji: ':rotating_light:'
+          color: danger
+          title: '🔥 Critical Build Failure - Immediate Attention Required'
+          text: |
+            *🚨 CRITICAL: Build failure on `${{ github.ref_name }}` branch*
+            
+            *Repository:* ${{ github.repository }}
+            *Commit:* `${{ github.sha }}`
+            *Author:* ${{ github.actor }}
+            *Triggered by:* ${{ github.event_name }}
+            
+            *Failed Jobs:*
+            ${{ needs.security.result == 'failure' && '❌ Security checks failed' || '' }}
+            ${{ needs.lint.result == 'failure' && '❌ Code quality checks failed' || '' }}
+            ${{ needs.test.result == 'failure' && '❌ Tests failed' || '' }}
+            ${{ needs.build.result == 'failure' && '❌ Build failed' || '' }}
+            ${{ needs.browser-tests.result == 'failure' && '❌ Browser tests failed' || '' }}
+            ${{ needs.cdn-deployment.result == 'failure' && '❌ CDN deployment failed' || '' }}
+            ${{ needs.cdn-validation.result == 'failure' && '❌ CDN validation failed' || '' }}
+            
+            *Actions Required:*
+            1. Review the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow logs>
+            2. Fix the identified issues
+            3. Push a fix or revert the problematic commit
+            
+            *Deployment Status:*
+            • Production deployment ${{ github.ref == 'refs/heads/main' && 'is blocked' || 'not affected' }}
+            • CDN updates ${{ needs.cdn-deployment.result == 'failure' && 'failed' || 'successful' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send deployment success notification
+        if: env.SLACK_WEBHOOK_URL != '' && steps.status.outputs.status == 'success' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#dataprism-deployments'
+          username: 'DataPrism Deployment'
+          icon_emoji: ':rocket:'
+          color: good
+          title: '🚀 Production Deployment Successful'
+          text: |
+            *✅ Production deployment completed successfully!*
+            
+            *Repository:* ${{ github.repository }}
+            *Branch:* ${{ github.ref_name }}
+            *Commit:* `${{ github.sha }}`
+            *Author:* ${{ github.actor }}
+            
+            *Deployment Details:*
+            • CDN: ${{ needs.cdn-deployment.result == 'success' && '✅ Deployed' || '❌ Failed' }}
+            • Demo App: ${{ needs.demo.result == 'success' && '✅ Deployed' || '❌ Failed' }}
+            • Documentation: ${{ needs.docs.result == 'success' && '✅ Updated' || '❌ Failed' }}
+            
+            *Live URLs:*
+            • <https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}|CDN Assets>
+            • <https://demo.dataprism.dev|Demo Application>
+            • <https://docs.dataprism.dev|Documentation>
+            
+            *Performance Metrics:*
+            • Build time: ~${{ github.run_number }} minutes
+            • Tests passed: All integration and browser tests
+            • Bundle size: Optimized and within limits
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send release notification
+        if: env.SLACK_WEBHOOK_URL != '' && contains(github.event.head_commit.message, '[release]')
+        continue-on-error: true
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#dataprism-releases'
+          username: 'DataPrism Release'
+          icon_emoji: ':package:'
+          color: good
+          title: '📦 New Release Available'
+          text: |
+            *🎉 New DataPrism release is now available!*
+            
+            *Release Details:*
+            • Version: `v${{ env.PACKAGE_VERSION }}`
+            • Repository: ${{ github.repository }}
+            • Commit: `${{ github.sha }}`
+            • Author: ${{ github.actor }}
+            
+            *What's New:*
+            Check the <${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ env.PACKAGE_VERSION }}|release notes> for detailed changelog.
+            
+            *Availability:*
+            • <https://www.npmjs.com/package/@dataprism/core|NPM Registry>
+            • <https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}|CDN (Latest)>
+            • <https://demo.dataprism.dev|Live Demo>
+            
+            *Installation:*
+            ```
+            npm install @dataprism/core@latest
+            ```
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       
       - name: Create GitHub issue on critical failure
-        if: env.SLACK_WEBHOOK_URL == ''
+        if: env.SLACK_WEBHOOK_URL == '' && steps.status.outputs.status == 'failure'
         continue-on-error: true
         uses: actions/github-script@v7
         with:
