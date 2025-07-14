@@ -50,7 +50,7 @@
     "test:core": "cd packages/core && cargo test",
     "test:orchestration": "vitest run packages/orchestration/src/**/*.test.ts",
     "test:plugins": "cd packages/plugins && npm test || true",
-    "test:integration": "vitest run tests/integration/**/*.test.ts",
+    "test:integration": "vitest run tests/integration/ --config vitest.config.ts",
     "test:browser": "playwright test tests/browser/**/*.test.ts",
     "test:e2e": "playwright test tests/e2e/**/*.test.ts",
     "test:performance": "npm run build && node tests/performance/benchmark.js",

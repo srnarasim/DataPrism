@@ -316,9 +316,14 @@ jobs:
       - name: Run integration tests with retry
         run: |
           echo "🔗 Running integration tests with retry mechanism..."
+          echo "Current directory: $(pwd)"
+          echo "Available test files:"
+          find . -name "*.test.ts" -path "*/tests/integration/*" -type f || echo "No integration test files found"
+          
           for attempt in 1 2 3; do
             echo "Attempt $attempt of 3..."
-            if npm run test:integration; then
+            # Run integration tests with explicit config
+            if npx vitest run tests/integration/ --config vitest.config.ts --reporter=basic; then
               echo "✅ Integration tests passed on attempt $attempt"
               break
             elif [ $attempt -eq 3 ]; then
