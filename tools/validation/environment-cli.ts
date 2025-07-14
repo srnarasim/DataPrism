@@ -21,6 +21,7 @@ async function main() {
         console.log('Running quick validation...');
         const quickResult = await quickValidation();
         process.exit(quickResult ? 0 : 1);
+        break;
         
       case '--lockfiles-only':
       case '-l':
@@ -28,6 +29,7 @@ async function main() {
         const validator = new EnvironmentValidator();
         const lockResult = await validator.validateLockFiles();
         process.exit(lockResult ? 0 : 1);
+        break;
         
       case '--help':
       case '-h':
@@ -45,6 +47,7 @@ Examples:
   tsx tools/validation/environment-cli.ts --lockfiles-only
 `);
         process.exit(0);
+        break;
         
       default:
         console.log('Running full environment validation...');
