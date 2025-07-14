@@ -126,10 +126,17 @@ export default defineConfig({
   ],
 
   // Run your local dev server before starting the tests
-  webServer: {
+  webServer: process.env.CI ? {
+    // Use static server in CI to avoid demo app dependency issues
+    command: "node tests/browser/static-server.cjs",
+    url: "http://localhost:3000",
+    reuseExistingServer: false,
+    timeout: 30 * 1000, // 30 seconds for static server
+  } : {
+    // Use demo app locally for full integration testing
     command: "npm run dev:demo",
     url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 120 * 1000, // 2 minutes for WebAssembly to load
   },
 

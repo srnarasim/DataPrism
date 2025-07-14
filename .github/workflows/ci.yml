@@ -415,6 +415,13 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        
+      - name: Install demo-analytics dependencies
+        run: |
+          echo "📦 Installing demo-analytics dependencies for browser tests..."
+          cd apps/demo-analytics
+          npm install
+          cd ../..
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
