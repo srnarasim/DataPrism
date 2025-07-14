@@ -300,44 +300,80 @@ jobs:
           cd packages/core
           cargo fetch
 
-      - name: Run Rust tests with retry
+      - name: Run Rust tests with retry (attempt 1)
+        id: rust-test-1
+        continue-on-error: true
         run: |
-          echo "🦀 Running Rust tests with retry mechanism..."
-          for attempt in 1 2 3; do
-            echo "Attempt $attempt of 3..."
-            if npm run test:core; then
-              echo "✅ Rust tests passed on attempt $attempt"
-              break
-            elif [ $attempt -eq 3 ]; then
-              echo "❌ Rust tests failed after 3 attempts"
-              exit 1
-            else
-              echo "⚠️ Rust tests failed, retrying in 5 seconds..."
-              sleep 5
-            fi
-          done
+          echo "🦀 Running Rust tests - Attempt 1 of 3..."
+          npm run test:core
 
-      - name: Run integration tests with retry
+      - name: Run Rust tests with retry (attempt 2)
+        id: rust-test-2
+        if: steps.rust-test-1.outcome == 'failure'
+        continue-on-error: true
         run: |
-          echo "🔗 Running integration tests with retry mechanism..."
-          echo "Current directory: $(pwd)"
-          echo "Available test files:"
-          find . -name "*.test.ts" -path "*/tests/integration/*" -type f || echo "No integration test files found"
-          
-          for attempt in 1 2 3; do
-            echo "Attempt $attempt of 3..."
-            # Run integration tests with explicit config
-            if npx vitest run tests/integration/ --config vitest.config.ts --reporter=basic; then
-              echo "✅ Integration tests passed on attempt $attempt"
-              break
-            elif [ $attempt -eq 3 ]; then
-              echo "❌ Integration tests failed after 3 attempts"
-              exit 1
-            else
-              echo "⚠️ Integration tests failed, retrying in 10 seconds..."
-              sleep 10
-            fi
-          done
+          echo "⚠️ Rust tests failed, retrying - Attempt 2 of 3..."
+          npm run test:core
+
+      - name: Run Rust tests with retry (attempt 3)
+        id: rust-test-3
+        if: steps.rust-test-2.outcome == 'failure'
+        run: |
+          echo "⚠️ Rust tests failed again, final attempt - Attempt 3 of 3..."
+          npm run test:core
+
+      - name: Check Rust tests result
+        run: |
+          echo "🔍 Checking Rust test results..."
+          echo "Attempt 1: ${{ steps.rust-test-1.outcome }}"
+          echo "Attempt 2: ${{ steps.rust-test-2.outcome }}"
+          echo "Attempt 3: ${{ steps.rust-test-3.outcome }}"
+        
+      - name: Fail if all Rust tests failed
+        if: steps.rust-test-1.outcome == 'failure' && steps.rust-test-2.outcome == 'failure' && steps.rust-test-3.outcome == 'failure'
+        run: |
+          echo "❌ Rust tests failed after 3 attempts"
+          exit 1
+
+      - name: List integration test files
+        run: |
+          echo "🔗 Checking for integration test files..."
+          echo "Current directory: ${{ github.workspace }}"
+
+      - name: Run integration tests with retry (attempt 1)
+        id: integration-test-1
+        continue-on-error: true
+        run: |
+          echo "🔗 Running integration tests - Attempt 1 of 3..."
+          npx vitest run tests/integration/ --config vitest.config.ts --reporter=basic
+
+      - name: Run integration tests with retry (attempt 2)
+        id: integration-test-2
+        if: steps.integration-test-1.outcome == 'failure'
+        continue-on-error: true
+        run: |
+          echo "⚠️ Integration tests failed, retrying - Attempt 2 of 3..."
+          npx vitest run tests/integration/ --config vitest.config.ts --reporter=basic
+
+      - name: Run integration tests with retry (attempt 3)
+        id: integration-test-3
+        if: steps.integration-test-2.outcome == 'failure'
+        run: |
+          echo "⚠️ Integration tests failed again, final attempt - Attempt 3 of 3..."
+          npx vitest run tests/integration/ --config vitest.config.ts --reporter=basic
+
+      - name: Check integration tests result
+        run: |
+          echo "🔍 Checking integration test results..."
+          echo "Attempt 1: ${{ steps.integration-test-1.outcome }}"
+          echo "Attempt 2: ${{ steps.integration-test-2.outcome }}"
+          echo "Attempt 3: ${{ steps.integration-test-3.outcome }}"
+        
+      - name: Fail if all integration tests failed
+        if: steps.integration-test-1.outcome == 'failure' && steps.integration-test-2.outcome == 'failure' && steps.integration-test-3.outcome == 'failure'
+        run: |
+          echo "❌ Integration tests failed after 3 attempts"
+          exit 1
 
       - name: Run orchestration tests
         run: |
