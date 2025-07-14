@@ -174,6 +174,7 @@ export class TestRetryManager {
               'wasm',
               'compilation',
               'instantiation',
+              'initialization',
               'memory',
               'module',
               'streaming'

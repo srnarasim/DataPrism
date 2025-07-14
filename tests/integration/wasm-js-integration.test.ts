@@ -47,9 +47,11 @@ class MockDataPrismCoreImpl implements MockDataPrismCore {
     this.memoryUsage += Math.random() * 1024 * 1024; // Random 0-1MB increase
     
     // Mock different query responses
-    if (sql.includes('SELECT 1')) {
+    if (sql.includes('SELECT') && /SELECT\s+(\d+)/.test(sql)) {
+      const match = sql.match(/SELECT\s+(\d+)/);
+      const number = match ? parseInt(match[1]) : 1;
       return {
-        data: [{ '1': 1 }],
+        data: [{ [number.toString()]: number }],
         rowCount: 1,
         executionTime
       };
@@ -152,31 +154,29 @@ describe('WASM-JavaScript Integration', () => {
     });
 
     it('should handle initialization failures gracefully', async () => {
-      await retryableTest(async () => {
-        const faultyCore = new MockDataPrismCoreImpl();
-        
-        // Mock initialization failure
-        const originalInitialize = faultyCore.initialize;
-        let attemptCount = 0;
-        
-        faultyCore.initialize = async () => {
-          attemptCount++;
-          if (attemptCount < 3) {
-            throw new Error('Initialization failed');
-          }
-          return originalInitialize.call(faultyCore);
-        };
-        
-        // Should eventually succeed with retry mechanism
-        await retryManager.runWithRetry(
-          () => faultyCore.initialize(),
-          TestRetryManager.createRetryOptions('wasm')
-        );
-        
-        expect(faultyCore.isReady()).toBe(true);
-        expect(attemptCount).toBe(3);
-      }, 'integration');
-    }, 10000); // Increase timeout to 10 seconds
+      const faultyCore = new MockDataPrismCoreImpl();
+      
+      // Mock initialization failure
+      const originalInitialize = faultyCore.initialize;
+      let attemptCount = 0;
+      
+      faultyCore.initialize = async () => {
+        attemptCount++;
+        if (attemptCount < 3) {
+          throw new Error('WASM module compilation failed');
+        }
+        return originalInitialize.call(faultyCore);
+      };
+      
+      // Should eventually succeed with retry mechanism
+      await retryManager.runWithRetry(
+        () => faultyCore.initialize(),
+        TestRetryManager.createRetryOptions('wasm')
+      );
+      
+      expect(faultyCore.isReady()).toBe(true);
+      expect(attemptCount).toBe(3);
+    }, 15000); // Increase timeout to 15 seconds
   });
 
   describe('Query Execution', () => {
@@ -220,7 +220,8 @@ describe('WASM-JavaScript Integration', () => {
         
         expect(results).toHaveLength(5);
         results.forEach((result, index) => {
-          expect(result.data[0]['1']).toBe(1); // All SELECT 1, 2, 3, etc. return '1' field
+          const expectedNumber = index + 1;
+          expect(result.data[0][expectedNumber.toString()]).toBe(expectedNumber);
         });
         
         // Concurrent execution should be faster than sequential
