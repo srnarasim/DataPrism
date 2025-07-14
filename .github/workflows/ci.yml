@@ -244,6 +244,16 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
       - name: Install dependencies
         run: npm install
 
@@ -251,9 +261,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+          path: .
 
       - name: Run performance benchmarks
-        run: npm run test:performance
+        run: |
+          echo "🚀 Running performance benchmarks with pre-built artifacts..."
+          # Create benchmarks results directory
+          mkdir -p benchmarks/results
+          # Skip the build since we already have artifacts
+          node tests/performance/benchmark.js
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
