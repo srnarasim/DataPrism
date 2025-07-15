@@ -11,13 +11,13 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /guide/getting-started
+      link: /DataPrism/guide/getting-started
     - theme: alt
-      text: View Demo
-      link: https://demo.dataprism.dev
+      text: View Examples
+      link: /DataPrism/examples/
     - theme: alt
       text: API Reference
-      link: /api/
+      link: /DataPrism/api/
 
 features:
   - icon: 🚀
@@ -130,12 +130,12 @@ console.log(result.data);
 
 ## Live Examples
 
-Try DataPrism Core right in your browser:
+Explore DataPrism Core capabilities:
 
-- [**Interactive Demo**](https://demo.dataprism.dev) - Full-featured analytics application
-- [**Query Lab**](https://demo.dataprism.dev/query-lab) - SQL playground with sample datasets
-- [**Plugin Showcase**](https://demo.dataprism.dev/plugins) - Explore the plugin ecosystem
-- [**Performance Benchmarks**](https://demo.dataprism.dev/performance) - See real-world performance metrics
+- [**Basic Examples**](/DataPrism/examples/basic) - Simple data processing and visualization
+- [**Advanced Examples**](/DataPrism/examples/advanced) - Complex analytical workloads
+- [**Plugin Examples**](/DataPrism/examples/plugins) - Custom plugin development
+- [**API Reference**](/DataPrism/api/) - Complete API documentation
 
 ## Community & Support
 
@@ -172,17 +172,17 @@ DataPrism Core supports all modern browsers with WebAssembly:
 <div class="next-steps">
   <div class="step">
     <h3>📚 Learn the Basics</h3>
-    <p>Start with our <a href="/guide/getting-started">Getting Started guide</a> to understand core concepts</p>
+    <p>Start with our <a href="/DataPrism/guide/getting-started">Getting Started guide</a> to understand core concepts</p>
   </div>
   
   <div class="step">
     <h3>🔧 Build Something</h3>
-    <p>Follow our <a href="/examples/">examples</a> to build your first analytics application</p>
+    <p>Follow our <a href="/DataPrism/examples/">examples</a> to build your first analytics application</p>
   </div>
   
   <div class="step">
     <h3>🚀 Go Advanced</h3>
-    <p>Explore <a href="/plugins/">plugin development</a> and advanced integration patterns</p>
+    <p>Explore <a href="/DataPrism/plugins/">plugin development</a> and advanced integration patterns</p>
   </div>
 </div>
 
