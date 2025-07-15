@@ -29,8 +29,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       ...(isCDN ? [
         manifestPlugin({ 
-          config: cdnConfig,
-          bundleName: "dataprism-plugins"
+          config: cdnConfig
         }),
         jekyllPlugin({
           enabled: cdnConfig.target === 'github-pages',
