@@ -5,54 +5,18 @@ import { defineConfig, devices } from "@playwright/test";
  * Tests WebAssembly functionality across different browsers
  */
 
-export default defineConfig({
-  testDir: "./tests/browser",
-
-  // Run tests in files in parallel
-  fullyParallel: true,
-
-  // Fail the build on CI if you accidentally left test.only in the source code
-  forbidOnly: !!process.env.CI,
-
-  // Retry on CI only
-  retries: process.env.CI ? 2 : 0,
-
-  // Opt out of parallel tests on CI
-  workers: process.env.CI ? 1 : undefined,
-
-  // Reporter to use
-  reporter: [
-    ["html"],
-    ["json", { outputFile: "test-results/browser-test-results.json" }],
-    ["junit", { outputFile: "test-results/browser-test-results.xml" }],
-  ],
-
-  // Shared settings for all the projects below
-  use: {
-    // Base URL for all tests
-    baseURL: "http://localhost:3000",
-
-    // Collect trace when retrying the failed test
-    trace: "on-first-retry",
-
-    // Take screenshot on failure
-    screenshot: "only-on-failure",
-
-    // Record video on failure
-    video: "retain-on-failure",
-
-    // Global test timeout
-    actionTimeout: 10000,
-
-    // Required headers for WebAssembly
-    extraHTTPHeaders: {
-      "Cross-Origin-Embedder-Policy": "require-corp",
-      "Cross-Origin-Opener-Policy": "same-origin",
-    },
-  },
-
-  // Configure projects for major browsers
-  projects: [
+/**
+ * Get browser projects based on environment configuration
+ */
+function getProjects() {
+  const quickTest = process.env.BROWSER_TEST_QUICK === "true";
+  const skipBrowserTests = process.env.SKIP_BROWSER_TESTS === "true";
+  
+  if (skipBrowserTests) {
+    return [];
+  }
+  
+  const allProjects = [
     {
       name: "chromium",
       use: {
@@ -123,7 +87,66 @@ export default defineConfig({
         },
       },
     },
+  ];
+  
+  // For quick testing, only run Chromium
+  if (quickTest) {
+    return allProjects.filter(project => project.name === "chromium");
+  }
+  
+  return allProjects;
+}
+
+export default defineConfig({
+  testDir: "./tests/browser",
+
+  // Run tests in files in parallel
+  fullyParallel: true,
+
+  // Fail the build on CI if you accidentally left test.only in the source code
+  forbidOnly: !!process.env.CI,
+
+  // Retry on CI only
+  retries: process.env.CI ? 2 : 0,
+
+  // Workers configuration - allow override via environment variables
+  workers: process.env.BROWSER_TEST_WORKERS ? 
+    parseInt(process.env.BROWSER_TEST_WORKERS) : 
+    (process.env.CI ? 1 : undefined),
+
+  // Reporter to use
+  reporter: [
+    ["html"],
+    ["json", { outputFile: "test-results/browser-test-results.json" }],
+    ["junit", { outputFile: "test-results/browser-test-results.xml" }],
   ],
+
+  // Shared settings for all the projects below
+  use: {
+    // Base URL for all tests
+    baseURL: "http://localhost:3000",
+
+    // Collect trace when retrying the failed test
+    trace: "on-first-retry",
+
+    // Take screenshot on failure
+    screenshot: "only-on-failure",
+
+    // Record video on failure
+    video: "retain-on-failure",
+
+    // Global test timeout
+    actionTimeout: 10000,
+
+    // Required headers for WebAssembly
+    extraHTTPHeaders: {
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Opener-Policy": "same-origin",
+    },
+  },
+
+  // Configure projects for major browsers
+  projects: getProjects(),
 
   // Run your local dev server before starting the tests
   webServer: process.env.CI ? {
