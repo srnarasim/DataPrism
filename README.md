@@ -241,17 +241,17 @@ _\*Safari has limited threading support but full functionality_
 
 ## 🚀 Live Examples
 
-- **[Interactive Demo](https://demo.dataprism.dev)** - Full-featured analytics application
-- **[Query Lab](https://demo.dataprism.dev/query-lab)** - SQL playground with sample datasets
-- **[Plugin Showcase](https://demo.dataprism.dev/plugins)** - Explore the plugin ecosystem
-- **[Performance Benchmarks](https://demo.dataprism.dev/performance)** - Real-world performance metrics
+- **[CDN Assets](https://srnarasim.github.io/DataPrism/)** - DataPrism CDN with usage examples
+- **[Basic Usage Example](./examples/basic-usage.html)** - Simple HTML example
+- **[Demo Application Source](./apps/demo-analytics/)** - Full-featured analytics application (run locally)
+- **[Plugin Examples](./packages/plugins/examples/)** - Plugin development examples
 
 ## 📚 Documentation
 
-- **[Getting Started Guide](https://docs.dataprism.dev/guide/getting-started)** - Your first DataPrism application
-- **[API Reference](https://docs.dataprism.dev/api/)** - Complete API documentation
-- **[Examples](https://docs.dataprism.dev/examples/)** - Real-world usage examples
-- **[Plugin Development](https://docs.dataprism.dev/plugins/)** - Build custom functionality
+- **[Getting Started Guide](./apps/docs/guide/getting-started.md)** - Your first DataPrism application
+- **[API Reference](./apps/docs/api/)** - Complete API documentation
+- **[Examples](./apps/docs/examples/)** - Real-world usage examples
+- **[Local Documentation](./apps/docs/)** - Complete documentation (run locally)
 
 ## 🛠️ Development
 
@@ -291,7 +291,7 @@ To get the demo analytics app running locally without mocking:
 
 ```bash
 # Clone the repository
-git clone https://github.com/dataprism/core.git
+git clone https://github.com/srnarasim/DataPrism.git
 cd DataPrism
 
 # Install root dependencies
@@ -316,7 +316,7 @@ For complete development including all packages:
 
 ```bash
 # Clone the repository
-git clone https://github.com/dataprism/core.git
+git clone https://github.com/srnarasim/DataPrism.git
 cd DataPrism
 
 # Install dependencies for all packages
@@ -705,22 +705,22 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 ## 📞 Support
 
-- 📚 **[Documentation](https://docs.dataprism.dev)** - Comprehensive guides and API reference
-- 💬 **[GitHub Discussions](https://github.com/dataprism/core/discussions)** - Community support and questions
-- 🐛 **[GitHub Issues](https://github.com/dataprism/core/issues)** - Bug reports and feature requests
-- 📧 **[Email Support](mailto:support@dataprism.dev)** - Direct support for enterprise users
+- 📚 **[Documentation](./apps/docs/)** - Comprehensive guides and API reference
+- 💬 **[GitHub Discussions](https://github.com/srnarasim/DataPrism/discussions)** - Community support and questions
+- 🐛 **[GitHub Issues](https://github.com/srnarasim/DataPrism/issues)** - Bug reports and feature requests
+- 📧 **[Contact](https://github.com/srnarasim)** - Project maintainer
 
 ## 📈 Community
 
-- 🐦 **[Twitter](https://twitter.com/dataprism)** - Updates and announcements
-- 📧 **[Newsletter](https://dataprism.dev/newsletter)** - Monthly updates and tips
-- 💼 **[LinkedIn](https://linkedin.com/company/dataprism)** - Professional updates
+- 🔗 **[GitHub Repository](https://github.com/srnarasim/DataPrism)** - Star the project and contribute
+- 📦 **[CDN Assets](https://srnarasim.github.io/DataPrism/)** - Ready-to-use CDN deployment
+- 🚀 **[Latest Release](https://github.com/srnarasim/DataPrism/releases)** - Download the latest version
 
 ---
 
 <div align="center">
 
-**[Website](https://dataprism.dev) • [Documentation](https://docs.dataprism.dev) • [Demo](https://demo.dataprism.dev) • [GitHub](https://github.com/dataprism/core)**
+**[GitHub](https://github.com/srnarasim/DataPrism) • [CDN Assets](https://srnarasim.github.io/DataPrism/) • [Documentation](./apps/docs/) • [Demo App](./apps/demo-analytics/)**
 
 Made with ❤️ by the DataPrism Team
 
