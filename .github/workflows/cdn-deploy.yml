@@ -148,8 +148,8 @@ jobs:
           npm run size-check:cdn
           
           # Additional validation for critical files
-          if [ -f "cdn/dist/core.min.js" ]; then
-            CORE_SIZE=$(stat -c%s "cdn/dist/core.min.js")
+          if [ -f "cdn/dist/dataprism.min.js" ]; then
+            CORE_SIZE=$(stat -c%s "cdn/dist/dataprism.min.js")
             if [ $CORE_SIZE -gt 2097152 ]; then # 2MB
               echo "❌ Core bundle exceeds 2MB limit: $(numfmt --to=iec $CORE_SIZE)"
               exit 1
@@ -201,7 +201,7 @@ jobs:
       name: ${{ inputs.environment || 'production' }}
       url: ${{ steps.deploy.outputs.page_url }}
     permissions:
-      contents: read
+      contents: write
       pages: write
       id-token: write
     steps:
@@ -214,17 +214,21 @@ jobs:
           name: cdn-assets
           path: cdn/dist/
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload to GitHub Pages
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          path: cdn/dist/
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./cdn/dist/
+          publish_branch: gh-pages
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'Deploy CDN assets ${{ github.sha }}'
 
-      - name: Deploy to GitHub Pages
+      - name: Set deploy output
         id: deploy
-        uses: actions/deploy-pages@v4
+        run: |
+          echo "page_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
 
       - name: Update deployment status
         run: |
@@ -303,7 +307,7 @@ jobs:
           fi
           
           # Test core assets
-          if curl -f -s "$DEPLOYMENT_URL/core.min.js" > /dev/null; then
+          if curl -f -s "$DEPLOYMENT_URL/dataprism.min.js" > /dev/null; then
             echo "✅ Core bundle is accessible"
           else
             echo "❌ Core bundle is not accessible"
@@ -327,7 +331,7 @@ jobs:
           
           # Measure load time
           START_TIME=$(date +%s%N)
-          curl -s "$DEPLOYMENT_URL/core.min.js" > /dev/null
+          curl -s "$DEPLOYMENT_URL/dataprism.min.js" > /dev/null
           END_TIME=$(date +%s%N)
           LOAD_TIME=$(( (END_TIME - START_TIME) / 1000000 ))
           
