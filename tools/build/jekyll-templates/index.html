@@ -101,6 +101,12 @@ layout: null
             </div>
             
             <div class="asset-item">
+                <h3>UMD Bundle</h3>
+                <code>https://srnarasim.github.io/DataPrism/dataprism.umd.js</code>
+                <p>Universal Module Definition build for broader compatibility (~92KB)</p>
+            </div>
+            
+            <div class="asset-item">
                 <h3>Out-of-Box Plugins Bundle</h3>
                 <code>https://srnarasim.github.io/DataPrism/dataprism-plugins.min.js</code>
                 <p>Production-ready plugins: Charts, CSV Import, Clustering, Performance Monitor (~232KB)</p>
@@ -204,6 +210,28 @@ layout: null
     return engine.query("SELECT 1 as hello");
   }).then(result => {
     console.log(result);
+  });
+&lt;/script&gt;</code>
+        </div>
+        
+        <h3>UMD with Plugin System</h3>
+        <div class="usage-example">
+            <code>&lt;script src="https://srnarasim.github.io/DataPrism/dataprism.umd.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const { DataPrismEngine, DataPrismPluginSystem, BasePlugin } = DataPrism;
+  
+  // Create custom plugin with UMD
+  class MyUMDPlugin extends BasePlugin {
+    getCapabilities() { return ['data-processing']; }
+    async execute(operation, params) {
+      return { processed: true };
+    }
+  }
+  
+  // Use plugin system
+  DataPrismPluginSystem.create().then(pluginSystem => {
+    // Plugin system ready
+    console.log('Plugin system initialized');
   });
 &lt;/script&gt;</code>
         </div>
