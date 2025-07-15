@@ -151,10 +151,8 @@ Explore DataPrism Core capabilities:
   </a>
 </div>
 
-- 💬 [GitHub Discussions](https://github.com/dataprism/core/discussions) - Ask questions and share ideas
-- 🐛 [Issues](https://github.com/dataprism/core/issues) - Report bugs and request features
-- 📧 [Newsletter](https://dataprism.dev/newsletter) - Stay updated with latest releases
-- 🐦 [Twitter](https://twitter.com/dataprism) - Follow for updates and tips
+- 💬 [GitHub Discussions](https://github.com/srnarasim/DataPrism/discussions) - Ask questions and share ideas
+- 🐛 [Issues](https://github.com/srnarasim/DataPrism/issues) - Report bugs and request features
 
 ## Browser Support
 
