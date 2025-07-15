@@ -58,7 +58,7 @@ npm install @dataprism/core
 ```bash [CDN]
 # Include via CDN (no installation required)
 <script type="module">
-   import { DataPrismEngine } from 'https://srnarasim.github.io/DataPrism/dataprism.min.js';
+   import { DataPrismEngine } from 'https://srnarasim.github.io/DataPrism/cdn/dataprism.min.js';
 </script>
 ```
 

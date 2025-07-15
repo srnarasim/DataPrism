@@ -92,12 +92,11 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./apps/docs/.vitepress/dist
           publish_branch: gh-pages
-          destination_dir: docs
-          keep_files: true
+          force_orphan: true
           enable_jekyll: false
           cname: false
           commit_message: |
-            Deploy documentation to gh-pages/docs - ${{ github.sha }}
+            Deploy documentation to gh-pages root - ${{ github.sha }}
             
             🤖 Generated with GitHub Actions
             

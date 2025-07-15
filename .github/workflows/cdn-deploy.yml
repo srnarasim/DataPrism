@@ -220,15 +220,16 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./cdn/dist/
           publish_branch: gh-pages
-          force_orphan: true
+          destination_dir: cdn
+          keep_files: true
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'Deploy CDN assets ${{ github.sha }}'
+          commit_message: 'Deploy CDN assets to /cdn/ - ${{ github.sha }}'
 
       - name: Set deploy output
         id: deploy
         run: |
-          echo "page_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
+          echo "page_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/cdn" >> $GITHUB_OUTPUT
 
       - name: Update deployment status
         run: |
@@ -294,7 +295,7 @@ jobs:
 
       - name: Validate deployment
         run: |
-          DEPLOYMENT_URL="${{ (inputs.cdn_target == 'github-pages' || (github.event_name != 'workflow_dispatch')) && format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) || 'https://example.com' }}"
+          DEPLOYMENT_URL="${{ (inputs.cdn_target == 'github-pages' || (github.event_name != 'workflow_dispatch')) && format('https://{0}.github.io/{1}/cdn', github.repository_owner, github.event.repository.name) || 'https://example.com' }}"
           
           echo "🔍 Validating deployment at: $DEPLOYMENT_URL"
           
@@ -325,7 +326,7 @@ jobs:
 
       - name: Performance validation
         run: |
-          DEPLOYMENT_URL="${{ (inputs.cdn_target == 'github-pages' || (github.event_name != 'workflow_dispatch')) && format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) || 'https://example.com' }}"
+          DEPLOYMENT_URL="${{ (inputs.cdn_target == 'github-pages' || (github.event_name != 'workflow_dispatch')) && format('https://{0}.github.io/{1}/cdn', github.repository_owner, github.event.repository.name) || 'https://example.com' }}"
           
           echo "📊 Running performance tests..."
           
