@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'DataPrism Documentation',
   description: 'WebAssembly-powered browser analytics engine with DuckDB and LLM integration',
-  base: '/DataPrism/',
+  base: '/DataPrism/docs/',
   outDir: './.vitepress/dist',
   ignoreDeadLinks: true,
   
