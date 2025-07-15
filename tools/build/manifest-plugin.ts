@@ -133,9 +133,10 @@ function generateManifest(
   const totalCompressedSize = Array.from(assets.values()).reduce((sum, asset) => sum + asset.compressedSize, 0);
 
   // Find core assets
-  const coreAsset = Array.from(assets.values()).find(a => a.filename.includes('core')) || assets.values().next().value;
-  const orchestrationAsset = Array.from(assets.values()).find(a => a.filename.includes('orchestration')) || coreAsset;
-  const pluginFrameworkAsset = Array.from(assets.values()).find(a => a.filename.includes('plugin-framework')) || coreAsset;
+  const assetsList = Array.from(assets.values());
+  const coreAsset = assetsList.find(a => a.filename.includes('core')) || assetsList[0];
+  const orchestrationAsset = assetsList.find(a => a.filename.includes('orchestration')) || coreAsset;
+  const pluginFrameworkAsset = assetsList.find(a => a.filename.includes('plugin-framework')) || coreAsset;
 
   return {
     version: process.env.npm_package_version || '1.0.0',

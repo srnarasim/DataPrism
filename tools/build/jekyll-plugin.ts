@@ -1,17 +1,21 @@
+import { Plugin } from "vite";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { join, resolve } from 'path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+export interface JekyllPluginOptions {
+  enabled?: boolean;
+  templateDir?: string;
+  outDir?: string;
+}
 
 /**
  * Vite plugin to copy Jekyll configuration files for GitHub Pages deployment
  * This ensures that Jekyll processes the files correctly and fixes the 404 issue
  */
-export function jekyllPlugin(options = {}) {
+export function jekyllPlugin(options: JekyllPluginOptions = {}): Plugin {
   const {
     enabled = true,
-    templateDir = join(__dirname, 'jekyll-templates'),
+    templateDir = resolve(process.cwd(), 'tools/build/jekyll-templates'),
     outDir = 'cdn/dist'
   } = options;
 
@@ -19,9 +23,11 @@ export function jekyllPlugin(options = {}) {
 
   return {
     name: 'jekyll-github-pages',
+    
     configResolved(config) {
       outputDir = config.build.outDir || outDir;
     },
+    
     writeBundle() {
       if (!enabled) {
         console.log('🏷️  Jekyll plugin disabled');
@@ -63,7 +69,7 @@ export function jekyllPlugin(options = {}) {
         console.log('   This fixes the GitHub Pages 404 issue by ensuring Jekyll processes files correctly');
 
       } catch (error) {
-        console.error('❌ Failed to copy Jekyll files:', error.message);
+        console.error('❌ Failed to copy Jekyll files:', (error as Error).message);
         throw error;
       }
     }
