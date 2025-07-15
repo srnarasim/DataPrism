@@ -94,7 +94,7 @@ export class DependencyRegistry {
   ): Promise<any> {
     const metadata = this.dependencies.get(name)!;
     
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         this.setState(name, "timeout");
         const error: DataPrismError = {
@@ -109,47 +109,57 @@ export class DependencyRegistry {
 
       this.timeouts.set(name, timeoutId);
 
-      try {
-        this.setState(name, "loading");
-        const module = await loader();
-        
-        clearTimeout(timeoutId);
-        this.timeouts.delete(name);
-        
-        metadata.module = module;
-        metadata.loadEndTime = Date.now();
-        metadata.version = this.extractVersion(module);
-        this.setState(name, "ready");
-        
-        this.emitEvent("ready", name, metadata);
-        resolve(module);
-      } catch (error) {
-        clearTimeout(timeoutId);
-        this.timeouts.delete(name);
-        
-        const dataPrismError: DataPrismError = {
-          message: `Failed to load dependency '${name}': ${error}`,
-          code: "DEPENDENCY_LOAD_ERROR",
-          source: "orchestration",
-        };
-        
-        metadata.error = dataPrismError;
-        
-        if (metadata.retryCount < metadata.maxRetries) {
-          metadata.retryCount++;
-          this.emitEvent("retry", name, metadata, dataPrismError);
+      // Execute the async loading logic
+      this.performLoad(name, loader, options, timeoutId)
+        .then((module) => {
+          clearTimeout(timeoutId);
+          this.timeouts.delete(name);
           
-          const retryDelay = options.retryDelay || 1000 * metadata.retryCount;
-          setTimeout(() => {
-            this.executeLoad(name, loader, options).then(resolve).catch(reject);
-          }, retryDelay);
-        } else {
-          this.setState(name, "error");
-          this.emitEvent("error", name, metadata, dataPrismError);
-          reject(dataPrismError);
-        }
-      }
+          metadata.module = module;
+          metadata.loadEndTime = Date.now();
+          metadata.version = this.extractVersion(module);
+          this.setState(name, "ready");
+          
+          this.emitEvent("ready", name, metadata);
+          resolve(module);
+        })
+        .catch((error) => {
+          clearTimeout(timeoutId);
+          this.timeouts.delete(name);
+          
+          const dataPrismError: DataPrismError = {
+            message: `Failed to load dependency '${name}': ${error}`,
+            code: "DEPENDENCY_LOAD_ERROR",
+            source: "orchestration",
+          };
+          
+          metadata.error = dataPrismError;
+          
+          if (metadata.retryCount < metadata.maxRetries) {
+            metadata.retryCount++;
+            this.emitEvent("retry", name, metadata, dataPrismError);
+            
+            const retryDelay = options.retryDelay || 1000 * metadata.retryCount;
+            setTimeout(() => {
+              this.executeLoad(name, loader, options).then(resolve).catch(reject);
+            }, retryDelay);
+          } else {
+            this.setState(name, "error");
+            this.emitEvent("error", name, metadata, dataPrismError);
+            reject(dataPrismError);
+          }
+        });
     });
+  }
+
+  private async performLoad(
+    name: string,
+    loader: () => Promise<any>,
+    options: DependencyLoadOptions,
+    timeoutId: NodeJS.Timeout
+  ): Promise<any> {
+    this.setState(name, "loading");
+    return await loader();
   }
 
   private extractVersion(module: any): string | undefined {
