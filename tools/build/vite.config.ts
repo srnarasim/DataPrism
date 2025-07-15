@@ -5,6 +5,7 @@ import { wasmPlugin } from "./wasm-plugin.js";
 import { CDNBuildConfig, DEFAULT_CDN_CONFIG, SIZE_LIMITS } from "./types.js";
 import { manifestPlugin } from "./manifest-plugin.js";
 import { duckdbCDNPlugin } from "./duckdb-cdn-plugin.js";
+import { jekyllPlugin } from "./jekyll-plugin.js";
 
 export default defineConfig(({ mode, command }) => {
   const isProduction = mode === "production";
@@ -41,6 +42,10 @@ export default defineConfig(({ mode, command }) => {
           outDir: "assets",
           generateIntegrity: cdnConfig.assets.integrity,
           baseUrl: cdnConfig.assets.baseUrl,
+        }),
+        jekyllPlugin({
+          enabled: cdnConfig.target === 'github-pages',
+          outDir: `cdn/dist/${cdnConfig.target === 'github-pages' ? '' : cdnConfig.target + '/'}`,
         })
       ] : []),
     ],
