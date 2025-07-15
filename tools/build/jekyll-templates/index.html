@@ -140,6 +140,34 @@ layout: null
 &lt;/script&gt;</code>
         </div>
         
+        <h3>Plugin System Usage</h3>
+        <div class="usage-example">
+            <code>&lt;script type="module"&gt;
+  import { 
+    DataPrismEngine, 
+    DataPrismPluginSystem, 
+    BasePlugin 
+  } from "https://srnarasim.github.io/DataPrism/dataprism.min.js";
+  
+  // Initialize engine and plugin system
+  const engine = new DataPrismEngine();
+  const pluginSystem = await DataPrismPluginSystem.create();
+  
+  // Load a custom plugin
+  class MyPlugin extends BasePlugin {
+    getCapabilities() { return ['data-processing']; }
+    async execute(operation, params) {
+      // Your custom plugin logic
+      return processedData;
+    }
+  }
+  
+  // Register and use the plugin
+  await pluginSystem.register(new MyPlugin(manifest));
+  await pluginSystem.activate("my-plugin");
+&lt;/script&gt;</code>
+        </div>
+        
         <h3>UMD (Legacy Support)</h3>
         <div class="usage-example">
             <code>&lt;script src="https://srnarasim.github.io/DataPrism/dataprism.umd.js"&gt;&lt;/script&gt;
@@ -160,6 +188,35 @@ layout: null
             <li><strong>JSDelivr Assets</strong>: DuckDB WASM binaries loaded automatically</li>
             <li><strong>Benefits</strong>: Fast loading, reliable access, universal compatibility</li>
         </ul>
+        
+        <h2>Plugin System</h2>
+        <p>DataPrism includes a comprehensive plugin system with the following interfaces available via CDN:</p>
+        
+        <div class="asset-list">
+            <div class="asset-item">
+                <h3>Core Plugin Classes</h3>
+                <code>DataPrismPluginSystem, PluginManager, BasePlugin</code>
+                <p>Main plugin system classes for creating and managing plugins</p>
+            </div>
+            
+            <div class="asset-item">
+                <h3>Plugin Registry</h3>
+                <code>PluginRegistry, PluginLoader, PluginUtils</code>
+                <p>Plugin discovery, loading, and validation utilities</p>
+            </div>
+            
+            <div class="asset-item">
+                <h3>Security & Resources</h3>
+                <code>SecurityManager, ResourceManager, PluginSandbox</code>
+                <p>Security controls and resource management for plugins</p>
+            </div>
+            
+            <div class="asset-item">
+                <h3>Communication</h3>
+                <code>EventBus, EventBusFactory</code>
+                <p>Event-driven communication system for plugins</p>
+            </div>
+        </div>
         
         <h2>Browser Support</h2>
         <ul>

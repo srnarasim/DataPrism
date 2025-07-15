@@ -26,7 +26,8 @@
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.28.0",
-    "apache-arrow": "^16.0.0"
+    "apache-arrow": "^16.0.0",
+    "@dataprism/plugins": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

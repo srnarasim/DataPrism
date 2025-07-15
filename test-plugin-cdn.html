@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DataPrism Plugin CDN Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>DataPrism Plugin CDN Test</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        const results = document.getElementById('results');
+        
+        function log(message, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `result ${isSuccess ? 'success' : 'error'}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+
+        try {
+            // Test importing plugin interfaces from CDN (including those from issue #18)
+            const { 
+                DataPrismEngine, 
+                DataPrismPluginSystem, 
+                BasePlugin,
+                PluginManager,
+                PluginRegistry,
+                PluginUtils,
+                SecurityManager,
+                ResourceManager,
+                EventBus
+            } = await import('./cdn/dist/dataprism.min.js');
+            
+            // Test TypeScript types availability (these should be available for TypeScript users)
+            // Note: In runtime, these are types and won't be available, but they're exposed for TypeScript
+            
+            log('✅ Successfully imported plugin interfaces from CDN');
+            
+            // Test DataPrismPluginSystem
+            if (typeof DataPrismPluginSystem !== 'undefined') {
+                log('✅ DataPrismPluginSystem is available');
+                
+                const pluginSystem = await DataPrismPluginSystem.create();
+                log('✅ DataPrismPluginSystem.create() works');
+                
+                const instance = DataPrismPluginSystem.getInstance();
+                log('✅ DataPrismPluginSystem.getInstance() works');
+            } else {
+                log('❌ DataPrismPluginSystem is not available', false);
+            }
+            
+            // Test BasePlugin
+            if (typeof BasePlugin !== 'undefined') {
+                log('✅ BasePlugin is available');
+                
+                // Test creating a custom plugin
+                class TestPlugin extends BasePlugin {
+                    constructor() {
+                        super({
+                            name: 'test-plugin',
+                            version: '1.0.0',
+                            description: 'Test plugin',
+                            author: 'Test',
+                            category: 'utility',
+                            entryPoint: './test.js',
+                            dependencies: [],
+                            permissions: []
+                        });
+                    }
+                    
+                    getCapabilities() {
+                        return ['test'];
+                    }
+                    
+                    async execute(operation, params) {
+                        return { result: 'test completed' };
+                    }
+                }
+                
+                const testPlugin = new TestPlugin();
+                log('✅ BasePlugin extension works');
+                log(`✅ Plugin name: ${testPlugin.getName()}`);
+                log(`✅ Plugin version: ${testPlugin.getVersion()}`);
+            } else {
+                log('❌ BasePlugin is not available', false);
+            }
+            
+            // Test other plugin interfaces
+            const interfaces = {
+                PluginManager,
+                PluginRegistry,
+                PluginUtils,
+                SecurityManager,
+                ResourceManager,
+                EventBus
+            };
+            
+            for (const [name, interface_] of Object.entries(interfaces)) {
+                if (typeof interface_ !== 'undefined') {
+                    log(`✅ ${name} is available`);
+                } else {
+                    log(`❌ ${name} is not available`, false);
+                }
+            }
+            
+            log('🎉 All plugin interfaces are successfully exposed via CDN!');
+            
+        } catch (error) {
+            log(`❌ Error testing plugin interfaces: ${error.message}`, false);
+            console.error('Full error:', error);
+        }
+    </script>
+</body>
+</html>

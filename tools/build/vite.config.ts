@@ -57,8 +57,7 @@ export default defineConfig(({ mode, command }) => {
             formats: ["umd", "es"],
             name: "DataPrism",
             fileName: (format) => {
-              const ext = format === "es" ? "min.js" : "umd.js";
-              return `dataprism.${ext}`;
+              return format === "es" ? "dataprism.min.js" : "dataprism.umd.js";
             },
           }
         : {
