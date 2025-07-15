@@ -11,13 +11,13 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /DataPrism/guide/getting-started
+      link: /guide/getting-started
     - theme: alt
       text: View Examples
-      link: /DataPrism/examples/
+      link: /examples/
     - theme: alt
       text: API Reference
-      link: /DataPrism/api/
+      link: /api/
 
 features:
   - icon: 🚀
@@ -58,7 +58,7 @@ npm install @dataprism/core
 ```bash [CDN]
 # Include via CDN (no installation required)
 <script type="module">
-  import { DataPrismEngine } from 'https://cdn.dataprism.dev/v1.0.0/core.min.js'
+   import { DataPrismEngine } from 'https://srnarasim.github.io/DataPrism/dataprism.min.js';
 </script>
 ```
 
