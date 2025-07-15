@@ -180,6 +180,12 @@ function createTestPage() {
       async query(sql) {
         // Simulate query execution
         await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Simulate error for invalid SQL
+        if (sql.includes('INVALID') || sql.includes('ERROR')) {
+          throw new Error('Invalid SQL query');
+        }
+        
         return {
           success: true,
           data: [{ result: 'mock_data', query: sql }],
@@ -296,10 +302,10 @@ function createTestPage() {
  * Main request handler
  */
 function handleRequest(request, response) {
-  const url = new URL(request.url, \`http://\${request.headers.host}\`);
+  const url = new URL(request.url, `http://${request.headers.host}`);
   const pathname = url.pathname;
   
-  console.log(\`[\${new Date().toISOString()}] \${request.method} \${pathname}\`);
+  console.log(`[${new Date().toISOString()}] ${request.method} ${pathname}`);
   
   // Handle CORS preflight
   if (request.method === 'OPTIONS') {
@@ -380,9 +386,9 @@ function handleRequest(request, response) {
 const server = http.createServer(handleRequest);
 
 server.listen(PORT, HOST, () => {
-  console.log(\`CI test server running at http://\${HOST}:\${PORT}\`);
-  console.log(\`Process ID: \${process.pid}\`);
-  console.log(\`Environment: \${process.env.NODE_ENV || 'development'}\`);
+  console.log(`CI test server running at http://${HOST}:${PORT}`);
+  console.log(`Process ID: ${process.pid}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 // Handle shutdown gracefully

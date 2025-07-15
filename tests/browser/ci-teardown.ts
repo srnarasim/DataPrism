@@ -24,7 +24,7 @@ async function globalTeardown(config: FullConfig) {
       timeout: config.timeout,
     },
     performance: {
-      setupDuration: process.hrtime.bigint(),
+      setupDuration: Date.now(),
       memoryUsage: process.memoryUsage(),
     },
   };
