@@ -13,6 +13,12 @@ on:
     paths:
       - 'apps/docs/**'
   workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment even if no changes detected'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   # Validate documentation before deployment
