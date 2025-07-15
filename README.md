@@ -40,7 +40,7 @@ DataPrism is available via CDN for immediate use in any web application:
 #### ESM (Recommended)
 ```html
 <script type="module">
-  import { DataPrismEngine } from 'https://dataprism.github.io/core/dataprism.min.js';
+  import { DataPrismEngine } from 'https://srnarasim.github.io/DataPrism/dataprism.min.js';
   
   const engine = new DataPrismEngine();
   await engine.initialize();
@@ -51,7 +51,7 @@ DataPrism is available via CDN for immediate use in any web application:
 
 #### UMD (Legacy Browser Support)
 ```html
-<script src="https://dataprism.github.io/core/dataprism.umd.js"></script>
+<script src="https://srnarasim.github.io/DataPrism/dataprism.umd.js"></script>
 <script>
   const engine = new DataPrism.DataPrismEngine();
   engine.initialize().then(() => {
@@ -63,8 +63,8 @@ DataPrism is available via CDN for immediate use in any web application:
 #### With Subresource Integrity (Recommended)
 ```html
 <script type="module" 
-        src="https://dataprism.github.io/core/dataprism.min.js"
-        integrity="sha384-HASH_WILL_BE_PROVIDED"
+        src="https://srnarasim.github.io/DataPrism/dataprism.min.js"
+        integrity="sha384-mgrS+8dl2k36lHb5WZdobW4o2wpj69/ZgMQqB6PJpQNHR9N7crRdI82Y2RxTmnEh"
         crossorigin="anonymous">
 </script>
 ```
@@ -73,15 +73,37 @@ DataPrism is available via CDN for immediate use in any web application:
 
 | Asset | Description | Size | Use Case |
 |-------|-------------|------|----------|
-| `dataprism.min.js` | Complete DataPrism bundle (ESM) | ~800KB | Modern applications |
-| `dataprism.umd.js` | UMD bundle for legacy browsers | ~850KB | Legacy support |
-| `orchestration.min.js` | High-level APIs only | ~200KB | When using core separately |
-| `plugin-framework.min.js` | Plugin system only | ~150KB | Plugin development |
-| `assets/*.wasm` | WebAssembly binaries | ~1.2MB | Automatically loaded |
-| `plugins/manifest.json` | Available plugins registry | ~10KB | Plugin discovery |
+| `dataprism.min.js` | Complete DataPrism bundle (ESM) | ~36KB | Modern applications |
+| `dataprism.umd.js` | UMD bundle for legacy browsers | ~29KB | Legacy support |
+| `assets/duckdb-browser-*.worker.js` | DuckDB worker scripts | ~3MB | Automatically loaded |
+| `duckdb-config.json` | DuckDB configuration | ~1KB | Hybrid deployment config |
+| `manifest.json` | Asset metadata with integrity hashes | ~2KB | Asset validation |
+
+**Note**: DuckDB WASM files (~100MB) are loaded from JSDelivr CDN for optimal performance and CDN size management. This hybrid approach provides full DuckDB functionality while keeping the main CDN bundle lightweight.
+
+#### Hybrid DuckDB Architecture
+
+DataPrism uses an intelligent hybrid loading strategy for DuckDB:
+
+- **CDN Assets** (`https://srnarasim.github.io/DataPrism/`): 
+  - DataPrism JavaScript API and orchestration layer
+  - DuckDB worker scripts for optimal browser compatibility
+  - Configuration and asset manifests
+
+- **JSDelivr Assets** (`https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@latest/dist/`):
+  - DuckDB WebAssembly binaries (automatically selected based on browser capabilities)
+  - Reliable, globally distributed CDN for large WASM files
+  - Automatic fallback and bundle selection
+
+This approach ensures:
+- ⚡ **Fast CDN loading** with minimal bundle size
+- 🔒 **Reliable DuckDB access** through battle-tested JSDelivr
+- 🌐 **Universal compatibility** with automatic bundle selection
+- 📦 **Zero configuration** - everything works out of the box
 
 ### Basic Usage
 
+#### NPM Installation
 ```typescript
 import { DataPrismEngine } from "@dataprism/core";
 
@@ -89,13 +111,14 @@ import { DataPrismEngine } from "@dataprism/core";
 const engine = new DataPrismEngine();
 await engine.initialize();
 
-// Load CSV data
-const csvData = `name,age,city
-Alice,25,New York
-Bob,30,London
-Charlie,35,Tokyo`;
+// Load data from array
+const userData = [
+  { name: 'Alice', age: 25, city: 'New York' },
+  { name: 'Bob', age: 30, city: 'London' },
+  { name: 'Charlie', age: 35, city: 'Tokyo' }
+];
 
-await engine.loadCSV(csvData, "users");
+await engine.loadData(userData, "users");
 
 // Execute SQL queries
 const result = await engine.query(`
@@ -111,6 +134,45 @@ console.log(result.data);
 //   { city: 'London', count: 1, avg_age: 30 },
 //   { city: 'Tokyo', count: 1, avg_age: 35 }
 // ]
+```
+
+#### CDN Usage
+```html
+<!DOCTYPE html>
+<html>
+<head><title>DataPrism CDN Example</title></head>
+<body>
+  <script type="module">
+    import { DataPrismEngine } from 'https://srnarasim.github.io/DataPrism/dataprism.min.js';
+    
+    async function runAnalytics() {
+      const engine = new DataPrismEngine();
+      await engine.initialize();
+      
+      // Load sample data
+      const salesData = [
+        { product: 'Laptop', sales: 1200, region: 'North' },
+        { product: 'Phone', sales: 800, region: 'South' },
+        { product: 'Tablet', sales: 600, region: 'North' }
+      ];
+      
+      await engine.loadData(salesData, 'sales');
+      
+      // Analyze data with SQL
+      const topProducts = await engine.query(`
+        SELECT product, SUM(sales) as total_sales
+        FROM sales 
+        GROUP BY product 
+        ORDER BY total_sales DESC
+      `);
+      
+      console.log('Top products:', topProducts.data);
+    }
+    
+    runAnalytics().catch(console.error);
+  </script>
+</body>
+</html>
 ```
 
 ## 🏗️ Architecture
