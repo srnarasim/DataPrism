@@ -6,13 +6,13 @@
 ```
 main (source) 
 └── gh-pages (GitHub Pages deployment)
-    ├── / (VitePress documentation)
-    └── /cdn/ (CDN assets)
+    ├── / (VitePress documentation + CDN assets)
+    └── /cdn/ (CDN assets duplicate - not accessible)
 ```
 
 ### Deployment URLs
 - **Documentation**: https://srnarasim.github.io/DataPrism/
-- **CDN Assets**: https://srnarasim.github.io/DataPrism/cdn/
+- **CDN Assets**: https://srnarasim.github.io/DataPrism/ (root level alongside docs)
 
 ## Common Tasks
 
