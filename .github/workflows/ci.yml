@@ -454,31 +454,30 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: npm install
-        
-      - name: Install demo-analytics dependencies
-        run: |
-          echo "📦 Installing demo-analytics dependencies for browser tests..."
-          cd apps/demo-analytics
-          npm install
-          cd ../..
+        run: npm ci
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
 
-      - name: Install Playwright
-        run: npx playwright install --with-deps
+      - name: Install Playwright (Chromium only for CI)
+        run: npx playwright install chromium --with-deps
 
-      - name: Run browser tests
-        run: npm run test:browser
+      - name: Run optimized browser tests
+        run: |
+          echo "🚀 Running optimized browser tests for CI..."
+          npx playwright test --config=playwright.ci.config.ts --reporter=github
+        env:
+          CI: true
+          BROWSER_TEST_CI: true
+          BROWSER_TEST_QUICK: true
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-results
+          name: playwright-ci-results
           path: |
             test-results/
             playwright-report/

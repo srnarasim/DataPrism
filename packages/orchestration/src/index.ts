@@ -1,6 +1,10 @@
 export { DataPrismEngine } from "./engine.js";
 export { DuckDBManager } from "./duckdb-manager.js";
 export { ErrorHandler } from "./error-handler.js";
+export { DependencyRegistry } from "./dependency-registry.js";
+export { ArrowLoader } from "./arrow-loader.js";
+export { DependencyErrorHandler } from "./dependency-error-handler.js";
+export { DependencyEventSystem } from "./dependency-events.js";
 
 export type {
   DataPrismConfig,
@@ -12,6 +16,28 @@ export type {
   Logger,
   LogLevel,
 } from "./types.js";
+
+export type {
+  DependencyState,
+  DependencyMetadata,
+  DependencyLoadOptions,
+  DependencyEvent,
+  DependencyEventHandler,
+} from "./dependency-registry.js";
+
+export type {
+  ArrowModule,
+} from "./arrow-loader.js";
+
+export type {
+  EnhancedError,
+} from "./dependency-error-handler.js";
+
+export type {
+  DataPrismEventType,
+  DataPrismEvent,
+  DataPrismEventHandler,
+} from "./dependency-events.js";
 
 // Version information
 export const version = "0.1.0";

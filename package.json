@@ -55,6 +55,7 @@
     "test:integration": "vitest run tests/integration/ --config vitest.config.ts",
     "test:browser": "playwright test",
     "test:browser:quick": "playwright test --config=playwright.quick.config.ts",
+    "test:browser:ci": "playwright test --config=playwright.ci.config.ts",
     "test:browser:fast": "BROWSER_TEST_WORKERS=4 playwright test",
     "test:browser:chromium": "BROWSER_TEST_QUICK=true playwright test --project=chromium",
     "test:browser:skip": "SKIP_BROWSER_TESTS=true echo 'Browser tests skipped'",

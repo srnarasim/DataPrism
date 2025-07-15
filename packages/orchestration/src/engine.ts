@@ -6,6 +6,8 @@ import {
   PerformanceMetrics,
 } from "./types.js";
 import { ErrorHandler } from "./error-handler.js";
+import { DependencyRegistry } from "./dependency-registry.js";
+import { ArrowLoader } from "./arrow-loader.js";
 
 // WASM module will be available after build
 interface WasmModule {
@@ -23,6 +25,8 @@ export class DataPrismEngine {
   private initialized = false;
   private startTime = Date.now();
   private errorHandler = ErrorHandler.getInstance();
+  private dependencyRegistry = DependencyRegistry.getInstance();
+  private arrowLoader = ArrowLoader.getInstance();
   private metrics: PerformanceMetrics = {
     queryCount: 0,
     totalExecutionTime: 0,
@@ -45,24 +49,49 @@ export class DataPrismEngine {
     if (this.initialized) return;
 
     try {
-      // Initialize DuckDB first
-      await this.duckdb.initialize();
-      this.log("info", "DuckDB initialized successfully");
+      // Initialize dependencies in parallel for better performance
+      const initPromises = [];
 
-      // Try to initialize WASM module if available
-      try {
-        await this.initializeWasm();
-        this.log("info", "WASM module initialized successfully");
-      } catch (wasmError) {
-        this.log(
-          "warn",
-          "WASM module not available, continuing without WASM optimizations",
+      // Initialize DuckDB
+      initPromises.push(
+        this.dependencyRegistry.loadDependency(
+          "duckdb",
+          () => this.duckdb.initialize(),
+          { timeout: 30000, maxRetries: 3 }
+        )
+      );
+
+      // Initialize Arrow
+      initPromises.push(
+        this.arrowLoader.loadArrow().catch(error => {
+          this.log("warn", `Arrow initialization failed: ${error.message}`);
+          return null;
+        })
+      );
+
+      // Initialize WASM module if available
+      if (this.config.enableWasmOptimizations) {
+        initPromises.push(
+          this.dependencyRegistry.loadDependency(
+            "wasm-core",
+            () => this.initializeWasm(),
+            { timeout: 20000, maxRetries: 2 }
+          ).catch(error => {
+            this.log("warn", `WASM initialization failed: ${error.message}`);
+            this.config.enableWasmOptimizations = false;
+            return null;
+          })
         );
-        this.config.enableWasmOptimizations = false;
       }
+
+      // Wait for all dependencies to load
+      await Promise.allSettled(initPromises);
 
       this.initialized = true;
       this.log("info", "DataPrism Engine initialized successfully");
+      
+      // Log dependency status
+      this.logDependencyStatus();
     } catch (error) {
       this.errorHandler.handleError(error, "orchestration");
       throw error;
@@ -241,6 +270,8 @@ export class DataPrismEngine {
       duckdbConnected: this.duckdb.isInitialized(),
       memoryUsage: this.getMemoryUsage(),
       uptime: Date.now() - this.startTime,
+      dependencies: this.getDependencyStatus(),
+      dependencyHealth: this.getDependencyHealth(),
     };
   }
 
@@ -269,11 +300,92 @@ export class DataPrismEngine {
     }
   }
 
+  async waitForReady(dependencies?: string[], timeoutMs: number = 30000): Promise<void> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    try {
+      await this.dependencyRegistry.waitForReady(dependencies, timeoutMs);
+      this.log("info", "All dependencies are ready");
+    } catch (error) {
+      const healthStatus = this.dependencyRegistry.getHealthStatus();
+      this.log("error", `Dependency readiness check failed. Health: ${healthStatus.healthScore}%`);
+      throw error;
+    }
+  }
+
+  async waitForDuckDB(timeoutMs: number = 30000): Promise<void> {
+    await this.dependencyRegistry.waitForDependency("duckdb", timeoutMs);
+  }
+
+  async waitForArrow(timeoutMs: number = 30000): Promise<void> {
+    await this.arrowLoader.waitForArrow(timeoutMs);
+  }
+
+  async waitForWasm(timeoutMs: number = 20000): Promise<void> {
+    if (this.config.enableWasmOptimizations) {
+      await this.dependencyRegistry.waitForDependency("wasm-core", timeoutMs);
+    }
+  }
+
+  async preloadDependencies(dependencies: string[] = []): Promise<void> {
+    const targetDeps = dependencies.length > 0 ? dependencies : ["duckdb", "apache-arrow"];
+    
+    if (this.config.enableWasmOptimizations) {
+      targetDeps.push("wasm-core");
+    }
+
+    try {
+      await this.dependencyRegistry.preloadDependencies(targetDeps);
+      this.log("info", `Preloaded dependencies: ${targetDeps.join(", ")}`);
+    } catch (error) {
+      this.log("warn", `Failed to preload some dependencies: ${error}`);
+    }
+  }
+
+  isReady(): boolean {
+    return this.initialized && this.dependencyRegistry.isDependencyReady("duckdb");
+  }
+
+  getDependencyStatus(): {
+    duckdb: boolean;
+    arrow: boolean;
+    wasm: boolean;
+    overall: boolean;
+  } {
+    return {
+      duckdb: this.dependencyRegistry.isDependencyReady("duckdb"),
+      arrow: this.arrowLoader.isArrowReady(),
+      wasm: this.config.enableWasmOptimizations ? 
+        this.dependencyRegistry.isDependencyReady("wasm-core") : true,
+      overall: this.isReady(),
+    };
+  }
+
+  getDependencyHealth(): any {
+    return this.dependencyRegistry.getHealthStatus();
+  }
+
+  private logDependencyStatus(): void {
+    const status = this.getDependencyStatus();
+    const health = this.getDependencyHealth();
+    
+    this.log("info", `Dependency Status - DuckDB: ${status.duckdb}, Arrow: ${status.arrow}, WASM: ${status.wasm}`);
+    this.log("info", `Overall Health Score: ${health.healthScore}%`);
+    
+    if (health.errorCount > 0) {
+      const failedDeps = this.dependencyRegistry.getFailedDependencies();
+      this.log("warn", `Failed dependencies: ${failedDeps.join(", ")}`);
+    }
+  }
+
   async close(): Promise<void> {
     await this.duckdb.close();
     this.wasmEngine = null;
     this.wasmModule = null;
     this.initialized = false;
+    this.dependencyRegistry.clearAll();
     this.log("info", "DataPrism Engine closed");
   }
 }

@@ -18,6 +18,18 @@ export interface EngineStatus {
   duckdbConnected: boolean;
   memoryUsage: number;
   uptime: number;
+  dependencies?: {
+    duckdb: boolean;
+    arrow: boolean;
+    wasm: boolean;
+    overall: boolean;
+  };
+  dependencyHealth?: {
+    totalDependencies: number;
+    readyCount: number;
+    errorCount: number;
+    healthScore: number;
+  };
 }
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
@@ -49,5 +61,12 @@ export interface DataPrismConfig {
   duckdbConfig?: {
     maxThreads?: number;
     maxMemory?: string;
+  };
+  dependencyConfig?: {
+    timeoutMs?: number;
+    maxRetries?: number;
+    retryDelay?: number;
+    preloadDependencies?: boolean;
+    enableProgressEvents?: boolean;
   };
 }
