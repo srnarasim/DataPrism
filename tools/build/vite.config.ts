@@ -54,10 +54,10 @@ export default defineConfig(({ mode, command }) => {
       lib: isCDN
         ? {
             entry: resolve(__dirname, "../../packages/orchestration/src/index.ts"),
-            formats: ["umd", "es"],
+            formats: ["es"],
             name: "DataPrism",
             fileName: (format) => {
-              return format === "es" ? "dataprism.min.js" : "dataprism.umd.js";
+              return "dataprism.min.js";
             },
           }
         : {

@@ -35,6 +35,8 @@
     "build:demo": "cd apps/demo-analytics && npm install && npm run build",
     "build:docs": "cd apps/docs && npm install && npm run build",
     "build:cdn": "vite build --config tools/build/vite.config.ts --mode cdn",
+    "build:cdn-plugins": "cd packages/plugins/out-of-box && npm run build:browser && cd ../../../ && node tools/build/copy-plugins-to-cdn.js",
+    "build:cdn-complete": "npm run build:cdn && npm run build:cdn-plugins",
     "build:release": "npm run clean && npm run build:all && npm run build:cdn && npm run size-check",
     "post-build:core": "node tools/scripts/post-build-core.js",
     "deploy:cdn": "node tools/deployment/cli-minimal.cjs deploy",

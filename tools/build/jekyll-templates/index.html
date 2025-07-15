@@ -97,13 +97,13 @@ layout: null
             <div class="asset-item">
                 <h3>Core Bundle (ES Module)</h3>
                 <code>https://srnarasim.github.io/DataPrism/dataprism.min.js</code>
-                <p>Minified ES module build for modern browsers (~36KB)</p>
+                <p>Core DataPrism engine with plugin framework (~119KB)</p>
             </div>
             
             <div class="asset-item">
-                <h3>UMD Bundle</h3>
-                <code>https://srnarasim.github.io/DataPrism/dataprism.umd.js</code>
-                <p>Universal Module Definition build for broader compatibility (~29KB)</p>
+                <h3>Out-of-Box Plugins Bundle</h3>
+                <code>https://srnarasim.github.io/DataPrism/dataprism-plugins.min.js</code>
+                <p>Production-ready plugins: Charts, CSV Import, Clustering, Performance Monitor (~232KB)</p>
             </div>
             
             <div class="asset-item">
@@ -140,7 +140,34 @@ layout: null
 &lt;/script&gt;</code>
         </div>
         
-        <h3>Plugin System Usage</h3>
+        <h3>Out-of-Box Plugins Usage</h3>
+        <div class="usage-example">
+            <code>&lt;script type="module"&gt;
+  import { DataPrismEngine } from "https://srnarasim.github.io/DataPrism/dataprism.min.js";
+  import { 
+    createVisualizationPlugin,
+    createIntegrationPlugin,
+    createProcessingPlugin,
+    createUtilityPlugin
+  } from "https://srnarasim.github.io/DataPrism/dataprism-plugins.min.js";
+  
+  // Initialize engine
+  const engine = new DataPrismEngine();
+  await engine.initialize();
+  
+  // Use ready-made plugins
+  const chartsPlugin = await createVisualizationPlugin("observable-charts");
+  const csvPlugin = await createIntegrationPlugin("csv-importer");
+  const clusteringPlugin = await createProcessingPlugin("semantic-clustering");
+  const monitorPlugin = await createUtilityPlugin("performance-monitor");
+  
+  // Import and visualize data
+  const data = await csvPlugin.execute("import", { file: myFile });
+  await chartsPlugin.render(container, data, { type: "bar" });
+&lt;/script&gt;</code>
+        </div>
+        
+        <h3>Custom Plugin Development</h3>
         <div class="usage-example">
             <code>&lt;script type="module"&gt;
   import { 
