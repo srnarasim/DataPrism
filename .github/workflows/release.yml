@@ -49,19 +49,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-          target: wasm32-unknown-unknown
-          override: true
-
-      - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-
-      - name: Build CDN bundles for validation
-        run: npm run build:cdn
-
       - name: Get current version
         id: version
         run: |

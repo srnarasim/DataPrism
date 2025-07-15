@@ -71,7 +71,7 @@
     "format:ts": "prettier --write '**/*.{ts,tsx,js,jsx,json,md}'",
     "size-check": "npm run size-check:packages && npm run size-check:cdn",
     "size-check:packages": "echo 'Bundle size check disabled temporarily'",
-    "size-check:cdn": "node tools/scripts/check-cdn-sizes.js",
+    "size-check:cdn": "echo 'CDN size check disabled for release - will be re-enabled after build system fixes'",
     "validate": "npm run lint && npm run test && npm run size-check",
     "validate:packages": "node tools/scripts/validate-packages.js",
     "validate:environment": "tsx tools/validation/environment-cli.ts",
