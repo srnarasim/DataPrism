@@ -4,7 +4,7 @@ export default defineConfig({
   title: 'DataPrism Documentation',
   description: 'WebAssembly-powered browser analytics engine with DuckDB and LLM integration',
   base: '/DataPrism/',
-  outDir: '../../../docs-build',
+  outDir: './.vitepress/dist',
   ignoreDeadLinks: true,
   
   head: [
@@ -187,5 +187,8 @@ export default defineConfig({
     define: {
       __VUE_OPTIONS_API__: false
     }
-  }
+  },
+
+  // Clean URLs configuration
+  cleanUrls: true
 })
