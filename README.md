@@ -1,8 +1,8 @@
 # DataPrism Core
 
 [![npm version](https://badge.fury.io/js/@dataprism%2Fcore.svg)](https://badge.fury.io/js/@dataprism%2Fcore)
-[![CI Status](https://github.com/dataprism/core/workflows/CI/badge.svg)](https://github.com/dataprism/core/actions)
-[![Security Status](https://github.com/dataprism/core/workflows/Security/badge.svg)](https://github.com/dataprism/core/actions)
+[![CI Status](https://github.com/srnarasim/DataPrism/workflows/Continuous%20Integration/badge.svg)](https://github.com/srnarasim/DataPrism/actions)
+[![Security Status](https://github.com/srnarasim/DataPrism/workflows/Security%20Scanning/badge.svg)](https://github.com/srnarasim/DataPrism/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 > High-performance browser-based analytics engine powered by WebAssembly and DuckDB

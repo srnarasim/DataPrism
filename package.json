@@ -14,10 +14,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dataprism/core.git"
+    "url": "https://github.com/srnarasim/DataPrism.git"
   },
   "bugs": {
-    "url": "https://github.com/dataprism/core/issues"
+    "url": "https://github.com/srnarasim/DataPrism/issues"
   },
   "homepage": "https://dataprism.dev",
   "scripts": {
