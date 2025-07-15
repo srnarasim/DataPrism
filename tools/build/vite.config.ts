@@ -4,6 +4,7 @@ import { createHash } from "crypto";
 import { wasmPlugin } from "./wasm-plugin.js";
 import { CDNBuildConfig, DEFAULT_CDN_CONFIG, SIZE_LIMITS } from "./types.js";
 import { manifestPlugin } from "./manifest-plugin.js";
+import { duckdbCDNPlugin } from "./duckdb-cdn-plugin.js";
 
 export default defineConfig(({ mode, command }) => {
   const isProduction = mode === "production";
@@ -34,7 +35,14 @@ export default defineConfig(({ mode, command }) => {
         outDir: "assets",
         compression: cdnConfig.optimization.compression,
       }),
-      ...(isCDN ? [manifestPlugin({ config: cdnConfig })] : []),
+      ...(isCDN ? [
+        manifestPlugin({ config: cdnConfig }),
+        duckdbCDNPlugin({
+          outDir: "assets",
+          generateIntegrity: cdnConfig.assets.integrity,
+          baseUrl: cdnConfig.assets.baseUrl,
+        })
+      ] : []),
     ],
     build: {
       target: "es2020",
@@ -74,7 +82,7 @@ export default defineConfig(({ mode, command }) => {
       reportCompressedSize: true,
       rollupOptions: {
         external: isCDN
-          ? ["@duckdb/duckdb-wasm", "apache-arrow"]
+          ? ["apache-arrow"]
           : [
               "@dataprism/core",
               "@dataprism/plugin-framework",
@@ -89,7 +97,6 @@ export default defineConfig(({ mode, command }) => {
                 "@dataprism/core": "DataPrismCore",
                 "@dataprism/plugin-framework": "DataPrismPluginFramework",
                 "@dataprism/orchestration": "DataPrismOrchestration",
-                "@duckdb/duckdb-wasm": "DuckDB",
                 "apache-arrow": "Arrow",
               }
             : undefined,

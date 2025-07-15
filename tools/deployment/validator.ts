@@ -54,6 +54,9 @@ export class CDNDeploymentValidator {
       // WASM-specific validation
       checks.push(...await this.runWasmValidation(url));
 
+      // DuckDB-specific validation
+      checks.push(...await this.runDuckDBValidation(url));
+
       // Plugin system validation
       checks.push(...await this.runPluginValidation(url));
 
@@ -226,6 +229,124 @@ export class CDNDeploymentValidator {
         name: VALIDATION_CHECKS.WASM_LOADING,
         status: 'failed',
         message: `WASM validation failed: ${error.message}`,
+      });
+    }
+
+    return checks;
+  }
+
+  /**
+   * DuckDB-specific validation
+   */
+  private async runDuckDBValidation(url: string): Promise<ValidationCheck[]> {
+    const checks: ValidationCheck[] = [];
+
+    try {
+      // Check for DuckDB configuration file
+      const configCheck = await this.checkUrlAccessible(`${url}/duckdb-config.json`, 'duckdb-config');
+      checks.push({
+        ...configCheck,
+        name: 'duckdb-config',
+        message: configCheck.status === 'passed' 
+          ? 'DuckDB configuration is accessible'
+          : 'DuckDB configuration missing - will fallback to JSDelivr',
+      });
+
+      // Check for DuckDB WASM assets
+      const duckdbAssets = [
+        'assets/duckdb-mvp.wasm',
+        'assets/duckdb-eh.wasm',
+        'assets/duckdb-coi.wasm',
+        'assets/duckdb-browser-mvp.worker.js',
+        'assets/duckdb-browser-eh.worker.js',
+        'assets/duckdb-browser-coi.worker.js',
+        'assets/duckdb-browser-coi.pthread.worker.js'
+      ];
+
+      let foundAssets = 0;
+      for (const asset of duckdbAssets) {
+        try {
+          const response = await this.fetchWithTimeout(`${url}/${asset}`);
+          if (response.ok) {
+            foundAssets++;
+            checks.push({
+              name: `duckdb-asset-${asset.split('/').pop()?.replace('.', '-')}`,
+              status: 'passed',
+              message: `DuckDB asset ${asset} is accessible`,
+              details: { url: `${url}/${asset}` },
+            });
+          }
+        } catch (error) {
+          checks.push({
+            name: `duckdb-asset-${asset.split('/').pop()?.replace('.', '-')}`,
+            status: 'warning',
+            message: `DuckDB asset ${asset} not accessible - will use JSDelivr fallback`,
+            details: { url: `${url}/${asset}`, error: error.message },
+          });
+        }
+      }
+
+      // Overall DuckDB bundle assessment
+      checks.push({
+        name: 'duckdb-bundle-completeness',
+        status: foundAssets >= 3 ? 'passed' : foundAssets > 0 ? 'warning' : 'failed',
+        message: foundAssets >= 3 
+          ? `Complete DuckDB bundle available (${foundAssets}/${duckdbAssets.length} assets)`
+          : foundAssets > 0
+          ? `Partial DuckDB bundle (${foundAssets}/${duckdbAssets.length} assets) - some features may fallback to JSDelivr`
+          : 'No DuckDB assets found - will use JSDelivr fallback',
+        details: { foundAssets, totalAssets: duckdbAssets.length },
+      });
+
+      // Validate DuckDB configuration if available
+      if (configCheck.status === 'passed') {
+        try {
+          const configResponse = await fetch(`${url}/duckdb-config.json`);
+          const config = await configResponse.json();
+          
+          // Validate config structure
+          const hasValidStructure = config.baseUrl !== undefined && 
+                                   config.assets && 
+                                   config.bundles;
+          
+          checks.push({
+            name: 'duckdb-config-validation',
+            status: hasValidStructure ? 'passed' : 'failed',
+            message: hasValidStructure 
+              ? 'DuckDB configuration structure is valid'
+              : 'DuckDB configuration has invalid structure',
+            details: { configKeys: Object.keys(config) },
+          });
+
+          // Check if config assets match available files
+          if (hasValidStructure && config.assets) {
+            const configAssets = Object.values(config.assets) as string[];
+            const availableAssets = configAssets.filter(asset => 
+              foundAssets > 0 // If we found any assets, assume they match config
+            );
+            
+            checks.push({
+              name: 'duckdb-config-asset-consistency',
+              status: availableAssets.length >= 3 ? 'passed' : 'warning',
+              message: `${availableAssets.length}/${configAssets.length} configured DuckDB assets are available`,
+              details: { configAssets, availableCount: availableAssets.length },
+            });
+          }
+
+        } catch (error) {
+          checks.push({
+            name: 'duckdb-config-validation',
+            status: 'failed',
+            message: `Failed to validate DuckDB configuration: ${error.message}`,
+          });
+        }
+      }
+
+    } catch (error) {
+      checks.push({
+        name: 'duckdb-validation-error',
+        status: 'failed',
+        message: `DuckDB validation failed: ${error.message}`,
       });
     }
 

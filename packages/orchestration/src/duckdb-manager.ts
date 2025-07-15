@@ -1,32 +1,25 @@
-import * as duckdb from "@duckdb/duckdb-wasm";
 import { AsyncDuckDB, AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
 import { QueryMetadata, QueryResult, DataPrismError } from "./types.js";
 import { ErrorHandler } from "./error-handler.js";
+import { DuckDBCDNLoader } from "./duckdb-cdn-loader.js";
 
 export class DuckDBManager {
   private db: AsyncDuckDB | null = null;
   private connection: AsyncDuckDBConnection | null = null;
   private initialized = false;
   private errorHandler = ErrorHandler.getInstance();
+  private cdnLoader: DuckDBCDNLoader;
+
+  constructor(cdnBaseUrl?: string) {
+    this.cdnLoader = new DuckDBCDNLoader(cdnBaseUrl);
+  }
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
     try {
-      const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
-      const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
-
-      const worker_url = URL.createObjectURL(
-        new Blob([`importScripts("${bundle.mainWorker}");`], {
-          type: "text/javascript",
-        }),
-      );
-
-      const worker = new Worker(worker_url);
-      const logger = new duckdb.ConsoleLogger();
-      this.db = new duckdb.AsyncDuckDB(logger, worker);
-
-      await this.db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+      // Use CDN loader which handles both CDN and JSDelivr fallback
+      this.db = await this.cdnLoader.createDuckDB();
       this.connection = await this.db.connect();
 
       this.initialized = true;
