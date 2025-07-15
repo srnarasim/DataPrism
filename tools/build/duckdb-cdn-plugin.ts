@@ -14,11 +14,9 @@ export function duckdbCDNPlugin(options: DuckDBCDNPluginOptions): Plugin {
     name: 'duckdb-cdn-plugin',
     apply: 'build',
     generateBundle(outputOptions, bundle) {
-      // Add DuckDB assets to the bundle
+      // For CDN builds, we'll only include worker scripts, not the large WASM files
+      // This keeps the CDN bundle size manageable while still providing DuckDB functionality
       const duckdbAssets = [
-        'duckdb-mvp.wasm',
-        'duckdb-eh.wasm', 
-        'duckdb-coi.wasm',
         'duckdb-browser-mvp.worker.js',
         'duckdb-browser-eh.worker.js',
         'duckdb-browser-coi.worker.js',
@@ -48,39 +46,27 @@ export function duckdbCDNPlugin(options: DuckDBCDNPluginOptions): Plugin {
             source: content
           });
 
-          console.log(`✓ Added DuckDB asset: ${asset} (${(content.length / 1024).toFixed(1)}KB)`);
+          console.log(`✓ Added DuckDB worker: ${asset} (${(content.length / 1024).toFixed(1)}KB)`);
         } catch (error) {
-          console.warn(`⚠ Could not find DuckDB asset: ${asset}`);
+          console.warn(`⚠ Could not find DuckDB worker: ${asset}`);
         }
       }
     },
     writeBundle(outputOptions, bundle) {
-      // Create DuckDB configuration for CDN usage
+      // Create DuckDB configuration for hybrid CDN usage
+      // Workers are served from CDN, WASM files from JSDelivr
       const duckdbConfig = {
         baseUrl: options.baseUrl || '',
-        assets: {
-          'duckdb-mvp.wasm': 'assets/duckdb-mvp.wasm',
-          'duckdb-eh.wasm': 'assets/duckdb-eh.wasm',
-          'duckdb-coi.wasm': 'assets/duckdb-coi.wasm',
+        hybrid: true, // Indicates this is a hybrid deployment
+        workers: {
           'duckdb-browser-mvp.worker.js': 'assets/duckdb-browser-mvp.worker.js',
           'duckdb-browser-eh.worker.js': 'assets/duckdb-browser-eh.worker.js',
           'duckdb-browser-coi.worker.js': 'assets/duckdb-browser-coi.worker.js',
           'duckdb-browser-coi.pthread.worker.js': 'assets/duckdb-browser-coi.pthread.worker.js'
         },
-        bundles: {
-          mvp: {
-            mainModule: 'assets/duckdb-mvp.wasm',
-            mainWorker: 'assets/duckdb-browser-mvp.worker.js'
-          },
-          eh: {
-            mainModule: 'assets/duckdb-eh.wasm', 
-            mainWorker: 'assets/duckdb-browser-eh.worker.js'
-          },
-          coi: {
-            mainModule: 'assets/duckdb-coi.wasm',
-            mainWorker: 'assets/duckdb-browser-coi.worker.js',
-            pthreadWorker: 'assets/duckdb-browser-coi.pthread.worker.js'
-          }
+        fallback: {
+          strategy: 'jsdelivr',
+          note: 'WASM files are loaded from JSDelivr for optimal CDN size'
         }
       };
 

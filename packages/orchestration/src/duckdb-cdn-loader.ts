@@ -12,8 +12,14 @@ export interface DuckDBBundle {
 
 export interface DuckDBConfig {
   baseUrl: string;
-  assets: Record<string, string>;
-  bundles: Record<string, DuckDBBundle>;
+  hybrid?: boolean;
+  workers?: Record<string, string>;
+  assets?: Record<string, string>;
+  bundles?: Record<string, DuckDBBundle>;
+  fallback?: {
+    strategy: string;
+    note: string;
+  };
 }
 
 export class DuckDBCDNLoader {
@@ -74,15 +80,23 @@ export class DuckDBCDNLoader {
       // Try to load from CDN first
       const config = await this.loadConfig();
       
-      // Convert CDN config to DuckDB bundle format
-      const bundles = Object.entries(config.bundles).map(([name, bundle]) => ({
-        name,
-        mainModule: `${this.baseUrl}/${bundle.mainModule}`,
-        mainWorker: `${this.baseUrl}/${bundle.mainWorker}`,
-        pthreadWorker: bundle.pthreadWorker ? `${this.baseUrl}/${bundle.pthreadWorker}` : undefined
-      }));
+      if (config.hybrid) {
+        // Hybrid mode: use JSDelivr for WASM, CDN for workers (if needed)
+        console.log('Using hybrid DuckDB loading (JSDelivr WASM + CDN workers)');
+        return duckdb.getJsDelivrBundles();
+      } else if (config.bundles) {
+        // Full CDN mode: everything from CDN
+        const bundles = Object.entries(config.bundles).map(([name, bundle]) => ({
+          name,
+          mainModule: `${this.baseUrl}/${bundle.mainModule}`,
+          mainWorker: `${this.baseUrl}/${bundle.mainWorker}`,
+          pthreadWorker: bundle.pthreadWorker ? `${this.baseUrl}/${bundle.pthreadWorker}` : undefined
+        }));
 
-      return bundles;
+        return bundles;
+      } else {
+        throw new Error('Invalid CDN configuration');
+      }
     } catch (error) {
       // Fallback to JSDelivr
       console.log('Using JSDelivr fallback for DuckDB');

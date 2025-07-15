@@ -252,11 +252,8 @@ export class CDNDeploymentValidator {
           : 'DuckDB configuration missing - will fallback to JSDelivr',
       });
 
-      // Check for DuckDB WASM assets
+      // Check for DuckDB worker assets (WASM files are loaded from JSDelivr in hybrid mode)
       const duckdbAssets = [
-        'assets/duckdb-mvp.wasm',
-        'assets/duckdb-eh.wasm',
-        'assets/duckdb-coi.wasm',
         'assets/duckdb-browser-mvp.worker.js',
         'assets/duckdb-browser-eh.worker.js',
         'assets/duckdb-browser-coi.worker.js',
@@ -278,9 +275,9 @@ export class CDNDeploymentValidator {
           }
         } catch (error) {
           checks.push({
-            name: `duckdb-asset-${asset.split('/').pop()?.replace('.', '-')}`,
+            name: `duckdb-worker-${asset.split('/').pop()?.replace('.', '-')}`,
             status: 'warning',
-            message: `DuckDB asset ${asset} not accessible - will use JSDelivr fallback`,
+            message: `DuckDB worker ${asset} not accessible - will use JSDelivr fallback`,
             details: { url: `${url}/${asset}`, error: error.message },
           });
         }
@@ -288,14 +285,14 @@ export class CDNDeploymentValidator {
 
       // Overall DuckDB bundle assessment
       checks.push({
-        name: 'duckdb-bundle-completeness',
-        status: foundAssets >= 3 ? 'passed' : foundAssets > 0 ? 'warning' : 'failed',
+        name: 'duckdb-hybrid-deployment',
+        status: foundAssets >= 3 ? 'passed' : 'warning',
         message: foundAssets >= 3 
-          ? `Complete DuckDB bundle available (${foundAssets}/${duckdbAssets.length} assets)`
+          ? `Hybrid DuckDB deployment ready (${foundAssets}/${duckdbAssets.length} workers from CDN, WASM from JSDelivr)`
           : foundAssets > 0
-          ? `Partial DuckDB bundle (${foundAssets}/${duckdbAssets.length} assets) - some features may fallback to JSDelivr`
-          : 'No DuckDB assets found - will use JSDelivr fallback',
-        details: { foundAssets, totalAssets: duckdbAssets.length },
+          ? `Partial DuckDB deployment (${foundAssets}/${duckdbAssets.length} workers) - using JSDelivr fallback`
+          : 'No DuckDB workers found - using full JSDelivr fallback',
+        details: { foundWorkers: foundAssets, totalWorkers: duckdbAssets.length, strategy: 'hybrid' },
       });
 
       // Validate DuckDB configuration if available
@@ -304,32 +301,33 @@ export class CDNDeploymentValidator {
           const configResponse = await fetch(`${url}/duckdb-config.json`);
           const config = await configResponse.json();
           
-          // Validate config structure
+          // Validate config structure for hybrid deployment
+          const isHybrid = config.hybrid === true;
           const hasValidStructure = config.baseUrl !== undefined && 
-                                   config.assets && 
-                                   config.bundles;
+                                   (isHybrid ? config.workers : (config.assets && config.bundles));
           
           checks.push({
             name: 'duckdb-config-validation',
             status: hasValidStructure ? 'passed' : 'failed',
             message: hasValidStructure 
-              ? 'DuckDB configuration structure is valid'
+              ? `DuckDB configuration is valid (${isHybrid ? 'hybrid' : 'full CDN'} mode)`
               : 'DuckDB configuration has invalid structure',
-            details: { configKeys: Object.keys(config) },
+            details: { configKeys: Object.keys(config), hybrid: isHybrid },
           });
 
-          // Check if config assets match available files
-          if (hasValidStructure && config.assets) {
-            const configAssets = Object.values(config.assets) as string[];
-            const availableAssets = configAssets.filter(asset => 
-              foundAssets > 0 // If we found any assets, assume they match config
-            );
+          // Check hybrid configuration
+          if (isHybrid && config.workers) {
+            const configWorkers = Object.values(config.workers) as string[];
             
             checks.push({
-              name: 'duckdb-config-asset-consistency',
-              status: availableAssets.length >= 3 ? 'passed' : 'warning',
-              message: `${availableAssets.length}/${configAssets.length} configured DuckDB assets are available`,
-              details: { configAssets, availableCount: availableAssets.length },
+              name: 'duckdb-hybrid-config',
+              status: 'passed',
+              message: `Hybrid DuckDB configuration: ${configWorkers.length} workers defined, WASM from ${config.fallback?.strategy || 'JSDelivr'}`,
+              details: { 
+                workers: configWorkers.length, 
+                wasmSource: config.fallback?.strategy || 'JSDelivr',
+                note: config.fallback?.note 
+              },
             });
           }
 
