@@ -5,13 +5,14 @@
 ### Branch Structure
 ```
 main (source) 
-├── docs (VitePress documentation)
-└── gh-pages (CDN assets)
+└── gh-pages (GitHub Pages deployment)
+    ├── / (VitePress documentation)
+    └── /cdn/ (CDN assets)
 ```
 
 ### Deployment URLs
 - **Documentation**: https://srnarasim.github.io/DataPrism/
-- **CDN Assets**: https://srnarasim.github.io/DataPrism/ (when CDN mode active)
+- **CDN Assets**: https://srnarasim.github.io/DataPrism/cdn/
 
 ## Common Tasks
 
