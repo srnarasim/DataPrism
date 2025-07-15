@@ -5,7 +5,19 @@ export default defineConfig({
   description: 'WebAssembly-powered browser analytics engine with DuckDB and LLM integration',
   base: '/DataPrism/',
   outDir: './.vitepress/dist',
-  ignoreDeadLinks: true,
+  ignoreDeadLinks: false,
+  
+  // Build configuration
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['vue'],
+          'theme': ['vitepress']
+        }
+      }
+    }
+  },
   
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/DataPrism/docs/favicon.svg' }],
