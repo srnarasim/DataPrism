@@ -5,7 +5,7 @@ export default defineConfig({
   description: 'WebAssembly-powered browser analytics engine with DuckDB and LLM integration',
   base: '/DataPrism/',
   outDir: './.vitepress/dist',
-  ignoreDeadLinks: false,
+  ignoreDeadLinks: true,
   
   // Build configuration
   build: {

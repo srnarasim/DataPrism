@@ -26,6 +26,7 @@ class DocumentationValidator {
     
     this.printResults();
     
+    // Only fail on errors, not warnings
     return this.errors.length === 0;
   }
 

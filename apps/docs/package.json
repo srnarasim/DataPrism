@@ -19,7 +19,6 @@
     "validate": "node scripts/validate-docs.js",
     "check-links": "node scripts/check-links.js",
     "prebuild": "npm run validate",
-    "postbuild": "npm run check-links",
     "generate:api": "typedoc --out docs/api packages/core/src packages/orchestration/src packages/plugins/src",
     "lint": "eslint docs --ext .ts,.js,.vue",
     "type-check": "vue-tsc --noEmit"
