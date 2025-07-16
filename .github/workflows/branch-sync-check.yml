@@ -8,6 +8,9 @@ on:
 jobs:
   check-sync-status:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,40 +22,40 @@ jobs:
           echo "## Branch Sync Status Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Check docs branch sync
-          DOCS_BEHIND=$(git rev-list --count origin/docs..origin/main -- apps/docs/)
-          echo "| Branch | Status | Commits Behind | Notes |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|--------|----------------|-------|" >> $GITHUB_STEP_SUMMARY
+          # Check documentation sync (docs deployed to gh-pages)
+          DOCS_BEHIND=$(git rev-list --count origin/gh-pages..origin/main -- apps/docs/)
+          echo "| Component | Status | Commits Behind | Notes |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|----------------|-------|" >> $GITHUB_STEP_SUMMARY
           
           if [ $DOCS_BEHIND -eq 0 ]; then
-            echo "| docs | ✅ Synced | 0 | Documentation up to date |" >> $GITHUB_STEP_SUMMARY
+            echo "| Documentation | ✅ Synced | 0 | Documentation up to date |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| docs | ⚠️ Behind | $DOCS_BEHIND | Documentation needs update |" >> $GITHUB_STEP_SUMMARY
+            echo "| Documentation | ⚠️ Behind | $DOCS_BEHIND | Documentation needs update |" >> $GITHUB_STEP_SUMMARY
           fi
           
-          # Check gh-pages branch sync
+          # Check CDN assets sync
           GHPAGES_BEHIND=$(git rev-list --count origin/gh-pages..origin/main -- packages/ tools/build/ cdn/)
           if [ $GHPAGES_BEHIND -eq 0 ]; then
-            echo "| gh-pages | ✅ Synced | 0 | CDN assets up to date |" >> $GITHUB_STEP_SUMMARY
+            echo "| CDN Assets | ✅ Synced | 0 | CDN assets up to date |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| gh-pages | ⚠️ Behind | $GHPAGES_BEHIND | CDN assets need update |" >> $GITHUB_STEP_SUMMARY
+            echo "| CDN Assets | ⚠️ Behind | $GHPAGES_BEHIND | CDN assets need update |" >> $GITHUB_STEP_SUMMARY
           fi
           
           # Check last deployment times
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Last Deployment Times" >> $GITHUB_STEP_SUMMARY
-          echo "- **Documentation**: $(git log -1 --format='%ci' origin/docs)" >> $GITHUB_STEP_SUMMARY
-          echo "- **CDN Assets**: $(git log -1 --format='%ci' origin/gh-pages)" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub Pages**: $(git log -1 --format='%ci' origin/gh-pages)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Main Branch**: $(git log -1 --format='%ci' origin/main)" >> $GITHUB_STEP_SUMMARY
           
-          # Auto-trigger deployments if needed
+          # Note: Auto-triggering disabled due to permission requirements
           if [ $DOCS_BEHIND -gt 0 ]; then
-            echo "🔄 Triggering documentation deployment..." >> $GITHUB_STEP_SUMMARY
-            gh workflow run deploy-docs.yml --repo ${{ github.repository }}
+            echo "📝 **Action Required**: Documentation deployment needed" >> $GITHUB_STEP_SUMMARY
+            echo "Run: \`gh workflow run deploy-docs.yml\`" >> $GITHUB_STEP_SUMMARY
           fi
           
           if [ $GHPAGES_BEHIND -gt 0 ]; then
-            echo "🔄 Triggering CDN deployment..." >> $GITHUB_STEP_SUMMARY
-            gh workflow run cdn-deploy.yml --repo ${{ github.repository }}
+            echo "📦 **Action Required**: CDN deployment needed" >> $GITHUB_STEP_SUMMARY  
+            echo "Run: \`gh workflow run cdn-deploy.yml\`" >> $GITHUB_STEP_SUMMARY
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
