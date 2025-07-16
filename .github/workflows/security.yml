@@ -423,7 +423,7 @@ jobs:
 
       - name: SLSA provenance verification
         continue-on-error: true
-        uses: slsa-framework/slsa-verifier/actions/installer@v2.4.1
+        uses: slsa-framework/slsa-verifier/actions/installer@v2.7.1
 
       - name: Check for typosquatting
         run: |
