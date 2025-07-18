@@ -18,6 +18,9 @@ hero:
     - theme: alt
       text: API Reference
       link: /api/
+    - theme: alt
+      text: Demo Application
+      link: https://srnarasim.github.io/DataPrism-demo-analytics/
 
 features:
   - icon: 🚀
@@ -136,6 +139,7 @@ Explore DataPrism Core capabilities:
 - [**Advanced Examples**](/DataPrism/examples/advanced) - Complex analytical workloads
 - [**Plugin Examples**](/DataPrism/examples/plugins) - Custom plugin development
 - [**API Reference**](/DataPrism/api/) - Complete API documentation
+- [**Demo Application**](https://srnarasim.github.io/DataPrism-demo-analytics/) - Interactive demo application
 
 ## Community & Support
 
