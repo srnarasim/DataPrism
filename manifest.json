@@ -1,0 +1,67 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2025-07-18T02:51:52.708Z",
+  "buildHash": "dc69579d",
+  "assets": {
+    "core": {
+      "filename": "dataprism.min.js",
+      "size": 119150,
+      "compressedSize": 83405,
+      "hash": "f3f3e0aa7cd8bfb3fcc41a769291c970720309bc16bbc83cda7c69ff2ba244951b069dd6837d24b19ae59e7d5ccb0e71",
+      "mimeType": "application/javascript",
+      "cacheDuration": 31536000,
+      "lastModified": "2025-07-18T02:51:52.553Z"
+    },
+    "orchestration": {
+      "filename": "dataprism.min.js",
+      "size": 119150,
+      "compressedSize": 83405,
+      "hash": "f3f3e0aa7cd8bfb3fcc41a769291c970720309bc16bbc83cda7c69ff2ba244951b069dd6837d24b19ae59e7d5ccb0e71",
+      "mimeType": "application/javascript",
+      "cacheDuration": 31536000,
+      "lastModified": "2025-07-18T02:51:52.553Z"
+    },
+    "pluginFramework": {
+      "filename": "dataprism.min.js",
+      "size": 119150,
+      "compressedSize": 83405,
+      "hash": "f3f3e0aa7cd8bfb3fcc41a769291c970720309bc16bbc83cda7c69ff2ba244951b069dd6837d24b19ae59e7d5ccb0e71",
+      "mimeType": "application/javascript",
+      "cacheDuration": 31536000,
+      "lastModified": "2025-07-18T02:51:52.553Z"
+    },
+    "plugins": [],
+    "wasm": []
+  },
+  "integrity": {
+    "dataprism.min.js": "sha384-8/PgqnzYv7P8xBp2kpHJcHIDCbwWu8g82nxp/yuiRJUbBp3Wg30ksZrlnn1cyw5x",
+    "dataprism.min.js.map": "sha384-QjWn4rIKHR8wCPtNiJFlULVOkfUDx/Yb4zTiBuc5uXA7dKAsf/INm7uc3qmoIWRQ",
+    "dataprism.umd.js": "sha384-gGMGub9BWOYCT4hVwqE6hP86zY/cOHYpegk+a6t6umxJnIrvABc8GxKr41oAfmiL",
+    "dataprism.umd.js.map": "sha384-J4v/7UT60p7KLnR9u5cJwy8QpINVBLy/QaUg4pjEp7EDs2gZLyHh8ixUtOGP+u3K"
+  },
+  "metadata": {
+    "buildDate": "2025-07-18T02:51:52.708Z",
+    "buildId": "dc69579d",
+    "nodeVersion": "v18.20.8",
+    "gitCommit": "32d36363d5200d4a7019fd18c7db8f620c63ae17",
+    "gitBranch": "main",
+    "target": "github-pages",
+    "optimization": {
+      "compression": "both",
+      "treeshaking": true,
+      "codesplitting": true,
+      "wasmOptimization": true,
+      "minification": true
+    },
+    "totalBundleSize": 801213,
+    "compressionRatio": 0.6999973789741305
+  },
+  "compatibility": {
+    "chrome": "90+",
+    "firefox": "88+",
+    "safari": "14+",
+    "edge": "90+",
+    "webAssembly": true,
+    "es2020": true
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "baseUrl": "",
+  "hybrid": true,
+  "workers": {
+    "duckdb-browser-mvp.worker.js": "assets/duckdb-browser-mvp.worker.js",
+    "duckdb-browser-eh.worker.js": "assets/duckdb-browser-eh.worker.js",
+    "duckdb-browser-coi.worker.js": "assets/duckdb-browser-coi.worker.js",
+    "duckdb-browser-coi.pthread.worker.js": "assets/duckdb-browser-coi.pthread.worker.js"
+  },
+  "fallback": {
+    "strategy": "jsdelivr",
+    "note": "WASM files are loaded from JSDelivr for optimal CDN size"
+  }
+}

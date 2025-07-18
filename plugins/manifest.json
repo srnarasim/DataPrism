@@ -1,0 +1,70 @@
+{
+  "plugins": [
+    {
+      "id": "dataprismplugins-out-of-box",
+      "name": "@dataprism/plugins-out-of-box",
+      "version": "1.0.0",
+      "entry": "plugins/out-of-box/index.js",
+      "dependencies": [],
+      "metadata": {
+        "description": "Production-ready plugin collection for DataPrism Core",
+        "author": "DataPrism Team",
+        "license": "MIT",
+        "keywords": [
+          "dataprism",
+          "analytics",
+          "plugins",
+          "visualization",
+          "data-processing"
+        ],
+        "size": 0,
+        "loadOrder": 50,
+        "lazy": true
+      },
+      "integrity": "",
+      "category": "utility",
+      "exports": [
+        "default"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "id": "integration",
+      "name": "Integration",
+      "description": "Data integration and import plugins",
+      "plugins": []
+    },
+    {
+      "id": "processing",
+      "name": "Processing",
+      "description": "Data processing and transformation plugins",
+      "plugins": []
+    },
+    {
+      "id": "visualization",
+      "name": "Visualization",
+      "description": "Data visualization and charting plugins",
+      "plugins": []
+    },
+    {
+      "id": "utility",
+      "name": "Utility",
+      "description": "Utility and helper plugins",
+      "plugins": [
+        "dataprismplugins-out-of-box"
+      ]
+    }
+  ],
+  "compatibility": {
+    "chrome": "90+",
+    "firefox": "88+",
+    "safari": "14+",
+    "edge": "90+",
+    "webAssembly": true,
+    "es2020": true
+  },
+  "baseUrl": "",
+  "version": "1.0.0",
+  "timestamp": "2025-07-18T02:53:10.375Z"
+}
