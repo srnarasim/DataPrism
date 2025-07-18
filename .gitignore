@@ -340,6 +340,27 @@ __pycache__/
 *.wmv
 *.flv
 
+# Security - Sensitive Files
+.env*
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+.ssh/
+credentials*
+config/database.yml
+config/production.yml
+
+# Build artifacts - Size limits
+packages/*/pkg/*.wasm
+cdn/*.wasm
+dist/*.wasm
 # ============================================================================
 # End of .gitignore
 # ============================================================================
+

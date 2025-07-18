@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-07-17T14:36:35.864Z",
+  "repository": "srnarasim/DataPrism",
+  "rulesets_created": 1,
+  "rulesets": [
+    {
+      "id": "generated",
+      "name": "main-protection",
+      "target": "main",
+      "enforcement": "active",
+      "rules_count": 0
+    }
+  ],
+  "security_features_enabled": true,
+  "status": "completed"
+}
