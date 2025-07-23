@@ -43,7 +43,7 @@
     "@types/papaparse": "^5.3.8",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "bundlesize": "^0.18.1",
+    "bundlesize": "^0.18.2",
     "eslint": "^8.45.0",
     "playwright": "^1.37.0",
     "prettier": "^3.0.0",
