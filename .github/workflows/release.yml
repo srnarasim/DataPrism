@@ -164,7 +164,7 @@ jobs:
         run: npm ci
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: release-build
 
@@ -210,7 +210,7 @@ jobs:
         run: npm ci
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: release-build
 
@@ -244,7 +244,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: release-build
 
@@ -326,7 +326,7 @@ jobs:
         run: npm ci
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: release-build
 
@@ -358,7 +358,7 @@ jobs:
     needs: [validate, create-release]
     steps:
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: release-build
 
@@ -451,7 +451,7 @@ jobs:
         run: npm ci
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: release-build
 
