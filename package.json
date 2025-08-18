@@ -88,7 +88,7 @@
     "generate:api": "typedoc --out docs/api packages/orchestration/src/index.ts packages/llm/src/index.ts packages/cli/src/index.ts packages/plugins/src/index.ts --theme default --readme none --excludeExternals"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.0",
+    "@playwright/test": "^1.54.2",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -97,9 +97,9 @@
     "license-checker": "^25.0.1",
     "prettier": "^3.0.0",
     "terser": "^5.43.1",
-    "tsx": "^4.20.3",
-    "typedoc": "^0.25.0",
-    "typescript": "^5.2.0",
+    "tsx": "^4.20.4",
+    "typedoc": "^0.28.10",
+    "typescript": "^5.9.2",
     "vite": "^5.4.8",
     "vitest": "^1.6.0"
   },
