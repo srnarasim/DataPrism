@@ -88,7 +88,7 @@
     "generate:api": "typedoc --out docs/api packages/orchestration/src/index.ts packages/llm/src/index.ts packages/cli/src/index.ts packages/plugins/src/index.ts --theme default --readme none --excludeExternals"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.0",
+    "@playwright/test": "^1.56.1",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
