@@ -5,6 +5,16 @@ import { resolve } from "path";
 export default defineConfig({
   plugins: [react()],
 
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./src/test-setup.ts"],
+    alias: {
+      "@ruvector/wasm": new URL("./src/__mocks__/@ruvector/wasm.ts", import.meta.url).pathname,
+      "@xenova/transformers": new URL("./src/__mocks__/@xenova/transformers.ts", import.meta.url).pathname,
+    },
+  },
+
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),
