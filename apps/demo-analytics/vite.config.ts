@@ -12,6 +12,7 @@ export default defineConfig({
     alias: {
       "@ruvector/wasm": new URL("./src/__mocks__/@ruvector/wasm.ts", import.meta.url).pathname,
       "@xenova/transformers": new URL("./src/__mocks__/@xenova/transformers.ts", import.meta.url).pathname,
+      "@dataprism/plugins-out-of-box": new URL("./src/__mocks__/@dataprism/plugins-out-of-box.ts", import.meta.url).pathname,
     },
   },
 
@@ -27,6 +28,7 @@ export default defineConfig({
       "@dataprism/core": resolve(__dirname, "../../packages/core/pkg"),
       "@dataprism/orchestration": resolve(__dirname, "../../packages/orchestration/src"),
       "@dataprism/plugins": resolve(__dirname, "../../packages/plugins/src"),
+      "@dataprism/plugins-out-of-box": resolve(__dirname, "../../packages/plugins/out-of-box/src"),
     },
   },
 
