@@ -1026,12 +1026,13 @@ export class SemanticClusteringPlugin
 
     tooltip.transition().duration(200).style("opacity", 1);
 
+    const containerRect = this.container!.getBoundingClientRect();
     tooltip
       .html(
         `<strong>${data.label}</strong><br/>Cluster: ${this.currentResult?.clusters[data.index]}`,
       )
-      .style("left", event.pageX + 10 + "px")
-      .style("top", event.pageY - 28 + "px");
+      .style("left", event.clientX - containerRect.left + 10 + "px")
+      .style("top", event.clientY - containerRect.top - 28 + "px");
   }
 
   private hideTooltip(): void {

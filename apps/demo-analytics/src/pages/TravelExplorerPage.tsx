@@ -53,6 +53,7 @@ export function TravelExplorerPage() {
   const [numClusters, setNumClusters] = useState(5);
   const [isClustering, setIsClustering] = useState(false);
   const [silhouette, setSilhouette] = useState<number | null>(null);
+  const [clusterError, setClusterError] = useState<string | null>(null);
   const clusterContainerRef = useRef<HTMLDivElement>(null);
 
   const storedEmbeddingsRef = useRef<number[][] | null>(null);
@@ -165,6 +166,7 @@ export function TravelExplorerPage() {
   const handleCluster = async () => {
     if (!tripsLoaded || !storedEmbeddingsRef.current || !storedDatasetRef.current) return;
     setIsClustering(true);
+    setClusterError(null);
     try {
       const plugin = new (SemanticClusteringPlugin as any)();
       const mockContext = {
@@ -187,7 +189,7 @@ export function TravelExplorerPage() {
         await plugin.render(clusterContainerRef.current, storedDatasetRef.current);
       }
     } catch (e) {
-      console.error("Clustering error:", e);
+      setClusterError(e instanceof Error ? e.message : String(e));
     } finally {
       setIsClustering(false);
     }
@@ -330,6 +332,10 @@ export function TravelExplorerPage() {
           <p className="text-sm text-gray-600">
             Silhouette: <span className="font-mono">{silhouette.toFixed(3)}</span>
           </p>
+        )}
+
+        {clusterError && (
+          <p className="text-sm text-red-600">{clusterError}</p>
         )}
 
         <div
