@@ -13,6 +13,7 @@ const QueryLabPage = React.lazy(() => import("./pages/QueryLabPage"));
 const PluginsDemoPage = React.lazy(() => import("./pages/PluginsDemoPage"));
 const PerformancePage = React.lazy(() => import("./pages/PerformancePage"));
 const AboutPage = React.lazy(() => import("./pages/AboutPage"));
+const TravelExplorerPage = React.lazy(() => import("./pages/TravelExplorerPage"));
 
 function App() {
   const { isInitialized, initializationError } = useDataPrism();
@@ -33,6 +34,7 @@ function App() {
           <Route path="/plugins" element={<PluginsDemoPage />} />
           <Route path="/performance" element={<PerformancePage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/travel" element={<TravelExplorerPage />} />
 
           {/* Redirect unknown routes to home */}
           <Route path="*" element={<Navigate to="/" replace />} />

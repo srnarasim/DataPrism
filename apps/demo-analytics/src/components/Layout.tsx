@@ -8,6 +8,7 @@ import {
   Puzzle,
   Zap,
   Info,
+  MapPin,
   Menu,
   X,
   Sun,
@@ -37,6 +38,7 @@ export function Layout({ children }: LayoutProps) {
     { name: "Plugins Demo", href: "/plugins", icon: Puzzle },
     { name: "Performance", href: "/performance", icon: Zap },
     { name: "About", href: "/about", icon: Info },
+    { name: "Travel Explorer", href: "/travel", icon: MapPin },
   ];
 
   const themeIcons = {
