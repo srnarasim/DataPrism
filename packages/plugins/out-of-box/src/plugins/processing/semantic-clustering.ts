@@ -32,6 +32,7 @@ export interface ClusteringConfig {
     model?: string;
     dimensions?: number;
   };
+  precomputedEmbeddings?: number[][];
 }
 
 export interface ClusteringResult {
@@ -256,7 +257,9 @@ export class SemanticClusteringPlugin
 
       // Generate embeddings if needed
       let embeddings: number[][];
-      if (config.embeddings) {
+      if (config.precomputedEmbeddings) {
+        embeddings = config.precomputedEmbeddings;
+      } else if (config.embeddings) {
         embeddings = await this.generateEmbeddings(data, config.embeddings);
       } else {
         embeddings = features;
@@ -903,7 +906,15 @@ export class SemanticClusteringPlugin
     // Add points
     g.selectAll(".point")
       .data(
-        x.map((xVal, i) => ({ x: xVal, y: y[i], color: colors[i], index: i })),
+        x.map((xVal, i) => ({
+          x: xVal,
+          y: y[i],
+          color: colors[i],
+          index: i,
+          label: this.currentData?.rows[i]?.[0] != null
+            ? String(this.currentData.rows[i][0])
+            : `Point ${i}`,
+        })),
       )
       .enter()
       .append("circle")
@@ -1001,7 +1012,7 @@ export class SemanticClusteringPlugin
 
   private showTooltip(event: MouseEvent, data: any): void {
     const tooltip = d3
-      .select("body")
+      .select(this.container!)
       .append("div")
       .attr("class", "cluster-tooltip")
       .style("opacity", 0)
@@ -1017,13 +1028,13 @@ export class SemanticClusteringPlugin
 
     tooltip
       .html(
-        `Point ${data.index}<br/>Cluster: ${this.currentResult?.clusters[data.index]}`,
+        `<strong>${data.label}</strong><br/>Cluster: ${this.currentResult?.clusters[data.index]}`,
       )
       .style("left", event.pageX + 10 + "px")
       .style("top", event.pageY - 28 + "px");
   }
 
   private hideTooltip(): void {
-    d3.selectAll(".cluster-tooltip").remove();
+    d3.select(this.container!).selectAll(".cluster-tooltip").remove();
   }
 }
