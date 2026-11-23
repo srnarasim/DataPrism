@@ -1,0 +1,9 @@
+# GitHub Pages Jekyll Configuration for DataPrism CDN
+plugins: ["jekyll-gist"]
+include: ["_*",".nojekyll","*.js","*.map","*.json","assets/**/*"]
+exclude: ["node_modules/","Gemfile*","test-results/","packages/"]
+markdown: kramdown
+highlighter: rouge
+sass:
+  sass_dir: _sass
+  style: compressed

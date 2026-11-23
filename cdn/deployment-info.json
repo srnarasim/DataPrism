@@ -1,0 +1,13 @@
+{
+  "deploymentId": "deploy_1795438256_6d5d5cc",
+  "timestamp": "2026-11-23T12:51:46Z",
+  "environment": "production",
+  "target": "github-pages",
+  "gitCommit": "6d5d5ccc9f5285faaadf30a6f8d7ae5d368f8873",
+  "gitBranch": "main",
+  "repository": "srnarasim/DataPrism",
+  "workflow": "45177883514",
+  "actor": "srnarasim",
+  "totalSize": 3944905,
+  "assetCount": 14
+}
