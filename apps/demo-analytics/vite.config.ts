@@ -38,6 +38,16 @@ export default defineConfig({
       "@shared/data-utils.js": resolve(__dirname, "../../packages/plugins/out-of-box/src/shared/data-utils.ts"),
       // @ruvector/wasm: in build/dev, use the shim that lazy-loads from public/ruvector/
       "@ruvector/wasm": resolve(__dirname, "./src/shims/ruvector-wasm.js"),
+      // Pin third-party deps used by workspace-aliased source to THIS app's node_modules.
+      // Rollup resolves bare imports relative to the source file's location, so when we
+      // alias e.g. @dataprism/plugins-out-of-box to packages/plugins/out-of-box/src/,
+      // imports like "d3" inside that code are resolved from there — not from here.
+      // CI only installs node_modules here, so without these aliases the build fails.
+      "d3": resolve(__dirname, "node_modules/d3"),
+      "ml-kmeans": resolve(__dirname, "node_modules/ml-kmeans"),
+      "density-clustering": resolve(__dirname, "node_modules/density-clustering"),
+      "ml-distance": resolve(__dirname, "node_modules/ml-distance"),
+      "ml-matrix": resolve(__dirname, "node_modules/ml-matrix"),
     },
   },
 
