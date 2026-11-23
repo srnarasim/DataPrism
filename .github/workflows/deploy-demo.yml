@@ -33,7 +33,7 @@ jobs:
       - name: Run tests
         run: |
           cd apps/demo-analytics
-          npx vitest run
+          npm test -- --run
 
       - name: Build
         env:
