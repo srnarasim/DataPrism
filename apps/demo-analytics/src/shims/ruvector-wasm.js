@@ -1,31 +1,25 @@
-// Build-time shim for @ruvector/wasm.
-// In tests: vite.config.ts test.alias points here to the mock stub instead.
-// In production build: this shim loads the pre-built WASM from /ruvector/ in public/.
+// Static import of the wasm-pack web-target bundle.
+// Vite processes ruvector_wasm_bg.wasm as an asset and rewrites the URL.
+import init, { VectorDB as _VectorDB } from "../wasm/ruvector/ruvector_wasm.js";
+import wasmUrl from "../wasm/ruvector/ruvector_wasm_bg.wasm?url";
 
-let _VectorDB = null;
+let _ready = false;
 let _initPromise = null;
 
-async function ensureLoaded() {
-  if (_VectorDB) return;
+function ensureLoaded() {
+  if (_ready) return Promise.resolve();
   if (!_initPromise) {
-    _initPromise = (async () => {
-      const base = (typeof import.meta !== "undefined" && import.meta.env?.BASE_URL) || "/";
-      const jsUrl = base.replace(/\/$/, "") + "/ruvector/ruvector_wasm.js";
-      const wasmUrl = base.replace(/\/$/, "") + "/ruvector/ruvector_wasm_bg.wasm";
-      const mod = await import(/* @vite-ignore */ jsUrl);
-      await mod.default({ module_or_path: wasmUrl });
-      _VectorDB = mod.VectorDB;
-    })();
+    _initPromise = init({ module_or_path: wasmUrl }).then(() => {
+      _ready = true;
+    });
   }
-  await _initPromise;
+  return _initPromise;
 }
 
 export class VectorDB {
-  _config;
-  _db = null;
-
   constructor(config) {
     this._config = config;
+    this._db = null;
   }
 
   async init() {
