@@ -39,6 +39,7 @@
     "ml-kmeans": "^6.0.0",
     "ml-matrix": "^6.15.1",
     "papaparse": "^5.4.1",
+    "plotly.js-dist": "^2.35.3",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",

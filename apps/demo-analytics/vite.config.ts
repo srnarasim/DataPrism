@@ -20,6 +20,10 @@ export default defineConfig({
   },
 
   resolve: {
+    // When bundling workspace packages via alias (e.g. packages/orchestration/src),
+    // Rollup resolves their deps from the aliased file's directory, missing this
+    // app's node_modules. Adding it here fixes cross-package dep resolution.
+    modules: [resolve(__dirname, "node_modules"), "node_modules"],
     alias: {
       "@": resolve(__dirname, "./src"),
       "@components": resolve(__dirname, "./src/components"),
