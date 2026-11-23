@@ -20,10 +20,6 @@ export default defineConfig({
   },
 
   resolve: {
-    // When bundling workspace packages via alias (e.g. packages/orchestration/src),
-    // Rollup resolves their deps from the aliased file's directory, missing this
-    // app's node_modules. Adding it here fixes cross-package dep resolution.
-    modules: [resolve(__dirname, "node_modules"), "node_modules"],
     alias: {
       "@": resolve(__dirname, "./src"),
       "@components": resolve(__dirname, "./src/components"),
@@ -34,7 +30,8 @@ export default defineConfig({
       // Local development aliases for DataPrism packages
       "@dataprism/orchestration": resolve(__dirname, "../../packages/orchestration/src"),
       "@dataprism/plugins": resolve(__dirname, "../../packages/plugins/src"),
-      "@dataprism/plugins-out-of-box": resolve(__dirname, "../../packages/plugins/out-of-box/src"),
+      // Shim: only re-exports SemanticClusteringPlugin, avoiding csv-importer (needs papaparse/plotly)
+      "@dataprism/plugins-out-of-box": resolve(__dirname, "./src/shims/plugins-out-of-box.ts"),
       // @shared/* modules live inside plugins/out-of-box
       "@shared/worker-manager.js": resolve(__dirname, "../../packages/plugins/out-of-box/src/shared/worker-manager.ts"),
       "@shared/performance-tracker.js": resolve(__dirname, "../../packages/plugins/out-of-box/src/shared/performance-tracker.ts"),
