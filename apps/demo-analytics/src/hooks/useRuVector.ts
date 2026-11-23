@@ -26,8 +26,17 @@ export interface UseRuVectorReturn {
 
 export function useRuVector(): UseRuVectorReturn {
   const dbRef = useRef<InstanceType<typeof VectorDB> | null>(null);
+  const readyPromiseRef = useRef<Promise<void> | null>(null);
+  const resolveReadyRef = useRef<() => void>(() => {});
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  // Create a promise that resolves when the DB is ready, so indexTrips can await it.
+  if (!readyPromiseRef.current) {
+    readyPromiseRef.current = new Promise<void>((resolve) => {
+      resolveReadyRef.current = resolve;
+    });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -37,10 +46,14 @@ export function useRuVector(): UseRuVectorReturn {
         await db.init();
         if (!cancelled) {
           dbRef.current = db;
+          resolveReadyRef.current();
           setIsReady(true);
         }
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e : new Error(String(e)));
+        if (!cancelled) {
+          console.error("RuVector WASM init failed:", e);
+          setError(e instanceof Error ? e : new Error(String(e)));
+        }
       }
     })();
     return () => {
@@ -53,6 +66,8 @@ export function useRuVector(): UseRuVectorReturn {
     embeddings: number[][],
     meta: TripMeta[],
   ): Promise<void> {
+    // Wait for WASM to finish initializing regardless of when this is called.
+    await readyPromiseRef.current;
     if (!dbRef.current) throw new Error("VectorDB not ready");
     const entries = rowIndices.map((idx, i) => ({
       id: String(idx),
