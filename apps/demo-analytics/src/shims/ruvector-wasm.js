@@ -3,36 +3,14 @@
 import init, { VectorDB as _VectorDB } from "../wasm/ruvector/ruvector_wasm.js";
 import wasmUrl from "../wasm/ruvector/ruvector_wasm_bg.wasm?url";
 
-let _ready = false;
-let _initPromise = null;
+// Start loading the WASM eagerly on module import.
+const _initPromise = init({ module_or_path: wasmUrl });
 
-function ensureLoaded() {
-  if (_ready) return Promise.resolve();
-  if (!_initPromise) {
-    _initPromise = init({ module_or_path: wasmUrl }).then(() => {
-      _ready = true;
-    });
-  }
-  return _initPromise;
+// Await WASM readiness before constructing a VectorDB.
+export async function createVectorDB(dimensions, metric, useHnsw) {
+  await _initPromise;
+  return new _VectorDB(dimensions, metric, useHnsw);
 }
 
-export class VectorDB {
-  constructor(config) {
-    this._config = config;
-    this._db = null;
-  }
-
-  async init() {
-    await ensureLoaded();
-    this._db = new _VectorDB(this._config);
-    await this._db.init();
-  }
-
-  insertBatch(entries) {
-    return this._db.insertBatch(entries);
-  }
-
-  search(vec, k) {
-    return this._db.search(vec, k);
-  }
-}
+// Re-export for type-compatible usage in tests (mock replaces this whole module).
+export { _VectorDB as VectorDB };

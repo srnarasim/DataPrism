@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 // @ts-expect-error — @ruvector/wasm has no type declarations yet
-import { VectorDB } from "@ruvector/wasm";
+import { createVectorDB } from "@ruvector/wasm";
 
 export interface TripSearchResult {
   id: string;
@@ -25,7 +25,7 @@ export interface UseRuVectorReturn {
 }
 
 export function useRuVector(): UseRuVectorReturn {
-  const dbRef = useRef<InstanceType<typeof VectorDB> | null>(null);
+  const dbRef = useRef<any | null>(null);
   const readyPromiseRef = useRef<Promise<void> | null>(null);
   const resolveReadyRef = useRef<() => void>(() => {});
   const [isReady, setIsReady] = useState(false);
@@ -42,8 +42,8 @@ export function useRuVector(): UseRuVectorReturn {
     let cancelled = false;
     (async () => {
       try {
-        const db = new VectorDB({ dimensions: 384, metric: "cosine", useHnsw: true });
-        await db.init();
+        const db = await createVectorDB(384, "cosine", true);
+        // VectorDB constructor is synchronous; no separate init() needed.
         if (!cancelled) {
           dbRef.current = db;
           resolveReadyRef.current();
