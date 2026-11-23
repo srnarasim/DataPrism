@@ -4,26 +4,18 @@ import Papa from "papaparse";
 import { useDataPrism } from "../contexts/DataPrismContext";
 import { embed } from "../utils/embeddings";
 import { useRuVector } from "../hooks/useRuVector";
-import { SemanticClusteringPlugin } from "@dataprism/plugins-out-of-box";
 
 // ── types ─────────────────────────────────────────────────────────────────────
 
 interface TripRow {
   row_index: number;
-  place: string;
-  country: string;
-  year: string;
-  type: string;
-  notes: string;
   [key: string]: unknown;
 }
 
 interface SearchResult {
-  place: string;
-  country: string;
-  year: string;
-  notes: string;
+  row_index: number;
   score: number;
+  [key: string]: unknown;
 }
 
 // ── validation ────────────────────────────────────────────────────────────────
@@ -44,6 +36,7 @@ export function TravelExplorerPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [embedProgress, setEmbedProgress] = useState(0);
   const [isEmbedding, setIsEmbedding] = useState(false);
+  const [columnNames, setColumnNames] = useState<string[]>([]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -54,10 +47,10 @@ export function TravelExplorerPage() {
   const [isClustering, setIsClustering] = useState(false);
   const [silhouette, setSilhouette] = useState<number | null>(null);
   const [clusterError, setClusterError] = useState<string | null>(null);
-  const clusterContainerRef = useRef<HTMLDivElement>(null);
+  const [clusterPoints, setClusterPoints] = useState<{ x: number; y: number; cluster: number; label: string }[]>([]);
 
   const storedEmbeddingsRef = useRef<number[][] | null>(null);
-  const storedDatasetRef = useRef<{ columns: { name: string; type: string }[]; rows: unknown[][] } | null>(null);
+  const storedRowsRef = useRef<TripRow[]>([]);
 
   // ── load CSV ────────────────────────────────────────────────────────────────
 
@@ -77,14 +70,16 @@ export function TravelExplorerPage() {
 
             const rows = result.data.map((r, i) => ({ ...r, row_index: i }));
             await loadData(rows, "trips");
+            setColumnNames(headers);
+            storedRowsRef.current = rows;
 
-            const notes = rows.map((r) => r.notes || "");
-            const meta = rows.map((r) => ({
-              place: r.place,
-              country: r.country,
-              year: parseInt(String(r.year), 10),
-            }));
+            const notes = rows.map((r) => String(r.notes ?? ""));
             const indices = rows.map((_, i) => i);
+            const meta = rows.map((r) => ({
+              place: String(r.place ?? r.destination ?? r.location ?? ""),
+              country: String(r.country ?? ""),
+              year: parseInt(String(r.year ?? r.date ?? "0"), 10),
+            }));
 
             setIsEmbedding(true);
             const embeddings = await embed(notes, ({ progress }) =>
@@ -96,11 +91,6 @@ export function TravelExplorerPage() {
             await indexTrips(indices, embeddings, meta);
 
             storedEmbeddingsRef.current = embeddings;
-            storedDatasetRef.current = {
-              columns: headers.map((h) => ({ name: h, type: "string" })),
-              rows: rows.map((r) => headers.map((h) => r[h])),
-            };
-
             setTripsLoaded(true);
           } catch (e) {
             setLoadError(e instanceof Error ? e.message : String(e));
@@ -140,54 +130,57 @@ export function TravelExplorerPage() {
     const scoreMap = Object.fromEntries(hits.map((h) => [h.id, h.score]));
 
     const rows = await query(
-      `SELECT row_index, place, country, year, notes FROM trips WHERE row_index IN (${ids})`,
+      `SELECT * FROM trips WHERE row_index IN (${ids})`,
     );
 
     setSearchResults(
       (rows.data ?? []).map((r: Record<string, unknown>) => ({
-        place: String(r.place ?? ""),
-        country: String(r.country ?? ""),
-        year: String(r.year ?? ""),
-        notes: String(r.notes ?? ""),
+        ...r,
+        row_index: Number(r.row_index),
         score: scoreMap[String(r.row_index)] ?? 0,
       })),
     );
 
-    const agg = await query(
-      `SELECT COUNT(*) as n, COUNT(DISTINCT country) as countries FROM trips WHERE row_index IN (${ids})`,
+    // Count distinct values for a summary — use first string-ish column that isn't notes
+    const locationCol = columnNames.find(
+      (c) => c !== "notes" && c !== "row_index",
     );
-    if (agg.data?.[0]) {
-      setAggregation(`${agg.data[0].n} results across ${agg.data[0].countries} countries`);
+    if (locationCol) {
+      const agg = await query(
+        `SELECT COUNT(*) as n FROM trips WHERE row_index IN (${ids})`,
+      );
+      if (agg.data?.[0]) {
+        setAggregation(`${agg.data[0].n} results`);
+      }
     }
   };
 
-  // ── cluster view ─────────────────────────────────────────────────────────────
+  // ── inline clustering ─────────────────────────────────────────────────────────
 
   const handleCluster = async () => {
-    if (!tripsLoaded || !storedEmbeddingsRef.current || !storedDatasetRef.current) return;
+    if (!tripsLoaded || !storedEmbeddingsRef.current) return;
     setIsClustering(true);
     setClusterError(null);
+    setSilhouette(null);
+    setClusterPoints([]);
+
     try {
-      const plugin = new (SemanticClusteringPlugin as any)();
-      const mockContext = {
-        logger: { info: console.info, error: console.error, warn: console.warn, debug: console.debug },
-        eventBus: { publish: () => {}, subscribe: () => () => {} },
-      };
-      await plugin.initialize(mockContext);
+      const embeddings = storedEmbeddingsRef.current;
+      const k = Math.min(numClusters, embeddings.length);
+      const { clusters } = kMeans(embeddings, k);
+      const reduced = pca2d(embeddings);
+      const sil = computeSilhouette(embeddings, clusters, k);
+      setSilhouette(sil);
 
-      const result = await plugin.performClustering(storedDatasetRef.current, {
-        algorithm: "kmeans",
-        features: [],
-        normalize: false,
-        numClusters,
-        precomputedEmbeddings: storedEmbeddingsRef.current,
-      });
-
-      setSilhouette(result.metrics.silhouetteScore);
-
-      if (clusterContainerRef.current) {
-        await plugin.render(clusterContainerRef.current, storedDatasetRef.current);
-      }
+      const labelCol = columnNames.find((c) => c !== "notes") ?? "row_index";
+      const rows = storedRowsRef.current;
+      const points = reduced.map((pt, i) => ({
+        x: pt[0],
+        y: pt[1],
+        cluster: clusters[i],
+        label: String(rows[i]?.[labelCol] ?? i),
+      }));
+      setClusterPoints(points);
     } catch (e) {
       setClusterError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -196,6 +189,12 @@ export function TravelExplorerPage() {
   };
 
   // ── render ───────────────────────────────────────────────────────────────────
+
+  const displayCols = columnNames.filter((c) => c !== "row_index").slice(0, 5);
+  const CLUSTER_COLORS = [
+    "#2563eb","#dc2626","#16a34a","#d97706","#7c3aed",
+    "#0891b2","#be185d","#15803d","#b45309","#6d28d9",
+  ];
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6" data-testid="travel-page">
@@ -220,12 +219,13 @@ export function TravelExplorerPage() {
         </div>
 
         <a
-          href="/sample-travels.csv"
+          href="sample-travels.csv"
           download
           className="text-sm text-blue-600 underline"
         >
           Download sample CSV
         </a>
+        <p className="text-xs text-gray-400">Required column: <code>notes</code>. Any other columns are displayed automatically.</p>
 
         {isEmbedding && (
           <div className="space-y-1">
@@ -245,7 +245,7 @@ export function TravelExplorerPage() {
           <p className="text-sm text-red-600">{loadError}</p>
         )}
         {tripsLoaded && (
-          <p className="text-sm text-green-600">Trips loaded and indexed!</p>
+          <p className="text-sm text-green-600">Trips loaded and indexed! Columns: {columnNames.join(", ")}</p>
         )}
       </section>
 
@@ -283,20 +283,20 @@ export function TravelExplorerPage() {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-left">
-                  <th className="px-3 py-2 font-medium">Place</th>
-                  <th className="px-3 py-2 font-medium">Country</th>
-                  <th className="px-3 py-2 font-medium">Year</th>
-                  <th className="px-3 py-2 font-medium">Notes</th>
+                  {displayCols.map((col) => (
+                    <th key={col} className="px-3 py-2 font-medium capitalize">{col}</th>
+                  ))}
                   <th className="px-3 py-2 font-medium">Score</th>
                 </tr>
               </thead>
               <tbody>
                 {searchResults.map((r, i) => (
                   <tr key={i} className="border-t border-gray-100">
-                    <td className="px-3 py-2 font-medium">{r.place}</td>
-                    <td className="px-3 py-2 text-gray-600">{r.country}</td>
-                    <td className="px-3 py-2 text-gray-600">{r.year}</td>
-                    <td className="px-3 py-2 text-gray-500 max-w-xs truncate">{r.notes}</td>
+                    {displayCols.map((col) => (
+                      <td key={col} className={`px-3 py-2 ${col === "notes" ? "text-gray-500 max-w-xs truncate" : ""}`}>
+                        {String(r[col] ?? "")}
+                      </td>
+                    ))}
                     <td className="px-3 py-2 text-blue-600">{r.score.toFixed(2)}</td>
                   </tr>
                 ))}
@@ -341,12 +341,188 @@ export function TravelExplorerPage() {
           <p className="text-sm text-red-600">{clusterError}</p>
         )}
 
-        <div
-          ref={clusterContainerRef}
-          className="relative w-full"
-          style={{ minHeight: 400 }}
-        />
+        {clusterPoints.length > 0 && (
+          <ClusterScatter points={clusterPoints} colors={CLUSTER_COLORS} />
+        )}
       </section>
+    </div>
+  );
+}
+
+// ── inline k-means ───────────────────────────────────────────────────────────
+
+function kMeans(features: number[][], k: number): { clusters: number[] } {
+  const n = features.length;
+  const d = features[0].length;
+  // k-means++ init
+  const centroids: number[][] = [features[Math.floor(Math.random() * n)]];
+  while (centroids.length < k) {
+    const dists = features.map((f) =>
+      Math.min(...centroids.map((c) => euclidean(f, c))) ** 2
+    );
+    const total = dists.reduce((s, x) => s + x, 0);
+    let r = Math.random() * total;
+    let idx = 0;
+    for (; idx < n - 1 && r > 0; idx++) r -= dists[idx];
+    centroids.push(features[idx]);
+  }
+  let labels = new Array(n).fill(0);
+  for (let iter = 0; iter < 100; iter++) {
+    const newLabels = features.map((f) => {
+      let best = 0, bestD = Infinity;
+      for (let j = 0; j < k; j++) {
+        const dist = euclidean(f, centroids[j]);
+        if (dist < bestD) { bestD = dist; best = j; }
+      }
+      return best;
+    });
+    for (let j = 0; j < k; j++) {
+      const pts = features.filter((_, i) => newLabels[i] === j);
+      if (!pts.length) continue;
+      for (let dim = 0; dim < d; dim++) {
+        centroids[j][dim] = pts.reduce((s, p) => s + p[dim], 0) / pts.length;
+      }
+    }
+    if (newLabels.every((l, i) => l === labels[i])) break;
+    labels = newLabels;
+  }
+  return { clusters: labels };
+}
+
+// ── inline PCA to 2D ─────────────────────────────────────────────────────────
+
+function pca2d(features: number[][]): [number, number][] {
+  const n = features.length;
+  if (n === 0) return [];
+  const d = features[0].length;
+  const means = new Array(d).fill(0);
+  for (const row of features) for (let j = 0; j < d; j++) means[j] += row[j] / n;
+  const X = features.map((row) => row.map((v, j) => v - means[j]));
+  const eigenvectors: number[][] = [];
+  const workCov = Array.from({ length: d }, (_, i) =>
+    Array.from({ length: d }, (__, j) =>
+      X.reduce((s, row) => s + row[i] * row[j], 0) / Math.max(n - 1, 1)
+    )
+  );
+  for (let e = 0; e < 2; e++) {
+    let v = new Array(d).fill(0); v[e % d] = 1;
+    for (let iter = 0; iter < 20; iter++) {
+      const w = new Array(d).fill(0);
+      for (let i = 0; i < d; i++) for (let j = 0; j < d; j++) w[i] += workCov[i][j] * v[j];
+      const norm = Math.sqrt(w.reduce((s, x) => s + x * x, 0)) || 1;
+      v = w.map((x) => x / norm);
+    }
+    eigenvectors.push(v);
+    // deflate
+    for (let i = 0; i < d; i++) for (let j = 0; j < d; j++)
+      workCov[i][j] -= v[i] * v[j] * workCov.reduce((s, row, r) => s + row[r] * v[r], 0);
+  }
+  return X.map((row) => [
+    row.reduce((s, x, j) => s + x * eigenvectors[0][j], 0),
+    row.reduce((s, x, j) => s + x * eigenvectors[1][j], 0),
+  ] as [number, number]);
+}
+
+// ── inline silhouette ─────────────────────────────────────────────────────────
+
+function computeSilhouette(embeddings: number[][], clusters: number[], k: number): number {
+  const n = embeddings.length;
+  if (n <= 1) return 0;
+  let total = 0;
+  for (let i = 0; i < n; i++) {
+    const ci = clusters[i];
+    let intraSum = 0, intraCount = 0;
+    const interSums = new Array(k).fill(0);
+    const interCounts = new Array(k).fill(0);
+    for (let j = 0; j < n; j++) {
+      if (i === j) continue;
+      const d = euclidean(embeddings[i], embeddings[j]);
+      if (clusters[j] === ci) { intraSum += d; intraCount++; }
+      else { interSums[clusters[j]] += d; interCounts[clusters[j]]++; }
+    }
+    const a = intraCount > 0 ? intraSum / intraCount : 0;
+    let b = Infinity;
+    for (let c = 0; c < k; c++) {
+      if (c !== ci && interCounts[c] > 0) b = Math.min(b, interSums[c] / interCounts[c]);
+    }
+    if (b === Infinity) b = 0;
+    total += (b - a) / Math.max(a, b, 1e-10);
+  }
+  return total / n;
+}
+
+function euclidean(a: number[], b: number[]): number {
+  let s = 0;
+  for (let i = 0; i < a.length; i++) s += (a[i] - b[i]) ** 2;
+  return Math.sqrt(s);
+}
+
+// ── scatter component ─────────────────────────────────────────────────────────
+
+function ClusterScatter({
+  points,
+  colors,
+}: {
+  points: { x: number; y: number; cluster: number; label: string }[];
+  colors: string[];
+}) {
+  const W = 600, H = 400, PAD = 40;
+  const xs = points.map((p) => p.x);
+  const ys = points.map((p) => p.y);
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  const yMin = Math.min(...ys), yMax = Math.max(...ys);
+  const xRange = xMax - xMin || 1;
+  const yRange = yMax - yMin || 1;
+
+  const toSvg = (x: number, y: number) => ({
+    cx: PAD + ((x - xMin) / xRange) * (W - 2 * PAD),
+    cy: H - PAD - ((y - yMin) / yRange) * (H - 2 * PAD),
+  });
+
+  const [tooltip, setTooltip] = useState<{ label: string; cx: number; cy: number } | null>(null);
+
+  return (
+    <div className="relative">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full border rounded-lg bg-gray-50">
+        {points.map((p, i) => {
+          const { cx, cy } = toSvg(p.x, p.y);
+          return (
+            <circle
+              key={i}
+              cx={cx}
+              cy={cy}
+              r={5}
+              fill={colors[p.cluster % colors.length]}
+              opacity={0.8}
+              onMouseEnter={() => setTooltip({ label: p.label, cx, cy })}
+              onMouseLeave={() => setTooltip(null)}
+              className="cursor-pointer"
+            />
+          );
+        })}
+        {tooltip && (
+          <text
+            x={tooltip.cx + 8}
+            y={tooltip.cy - 6}
+            fontSize={11}
+            fill="#374151"
+            className="pointer-events-none"
+          >
+            {tooltip.label}
+          </text>
+        )}
+      </svg>
+      <div className="flex flex-wrap gap-3 mt-2">
+        {Array.from(new Set(points.map((p) => p.cluster))).sort().map((c) => (
+          <span key={c} className="flex items-center gap-1 text-xs text-gray-600">
+            <span
+              className="inline-block w-3 h-3 rounded-full"
+              style={{ backgroundColor: colors[c % colors.length] }}
+            />
+            Cluster {c + 1}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
