@@ -229,7 +229,9 @@ export function TravelExplorerPage() {
 
         {isEmbedding && (
           <div className="space-y-1">
-            <p className="text-sm text-gray-600">Embedding notes…</p>
+            <p className="text-sm text-gray-600">
+              Downloading AI model and embedding notes… this takes 1–2 minutes on first load.
+            </p>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-blue-500 h-2 rounded-full transition-all"
@@ -255,15 +257,16 @@ export function TravelExplorerPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            onKeyDown={(e) => e.key === "Enter" && !isEmbedding && handleSearch()}
             placeholder="e.g. adventurous mountain hike"
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <button
             onClick={handleSearch}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+            disabled={isEmbedding}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Search
+            {isEmbedding ? "Indexing…" : "Search"}
           </button>
         </div>
 
