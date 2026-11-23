@@ -1,0 +1,2 @@
+import{j as a}from"./index-CtHtcVb5.js";import"@duckdb/duckdb-wasm";function t(){return a.jsxs("div",{className:"p-6",children:[a.jsx("h1",{className:"text-3xl font-bold mb-6",children:"About DataPrism"}),a.jsx("p",{className:"text-gray-600 mb-4",children:"DataPrism Core is a high-performance browser-based analytics engine powered by WebAssembly and DuckDB."}),a.jsx("p",{className:"text-gray-600",children:"This demo application showcases the capabilities of the DataPrism platform."})]})}export{t as default};
+//# sourceMappingURL=AboutPage-BlBmVc6L.js.map
