@@ -48,6 +48,10 @@ export default defineConfig({
       "density-clustering": resolve(__dirname, "node_modules/density-clustering"),
       "ml-distance": resolve(__dirname, "node_modules/ml-distance"),
       "ml-matrix": resolve(__dirname, "node_modules/ml-matrix"),
+      // duckdb-wasm and apache-arrow are statically imported by orchestration — must bundle.
+      // Force the browser ESM build to avoid the Node.js CJS entry.
+      "@duckdb/duckdb-wasm": resolve(__dirname, "node_modules/@duckdb/duckdb-wasm/dist/duckdb-browser.mjs"),
+      "apache-arrow": resolve(__dirname, "node_modules/apache-arrow/Arrow.dom.mjs"),
     },
   },
 
@@ -88,9 +92,6 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       treeshake: false,
-      // apache-arrow and @duckdb/duckdb-wasm are loaded via CDN at runtime
-      // by the orchestration layer's dependency-loading system
-      external: ["apache-arrow", "@duckdb/duckdb-wasm"],
       output: {
         manualChunks: undefined,
       },
