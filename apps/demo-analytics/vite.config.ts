@@ -28,10 +28,13 @@ export default defineConfig({
       "@utils": resolve(__dirname, "./src/utils"),
       "@hooks": resolve(__dirname, "./src/hooks"),
       // Local development aliases for DataPrism packages
-      "@dataprism/core": resolve(__dirname, "../../packages/core/pkg"),
       "@dataprism/orchestration": resolve(__dirname, "../../packages/orchestration/src"),
       "@dataprism/plugins": resolve(__dirname, "../../packages/plugins/src"),
       "@dataprism/plugins-out-of-box": resolve(__dirname, "../../packages/plugins/out-of-box/src"),
+      // @shared/* modules live inside plugins/out-of-box
+      "@shared/worker-manager.js": resolve(__dirname, "../../packages/plugins/out-of-box/src/shared/worker-manager.ts"),
+      "@shared/performance-tracker.js": resolve(__dirname, "../../packages/plugins/out-of-box/src/shared/performance-tracker.ts"),
+      "@shared/data-utils.js": resolve(__dirname, "../../packages/plugins/out-of-box/src/shared/data-utils.ts"),
       // @ruvector/wasm: in build/dev, use the shim that lazy-loads from public/ruvector/
       "@ruvector/wasm": resolve(__dirname, "./src/shims/ruvector-wasm.js"),
     },
@@ -55,9 +58,7 @@ export default defineConfig({
   // Optimize for DataPrism packages
   optimizeDeps: {
     exclude: [
-      "@dataprism/core",
       "@dataprism/orchestration",
-      "@dataprism/plugin-framework",
     ],
     include: [
       "react",
@@ -76,21 +77,10 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       treeshake: false,
-      external: [
-        "@dataprism/core",
-        "@dataprism/orchestration",
-        "@dataprism/plugin-framework",
-        "@dataprism/plugins-out-of-box",
-        "@shared/performance-tracker.js",
-        "@shared/worker-manager.js",
-        "@shared/data-utils.js",
-      ],
+      // apache-arrow and @duckdb/duckdb-wasm are loaded via CDN at runtime
+      // by the orchestration layer's dependency-loading system
+      external: ["apache-arrow", "@duckdb/duckdb-wasm"],
       output: {
-        globals: {
-          "@dataprism/core": "DataPrismCore",
-          "@dataprism/orchestration": "DataPrismOrchestration",
-          "@dataprism/plugin-framework": "DataPrismPluginFramework",
-        },
         manualChunks: undefined,
       },
     },
