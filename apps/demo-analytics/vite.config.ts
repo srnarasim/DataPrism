@@ -2,8 +2,11 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 
+const isCI = process.env.CI === "true";
+
 export default defineConfig({
   plugins: [react()],
+  base: isCI ? "/DataPrism/demo/" : "/",
 
   test: {
     environment: "jsdom",
@@ -29,6 +32,8 @@ export default defineConfig({
       "@dataprism/orchestration": resolve(__dirname, "../../packages/orchestration/src"),
       "@dataprism/plugins": resolve(__dirname, "../../packages/plugins/src"),
       "@dataprism/plugins-out-of-box": resolve(__dirname, "../../packages/plugins/out-of-box/src"),
+      // @ruvector/wasm: in build/dev, use the shim that lazy-loads from public/ruvector/
+      "@ruvector/wasm": resolve(__dirname, "./src/shims/ruvector-wasm.js"),
     },
   },
 
@@ -70,10 +75,15 @@ export default defineConfig({
     target: "es2020",
     sourcemap: true,
     rollupOptions: {
+      treeshake: false,
       external: [
         "@dataprism/core",
         "@dataprism/orchestration",
         "@dataprism/plugin-framework",
+        "@dataprism/plugins-out-of-box",
+        "@shared/performance-tracker.js",
+        "@shared/worker-manager.js",
+        "@shared/data-utils.js",
       ],
       output: {
         globals: {
@@ -81,15 +91,7 @@ export default defineConfig({
           "@dataprism/orchestration": "DataPrismOrchestration",
           "@dataprism/plugin-framework": "DataPrismPluginFramework",
         },
-        manualChunks: {
-          vendor: ["react", "react-dom", "react-router-dom"],
-          charts: ["d3", "chart.js", "react-chartjs-2", "recharts"],
-          ui: [
-            "@tanstack/react-query",
-            "@tanstack/react-table",
-            "lucide-react",
-          ],
-        },
+        manualChunks: undefined,
       },
     },
   },

@@ -1,0 +1,55 @@
+name: Deploy Demo App
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/demo-analytics/**'
+      - '.github/workflows/deploy-demo.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'apps/demo-analytics/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd apps/demo-analytics
+          npm ci --legacy-peer-deps
+
+      - name: Run tests
+        run: |
+          cd apps/demo-analytics
+          npx vitest run
+
+      - name: Build
+        env:
+          CI: true
+        run: |
+          cd apps/demo-analytics
+          npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apps/demo-analytics/dist
+          publish_branch: gh-pages
+          destination_dir: demo
+          keep_files: true
+          enable_jekyll: false
+          commit_message: |
+            Deploy demo app - ${{ github.sha }}
